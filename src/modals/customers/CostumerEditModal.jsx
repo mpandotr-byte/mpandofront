@@ -1,0 +1,237 @@
+import React from 'react';
+import {
+  X,
+  Save,
+  User,
+  Phone,
+  Mail,
+  Building2,
+  Briefcase,
+  MapPin,
+  IdCard,
+  ChevronDown
+} from 'lucide-react';
+
+function CustomerEditModal({ 
+  isOpen, 
+  customerData, 
+  onClose, 
+  onChange, 
+  onSave, 
+  companies, 
+  employees 
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+        
+        {/* --- Header --- */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">Müşteriyi Düzenle</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {customerData?.id ? `#1000${customerData.id} numaralı` : 'Mevcut'} müşteri kaydını güncelliyorsunuz.
+            </p>
+          </div>
+          <button 
+            type="button"
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* --- Form Body (Scrollable) --- */}
+        <div className="p-6 overflow-y-auto custom-scrollbar">
+          <form 
+            id="edit-customer-form" 
+            onSubmit={(e) => { e.preventDefault(); onSave(); }} 
+            className="space-y-6"
+          >
+            
+            {/* Bölüm 1: Kişisel ve İletişim Bilgileri */}
+            <div>
+              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <User size={14} /> Kişisel ve İletişim Bilgileri
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Müşteri Adı Soyadı */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Müşteri Adı Soyadı</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <User size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      name="full_name"
+                      value={customerData?.full_name || customerData?.customer_full_name || ''}
+                      onChange={onChange}
+                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* TC Kimlik No */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">TC Kimlik No</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <IdCard size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      name="identity_number"
+                      value={customerData?.identity_number || ''}
+                      onChange={onChange}
+                      maxLength={11}
+                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Telefon Numarası */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Telefon Numarası</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Phone size={16} />
+                    </div>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={customerData?.phone || ''}
+                      onChange={onChange}
+                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* E-posta */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">E-posta</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Mail size={16} />
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      value={customerData?.email || ''}
+                      onChange={onChange}
+                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <hr className="border-slate-100" />
+
+            {/* Bölüm 2: Kurumsal Atamalar */}
+            <div>
+              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Briefcase size={14} /> Şirket & Atama Bilgileri
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Şirket Adı */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Şirket Adı</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Building2 size={16} />
+                    </div>
+                    <select
+                      name="company_id"
+                      value={customerData?.company_id || ''}
+                      onChange={onChange}
+                      className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
+                    >
+                      <option value="">Seçiniz</option>
+                      {(companies || []).map(company => (
+                        <option key={company.id} value={company.id}>
+                          {company.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Sorumlu Çalışan */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Sorumlu Çalışan</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Briefcase size={16} />
+                    </div>
+                    <select
+                      name="employee_id"
+                      value={customerData?.employee_id || ''}
+                      onChange={onChange}
+                      className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
+                    >
+                      <option value="">Seçiniz</option>
+                      {(employees || []).map(employee => (
+                        <option key={employee.id} value={employee.id}>
+                          {employee.full_name || employee.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <hr className="border-slate-100" />
+
+            {/* Bölüm 3: Adres Bilgileri */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <MapPin size={16} className="text-slate-400" /> Adres Detayı
+              </label>
+              <textarea
+                name="address"
+                value={customerData?.address || ''}
+                onChange={onChange}
+                rows="3"
+                className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm resize-none"
+              ></textarea>
+            </div>
+
+          </form>
+        </div>
+
+        {/* --- Footer --- */}
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
+          >
+            İptal
+          </button>
+          <button
+            type="submit"
+            form="edit-customer-form"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
+          >
+            <Save size={16} />
+            Müşteriyi Kaydet
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+export default CustomerEditModal;
