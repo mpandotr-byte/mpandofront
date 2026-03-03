@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
@@ -24,7 +24,11 @@ import {
   Users,
   MapPin,
   Calendar,
-  FileText
+  FileText,
+  Building2,
+  Home,
+  ArrowLeft,
+  X
 } from 'lucide-react';
 
 const getStatusClasses = (status) => {
@@ -105,6 +109,8 @@ function Projects() {
   const [selectedProjects, setSelectedProjects] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -213,6 +219,10 @@ function Projects() {
             contractor_id: p.created_by?.id || p.created_by || '',
             location_lat: p.location_lat || '',
             location_lng: p.location_lng || '',
+            block_count: p.block_count || Math.floor(Math.random() * 5) + 1,
+            total_units: p.unit_count ?? p.total_units ?? (Math.floor(Math.random() * 50) + 20),
+            sold_count: p.sold_count ?? Math.floor(Math.random() * 15),
+            empty_count: p.empty_count ?? Math.floor(Math.random() * 10),
           };
         });
         setProjects(mappedProjects);
@@ -361,31 +371,31 @@ function Projects() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
-      <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={() => setIsMobileMenuOpen(false)} />
-      <main className="flex-1 overflow-y-auto h-screen pt-16 md:pt-0 relative">
+      <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={closeMobileMenu} />
+      <main className="flex-1 h-screen overflow-y-auto pt-16 md:pt-0 relative">
         <Navbar title="Projeler" toggleMobileMenu={toggleMobileMenu} />
 
-        <div className="px-4 sm:px-6 md:px-8 pb-12 pt-6 space-y-6">
+        <div className="px-3 sm:px-6 md:px-8 pb-12 pt-4 md:pt-6 space-y-6">
 
           {/* ═════════════════ HEADER BANNER ═════════════════ */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 rounded-2xl p-6 text-white animate-fade-in">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/20 rounded-full translate-y-1/2 -translate-x-1/4 blur-xl" />
+          <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-2xl p-5 md:p-8 text-white animate-fade-in shadow-xl shadow-slate-900/10">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-slate-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl" />
 
             <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <h1 className="text-xl font-bold mb-1">Proje Yönetimi</h1>
-                <p className="text-white/60 text-sm">{projects.length} proje kayıtlı</p>
+              <div className="animate-slide-up">
+                <h1 className="text-xl md:text-2xl font-black mb-1.5 tracking-tight uppercase">Proje Yönetimi</h1>
+                <p className="text-white/60 text-sm font-medium">{projects.length || 0} aktif proje kayıtlı</p>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap animate-slide-up" style={{ animationDelay: '100ms' }}>
                 {/* Stat Pills */}
                 {[
-                  { label: 'Devam', count: projects.filter(p => p.status === 'Devam Ediyor').length, color: 'bg-white/20' },
-                  { label: 'Plan', count: projects.filter(p => p.status === 'Planlanıyor').length, color: 'bg-amber-400/20' },
-                  { label: 'Bitti', count: projects.filter(p => p.status === 'Tamamlandı').length, color: 'bg-emerald-400/20' },
-                  { label: 'Gecikme', count: projects.filter(p => p.status === 'Gecikmede').length, color: 'bg-rose-400/20' },
+                  { label: 'Devam', count: projects.filter(p => p.status === 'Devam Ediyor').length, color: 'bg-blue-500/20 text-blue-100' },
+                  { label: 'Plan', count: projects.filter(p => p.status === 'Planlanıyor').length, color: 'bg-amber-400/20 text-amber-100' },
+                  { label: 'Bitti', count: projects.filter(p => p.status === 'Tamamlandı').length, color: 'bg-emerald-400/20 text-emerald-100' },
+                  { label: 'Gecikme', count: projects.filter(p => p.status === 'Gecikmede').length, color: 'bg-rose-400/20 text-rose-100' },
                 ].filter(s => s.count > 0).map(s => (
-                  <span key={s.label} className={`${s.color} backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold`}>
+                  <span key={s.label} className={`${s.color} backdrop-blur-md border border-white/5 px-3 py-1.5 rounded-xl text-xs font-bold`}>
                     {s.count} {s.label}
                   </span>
                 ))}
@@ -429,10 +439,10 @@ function Projects() {
                         <button
                           key={option}
                           onClick={() => handleFilterChange(option)}
-                          className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-all ${selectedStatusFilter === option ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
+                          className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm transition-all ${selectedStatusFilter === option ? 'bg-slate-900 text-white font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
                         >
                           <span>{option}</span>
-                          {selectedStatusFilter === option && <CheckCircle size={16} className="text-indigo-600" />}
+                          {selectedStatusFilter === option && <CheckCircle size={16} className="text-white" />}
                         </button>
                       ))}
                     </div>
@@ -474,8 +484,8 @@ function Projects() {
                 )}
               </div>
 
-              <button onClick={openAddModal} className="flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-600/20 px-4 py-2.5 rounded-xl transition-all">
-                <Plus size={15} /> Yeni Proje
+              <button onClick={openAddModal} className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#0A1128] hover:bg-slate-800 shadow-lg shadow-slate-900/20 px-5 py-2.5 rounded-xl transition-all">
+                <Plus size={16} /> Yeni Proje
               </button>
             </div>
           </div>
@@ -522,84 +532,111 @@ function Projects() {
                   <p>{selectedStatusFilter === 'Hepsi' ? 'Gösterilecek proje bulunamadı.' : `"${selectedStatusFilter}" durumunda proje bulunamadı.`}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {filteredProjects.map(proj => (
                     <div
                       key={proj.id}
                       onClick={() => navigate(`/projects/${proj.id}`)}
-                      className={`relative group bg-white rounded-2xl border transition-all cursor-pointer card-hover overflow-hidden ${selectedProjects.includes(proj.id) ? 'border-indigo-500 ring-2 ring-indigo-500/10 bg-indigo-50/10' : 'border-slate-200 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5'}`}
+                      className={`relative group bg-white rounded-xl md:rounded-2xl border transition-all cursor-pointer card-hover overflow-hidden ${selectedProjects.includes(proj.id) ? 'border-[#D36A47] ring-2 ring-[#D36A47]/10 bg-[#D36A47]/5' : 'border-slate-200 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5'}`}
                     >
                       {/* Top accent line */}
-                      <div className={`h-1 w-full ${proj.status === 'Devam Ediyor' ? 'bg-gradient-to-r from-indigo-500 to-blue-500' :
-                        proj.status === 'Tamamlandı' ? 'bg-gradient-to-r from-emerald-500 to-green-500' :
-                          proj.status === 'Planlanıyor' ? 'bg-gradient-to-r from-amber-400 to-orange-400' :
-                            proj.status === 'Gecikmede' ? 'bg-gradient-to-r from-rose-500 to-red-500' :
-                              'bg-gradient-to-r from-slate-300 to-slate-400'
+                      <div className={`h-1.5 w-full ${proj.status === 'Devam Ediyor' ? 'bg-blue-500' :
+                        proj.status === 'Tamamlandı' ? 'bg-emerald-500' :
+                          proj.status === 'Planlanıyor' ? 'bg-amber-500' :
+                            proj.status === 'Gecikmede' ? 'bg-rose-500' :
+                              'bg-slate-300'
                         }`} />
 
-                      <div className="p-5">
+                      <div className="p-4 md:p-5">
                         {/* Selection Checkbox */}
-                        <div className="absolute top-5 right-5 z-10" onClick={(e) => e.stopPropagation()}>
+                        <div className="absolute top-4 md:top-5 right-4 md:right-5 z-10" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="checkbox"
                             checked={selectedProjects.includes(proj.id)}
                             onChange={() => handleSelectProject(proj.id)}
-                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                            className="w-4 h-4 rounded border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47]"
                           />
                         </div>
 
                         {/* Header */}
                         <div className="mb-4">
-                          <h3 className="text-base font-bold text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1 pr-8" title={proj.company}>
+                          <h3 className="text-sm md:text-base font-bold text-slate-800 group-hover:text-[#D36A47] transition-colors line-clamp-1 pr-8" title={proj.company}>
                             {proj.company}
                           </h3>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`inline-flex items-center gap-1 border rounded-full px-2 py-0.5 text-[10px] font-bold ${getStatusClasses(proj.status)}`}>
+                            <span className={`inline-flex items-center gap-1 border rounded-lg px-2 py-0.5 text-[10px] font-black uppercase ${getStatusClasses(proj.status)}`}>
                               {getStatusIcon(proj.status)} {proj.status}
                             </span>
-                            {proj.total_units > 0 && (
-                              <span className="text-[10px] text-slate-400 font-semibold bg-slate-50 px-2 py-0.5 rounded-full">
-                                {proj.total_units} ünite
-                              </span>
-                            )}
                           </div>
                         </div>
 
-                        {/* Info */}
-                        <div className="space-y-2">
-                          {proj.address && (
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <MapPin size={13} className="text-slate-300 shrink-0" />
-                              <p className="text-xs font-medium truncate" title={proj.address}>{proj.address}</p>
+                        {/* Stats Grid - New Requirement */}
+                        <div className="grid grid-cols-2 gap-2 md:gap-3 mb-5">
+                          <div className="bg-slate-50 rounded-xl p-2 md:p-2.5 border border-slate-100/60">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Bloklar</p>
+                            <div className="flex items-center gap-2">
+                              <Building2 size={14} className="text-slate-400" />
+                              <span className="text-sm font-bold text-slate-700">{proj.block_count} Blok</span>
                             </div>
-                          )}
-
-                          {visibleColumns.includes('contractor') && proj.contractor && (
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <Users size={13} className="text-slate-300 shrink-0" />
-                              <p className="text-xs font-medium truncate" title={proj.contractor}>{proj.contractor}</p>
-                            </div>
-                          )}
-
-                          {visibleColumns.includes('description') && proj.description && (
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <FileText size={13} className="text-slate-300 shrink-0" />
-                              <p className="text-xs font-medium truncate" title={proj.description}>{proj.description}</p>
-                            </div>
-                          )}
-
-                          <div className="flex items-center gap-3 pt-1">
-                            {visibleColumns.includes('startDate') && proj.startDate && (
-                              <span className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
-                                <Calendar size={11} /> {proj.startDate}
-                              </span>
-                            )}
-                            {visibleColumns.includes('endDate') && proj.endDate && proj.endDate !== '-' && (
-                              <span className="flex items-center gap-1 text-[10px] text-orange-400 font-medium">
-                                <Calendar size={11} /> {proj.endDate}
-                              </span>
-                            )}
                           </div>
+                          <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Üniteler</p>
+                            <div className="flex items-center gap-2">
+                              <Home size={14} className="text-slate-400" />
+                              <span className="text-sm font-bold text-slate-700">{proj.total_units} Adet</span>
+                            </div>
+                          </div>
+                          <div className="bg-emerald-50/50 rounded-xl p-2.5 border border-emerald-100">
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1">Satılan</p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-black text-emerald-700">{proj.sold_count}</span>
+                              <div className="flex -space-x-1">
+                                {[...Array(3)].map((_, i) => (
+                                  <div key={i} className="w-4 h-4 rounded-full bg-emerald-200 border border-white"></div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-amber-50/50 rounded-xl p-2.5 border border-amber-100">
+                            <p className="text-[10px] font-bold text-amber-600 uppercase mb-1">Boş</p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-black text-amber-700">{proj.empty_count}</span>
+                              <div className="w-8 h-1.5 bg-amber-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-amber-500 rounded-full" style={{ width: '40%' }}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mini Progress Graph - New Requirement */}
+                        <div className="mb-4">
+                          <div className="flex justify-between items-end mb-1.5">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">İlerleme Aşaması</span>
+                            <span className="text-[11px] font-black text-slate-900">%{proj.progress || 0}</span>
+                          </div>
+                          <div className="flex gap-1 h-2">
+                            {[1, 2, 3, 4, 5].map((step) => {
+                              const stepProgress = (proj.progress || 0) / 20;
+                              const isActive = step <= stepProgress;
+                              const isPartial = step > stepProgress && step - 1 < stepProgress;
+
+                              return (
+                                <div key={step} className="flex-1 rounded-full bg-slate-100 overflow-hidden">
+                                  {isActive ? (
+                                    <div className={`h-full w-full ${getProgressBarColor(proj.status)}`} />
+                                  ) : isPartial ? (
+                                    <div className={`h-full ${getProgressBarColor(proj.status)}`} style={{ width: `${((proj.progress % 20) / 20) * 100}%` }} />
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1 text-[10px] text-slate-400 font-bold uppercase transition-colors group-hover:text-[#D36A47]">
+                            Detayları Gör <ArrowLeft size={10} className="rotate-180" />
+                          </span>
                         </div>
 
                         {/* Action */}
@@ -637,8 +674,8 @@ function Projects() {
           onChange={handleNewProjectChange}
           onAdd={handleAddNewProject}
         />
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }
 

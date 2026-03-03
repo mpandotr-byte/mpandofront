@@ -33,15 +33,15 @@ const getUnitStatusDetails = (status) => {
     switch (String(status).toUpperCase()) {
         case 'SOLD':
         case 'SATILDI':
-            return { label: 'Satıldı', classes: 'bg-red-50 text-red-700 border-red-200' };
+            return { label: 'Satıldı', classes: 'bg-rose-50 text-rose-700 border-rose-100' };
         case 'RESERVED':
         case 'REZERVE':
-            return { label: 'Rezerve', classes: 'bg-yellow-50 text-yellow-700 border-yellow-200' };
+            return { label: 'Rezerve', classes: 'bg-amber-50 text-amber-700 border-amber-100' };
         case 'AVAILABLE':
         case 'SATILIK':
         case 'MÜSAİT':
         default:
-            return { label: 'Satılık', classes: 'bg-green-50 text-green-700 border-green-200' };
+            return { label: 'Satılık', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
     }
 };
 
@@ -370,15 +370,15 @@ function BlockDetails() {
         <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
             <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={closeMobileMenu} />
 
-            <main className="flex-1 overflow-y-auto h-screen md:pt-0">
+            <main className="flex-1 overflow-y-auto h-screen pt-16 md:pt-0 relative">
                 <Navbar title={block ? `${block.name} Detayı` : "Blok Detayı"} toggleMobileMenu={toggleMobileMenu} />
 
-                <div className="px-4 sm:px-8 pb-12 pt-3">
+                <div className="px-3 sm:px-8 pb-12 pt-3 md:pt-6 space-y-6">
                     <button
                         onClick={() => navigate(`/projects/${projectId}`)}
-                        className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors mb-6 font-medium text-sm"
+                        className="group flex items-center gap-2 text-slate-500 hover:text-[#D36A47] transition-all mb-2 font-bold text-xs uppercase tracking-wider"
                     >
-                        <ArrowLeft size={16} /> Proje Detayına Dön
+                        <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Geri Dön
                     </button>
 
                     {loading ? (
@@ -397,32 +397,41 @@ function BlockDetails() {
                         </div>
                     ) : (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                            {/* Header */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <Building2 size={32} className="text-blue-600" />
-                                        <h1 className="text-2xl md:text-3xl font-black text-slate-900">{block.name}</h1>
+                            {/* Header Banner - Updated to match Projects.jsx style */}
+                            <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-2xl p-6 md:p-8 text-white shadow-xl shadow-slate-900/10">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
+                                <div className="absolute bottom-0 left-0 w-40 h-40 bg-slate-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl" />
+
+                                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-[#D36A47] shadow-inner">
+                                            <Building2 size={32} />
+                                        </div>
+                                        <div>
+                                            <h1 className="text-2xl md:text-3xl font-black tracking-tight">{block.name}</h1>
+                                            <p className="text-white/60 text-sm font-medium mt-1">
+                                                Proje: <span className="text-white">{project?.name || project?.project_name}</span>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="text-slate-500 font-medium">Proje: {project?.name || project?.project_name}</p>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl border border-blue-100 flex flex-col items-center justify-center min-w-[100px]">
-                                        <span className="text-2xl font-bold">{block.floor_count}</span>
-                                        <span className="text-xs font-semibold uppercase tracking-wider">Kat</span>
+                                    <div className="flex gap-4">
+                                        <div className="bg-white/10 backdrop-blur-md text-white px-5 py-3 rounded-2xl border border-white/10 flex flex-col items-center justify-center min-w-[100px] shadow-lg">
+                                            <span className="text-2xl font-black leading-none">{block.floor_count}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-60">Toplam Kat</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Floors & Units */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
-                                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                        <Layers size={20} className="text-blue-600" />
-                                        Kat ve Daire Detayları
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-8">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
+                                    <h2 className="text-base md:text-lg font-bold text-slate-800 flex items-center gap-2">
+                                        <Layers size={20} className="text-[#D36A47]" />
+                                        Kat ve Ünite Listesi
                                     </h2>
 
-                                    <div className="flex flex-wrap items-center gap-3">
+                                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
                                         <button
                                             onClick={() => {
                                                 const currentFloorCount = (block.floors || []).length;
@@ -435,21 +444,20 @@ function BlockDetails() {
                                                 setIsAddFloorModalOpen(true);
                                             }}
                                             disabled={(block.floors || []).length >= parseInt(block.floor_count || 0)}
-                                            className={`flex items-center gap-1.5 text-xs font-bold text-white px-3 py-1.5 rounded-lg transition-colors shadow-sm order-last md:order-none ${(block.floors || []).length >= parseInt(block.floor_count || 0)
+                                            className={`flex items-center gap-1.5 text-xs font-bold text-white px-4 py-2.5 rounded-xl transition-all shadow-lg order-last md:order-none ${(block.floors || []).length >= parseInt(block.floor_count || 0)
                                                 ? 'bg-slate-400 cursor-not-allowed opacity-70'
-                                                : 'bg-blue-600 hover:bg-blue-700'
+                                                : 'bg-[#D36A47] hover:bg-[#B95839] shadow-[#D36A47]/20'
                                                 }`}
-                                            title={(block.floors || []).length >= parseInt(block.floor_count || 0) ? 'Maksimum kat sayısına ulaşıldı' : 'Yeni Kat Ekle'}
                                         >
-                                            <Plus size={14} /> Yeni Kat
+                                            <Plus size={14} /> <span className="hidden sm:inline">Yeni Kat Ekle</span><span className="sm:hidden">Yeni Kat</span>
                                         </button>
 
-                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 cursor-pointer focus-within:ring-2 focus-within:ring-[#D36A47]/10 transition-all">
                                             <Filter size={14} className="text-slate-400" />
                                             <select
                                                 value={statusFilter}
                                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                                className="bg-transparent text-xs font-bold text-slate-600 focus:outline-none cursor-pointer"
+                                                className="bg-transparent text-xs font-bold text-slate-600 focus:outline-none cursor-pointer appearance-none pr-4"
                                             >
                                                 <option value="ALL">Tüm Durumlar</option>
                                                 <option value="AVAILABLE">Satılık</option>
@@ -458,12 +466,12 @@ function BlockDetails() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 cursor-pointer focus-within:ring-2 focus-within:ring-[#D36A47]/10 transition-all">
                                             <LayoutGrid size={14} className="text-slate-400" />
                                             <select
                                                 value={typeFilter}
                                                 onChange={(e) => setTypeFilter(e.target.value)}
-                                                className="bg-transparent text-xs font-bold text-slate-600 focus:outline-none cursor-pointer"
+                                                className="bg-transparent text-xs font-bold text-slate-600 focus:outline-none cursor-pointer appearance-none pr-4"
                                             >
                                                 <option value="ALL">Tüm Tipler</option>
                                                 {unitTypes.map(type => (
@@ -494,15 +502,15 @@ function BlockDetails() {
                                         const isLastItems = index >= filteredFloors.length - 2 && filteredFloors.length > 3;
 
                                         return (
-                                            <div key={floor.id} className={`relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-slate-100 before:rounded-full ${isMenuOpen ? 'z-50' : 'z-10'}`}>
+                                            <div key={floor.id} className={`relative pl-2 sm:pl-8 before:absolute before:inset-y-0 before:left-0 sm:before:left-0 before:w-1 sm:before:w-1 before:bg-slate-100 before:rounded-full ${isMenuOpen ? 'z-50' : 'z-10'}`}>
                                                 <div
-                                                    className="font-bold text-slate-800 flex items-center justify-between mb-4 sticky top-0 bg-white py-2 cursor-pointer hover:bg-slate-50 transition-colors rounded-lg pr-4 group"
+                                                    className="font-bold text-slate-800 flex items-center justify-between mb-4 sticky top-[64px] md:top-0 bg-white/95 backdrop-blur-sm px-2 py-3 cursor-pointer hover:bg-slate-50 transition-all rounded-xl border border-transparent hover:border-slate-100 group shadow-sm sm:shadow-none"
                                                 >
                                                     <div className="flex items-center gap-3 flex-1" onClick={() => toggleFloor(floor.id)}>
-                                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center absolute -left-[1.15rem] md:-left-[1.65rem] border-4 border-white shadow-sm">
+                                                        <div className="w-8 h-8 rounded-full bg-[#0A1128] text-white flex items-center justify-center sm:absolute sm:-left-[1.65rem] border-4 border-white shadow-md text-xs font-black">
                                                             {floor.floor_number}
                                                         </div>
-                                                        <span className="text-sm font-bold ml-2">Kat {floor.floor_number}</span>
+                                                        <span className="text-sm font-black ml-0 sm:ml-2 uppercase tracking-tight">Kat {floor.floor_number}</span>
                                                         <div className="flex flex-wrap gap-2">
                                                             <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">
                                                                 {(floor.units || []).length} Ünite
@@ -596,20 +604,22 @@ function BlockDetails() {
                                                 </div>
 
                                                 {isExpanded && (
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-6 animate-in fade-in slide-in-from-top-2 duration-200 px-1 sm:px-0">
                                                         {(floor.units || []).sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })).map(unit => {
                                                             const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
                                                             const isUnitExpanded = !!expandedUnits[unit.id];
                                                             return (
                                                                 <div key={unit.id} className="border border-slate-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all h-fit relative">
                                                                     <div
-                                                                        className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                                                                        className="p-3 sm:p-4 cursor-pointer hover:bg-slate-50 transition-colors"
                                                                         onClick={() => toggleUnit(unit.id)}
                                                                     >
                                                                         <div className="font-bold text-base text-slate-800 flex items-center justify-between gap-2">
                                                                             <div className="flex items-center gap-2">
-                                                                                <Home size={18} className="text-orange-500" />
-                                                                                <span className="truncate whitespace-nowrap">
+                                                                                <div className="w-7 h-7 rounded-lg bg-[#D36A47]/10 flex items-center justify-center text-[#D36A47]">
+                                                                                    <Home size={16} />
+                                                                                </div>
+                                                                                <span className="truncate whitespace-nowrap text-sm sm:text-base font-extrabold tracking-tight">
                                                                                     {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
                                                                                 </span>
                                                                             </div>
@@ -640,9 +650,9 @@ function BlockDetails() {
                                                                                                     setIsAddRoomModalOpen(true);
                                                                                                     setActiveUnitMenu(null);
                                                                                                 }}
-                                                                                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
+                                                                                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#D36A47] hover:bg-[#D36A47]/5 transition-colors"
                                                                                             >
-                                                                                                <div className="bg-blue-100 p-1.5 rounded-lg">
+                                                                                                <div className="bg-[#D36A47]/10 p-1.5 rounded-lg">
                                                                                                     <PlusCircle size={14} />
                                                                                                 </div>
                                                                                                 Oda Ekle

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { X } from "lucide-react";
 
 const icons = {
   Dashboard: (
@@ -55,9 +57,7 @@ const icons = {
     </svg>
   ),
   Close: (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-    </svg>
+    <X className="w-6 h-6" />
   ),
   Messages: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,6 +92,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
   const [openDropdowns, setOpenDropdowns] = useState({});
   const toggleDesktopCollapse = () => setIsSidebarCollapsed(!isSidebarCollapsed);
   const location = useLocation();
+  const { user } = useAuth();
 
   const sidebarWidthClass = isSidebarCollapsed
     ? "w-[280px] md:w-20"
@@ -121,24 +122,24 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex flex-col ${sidebarWidthClass}
-          bg-[#0f172a] border-r border-white/[0.06]
+          bg-[#0A1128] border-r border-white/[0.06]
           transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) 
           md:relative md:translate-x-0 
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-600/[0.03] via-transparent to-purple-600/[0.03] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#D36A47]/[0.05] via-transparent to-black/20 pointer-events-none" />
 
         {/* Header */}
         <div className={`relative flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between px-5"} h-16 mb-1`}>
           <div className="flex items-center gap-3">
-            <div className={`rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 transition-all duration-300 ${isSidebarCollapsed ? "w-10 h-10" : "w-9 h-9"}`}>
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-xl" />
+            <div className={`rounded-xl flex items-center justify-center transition-all duration-300 ${isSidebarCollapsed ? "w-10 h-10" : "w-10 h-10 p-0"}`}>
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert" title="Mpando Logo" />
             </div>
             {!isSidebarCollapsed && (
               <div className="flex flex-col">
-                <span className="text-white font-bold text-base tracking-tight">MPANDO</span>
-                <span className="text-[10px] text-slate-500 font-medium -mt-0.5">Construction Platform</span>
+                <span className="text-white font-black text-lg tracking-tight leading-none">MPANDO</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Construction</span>
               </div>
             )}
           </div>
@@ -177,13 +178,13 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
         {!isSidebarCollapsed && (
           <div className="relative px-4 pb-4">
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-[#D36A47] transition-colors">
                 {icons.Search}
               </div>
               <input
                 type="text"
                 placeholder="Ara..."
-                className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/[0.06] focus:bg-white/[0.08] focus:border-indigo-500/30 rounded-xl text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all duration-200"
+                className="w-full pl-9 pr-3 py-2 bg-white/[0.03] border border-white/[0.06] focus:bg-white/[0.08] focus:border-[#D36A47]/30 rounded-xl text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#D36A47]/10 transition-all duration-200"
               />
             </div>
           </div>
@@ -211,22 +212,22 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                             className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ease-out relative
                               ${isSidebarCollapsed ? "justify-center px-0 py-3" : ""}
                               ${isActive
-                                ? "bg-indigo-500/10 text-white"
+                                ? "bg-[#D36A47]/10 text-white"
                                 : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                               }`}
                             title={isSidebarCollapsed ? item.name : undefined}
                           >
                             {isActive && (
-                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-indigo-500 rounded-r-full" />
+                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3.5px] h-6 bg-[#D36A47] rounded-r-full" />
                             )}
-                            <span className={`transition-all duration-200 ${isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"}`}>
+                            <span className={`transition-all duration-200 ${isActive ? "text-[#D36A47]" : "text-slate-500 group-hover:text-slate-300"}`}>
                               {item.icon}
                             </span>
                             {!isSidebarCollapsed && (
-                              <span className={`text-[13px] ${isActive ? "font-semibold" : "font-medium"}`}>{item.name}</span>
+                              <span className={`text-[13px] ${isActive ? "font-bold" : "font-medium"}`}>{item.name}</span>
                             )}
                             {isActive && !isSidebarCollapsed && (
-                              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#D36A47] shadow-sm shadow-[#D36A47]/50" />
                             )}
                           </Link>
                         </li>
@@ -242,13 +243,13 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                             className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ease-out w-full
                               ${isSidebarCollapsed ? "justify-center px-0 py-3" : ""}
                               ${isActive
-                                ? "bg-indigo-500/10 text-white"
+                                ? "bg-[#D36A47]/10 text-white"
                                 : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                               }`}
                             title={isSidebarCollapsed ? item.name : undefined}
                             aria-expanded={isDropdownOpen}
                           >
-                            <span className={`transition-all duration-200 ${isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"}`}>
+                            <span className={`transition-all duration-200 ${isActive ? "text-[#D36A47]" : "text-slate-500 group-hover:text-slate-300"}`}>
                               {item.icon}
                             </span>
                             {!isSidebarCollapsed && (
@@ -274,14 +275,14 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                                       onClick={closeMobileMenu}
                                       className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ease-out
                                         ${isChildActive
-                                          ? "bg-indigo-500/10 text-white"
+                                          ? "bg-[#D36A47]/10 text-white"
                                           : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                                         }`}
                                     >
-                                      <span className={`transition-all duration-200 ${isChildActive ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"}`}>
+                                      <span className={`transition-all duration-200 ${isChildActive ? "text-[#D36A47]" : "text-slate-500 group-hover:text-slate-300"}`}>
                                         {child.icon}
                                       </span>
-                                      <span className={`text-[13px] ${isChildActive ? "font-semibold" : "font-medium"}`}>
+                                      <span className={`text-[13px] ${isChildActive ? "font-bold" : "font-medium"}`}>
                                         {child.name}
                                       </span>
                                     </Link>
@@ -320,12 +321,12 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
           {!isSidebarCollapsed && (
             <div className="mt-2 mx-1 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-indigo-500/20">
-                  M
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0A1128] to-[#1E293B] flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-black/20">
+                  {user?.full_name?.charAt(0) || 'M'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-300 truncate">Mpando User</p>
-                  <p className="text-[10px] text-slate-600 truncate">Pro Plan</p>
+                  <p className="text-xs font-semibold text-slate-300 truncate">{user?.full_name || 'Mpando User'}</p>
+                  <p className="text-[10px] text-slate-600 truncate uppercase tracking-tighter">Premium Plan</p>
                 </div>
               </div>
             </div>

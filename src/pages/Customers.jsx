@@ -119,6 +119,7 @@ function Customers() {
   }, []);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const handleSelectCustomer = (id) => {
     setSelectedCustomers(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
@@ -228,8 +229,8 @@ function Customers() {
       key: 'full_name',
       label: 'Müşteri',
       render: (val, row) => (
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0A1128] to-[#1E293B] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-black/10">
             {val?.charAt(0) || '?'}
           </div>
           <div>
@@ -282,44 +283,30 @@ function Customers() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
-      <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={() => setIsMobileMenuOpen(false)} />
-      <main className="flex-1 overflow-y-auto h-screen pt-16 md:pt-0 relative">
+      <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={closeMobileMenu} />
+      <main className="flex-1 h-screen overflow-y-auto pt-16 md:pt-0 relative">
         <Navbar title="Müşteriler" toggleMobileMenu={toggleMobileMenu} />
 
-        <div className="px-4 sm:px-6 md:px-8 pb-12 pt-6 space-y-6">
+        <div className="px-3 sm:px-6 md:px-8 pb-12 pt-4 md:pt-6 space-y-6">
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 card-hover">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Toplam Müşteri</p>
-                  <p className="text-2xl font-bold text-slate-800">{totalCustomers}</p>
-                </div>
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                  <Users size={22} />
-                </div>
+          {/* ═════════════════ HEADER BANNER ═════════════════ */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-2xl p-5 md:p-8 text-white animate-fade-in shadow-xl shadow-slate-900/10">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-slate-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl" />
+
+            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div className="animate-slide-up">
+                <h1 className="text-xl md:text-2xl font-black mb-1.5 tracking-tight uppercase">Müşteri Portföyü</h1>
+                <p className="text-white/60 text-sm font-medium">{customers.length || 0} aktif müşteri kaydı</p>
               </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 card-hover">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Aktif Müşteri</p>
-                  <p className="text-2xl font-bold text-emerald-600">{activeCustomers}</p>
+              <div className="flex items-center gap-2 md:gap-4 animate-slide-up" style={{ animationDelay: '100ms' }}>
+                <div className="bg-white/10 backdrop-blur-md px-4 py-2 md:py-3 rounded-2xl border border-white/10 shadow-lg min-w-[80px] md:min-w-[100px] text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#D36A47] mb-0.5">Aktif</p>
+                  <p className="text-lg md:text-xl font-black leading-none">{activeCustomers}</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                  <UserPlus size={22} />
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 card-hover">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Silinmiş Kayıt</p>
-                  <p className="text-2xl font-bold text-red-500">{deletedCustomers}</p>
-                </div>
-                <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center text-red-500">
-                  <UserX size={22} />
+                <div className="bg-white/10 backdrop-blur-md px-4 py-2 md:py-3 rounded-2xl border border-white/10 shadow-lg min-w-[80px] md:min-w-[100px] text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-0.5">Toplam</p>
+                  <p className="text-lg md:text-xl font-black leading-none">{totalCustomers}</p>
                 </div>
               </div>
             </div>
@@ -333,11 +320,11 @@ function Customers() {
               <div className="relative" ref={filterDropdownRef}>
                 <button
                   onClick={toggleFilterDropdown}
-                  className="flex items-center gap-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-3.5 py-2 rounded-xl transition-all"
+                  className="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-4 py-2.5 rounded-xl transition-all"
                 >
                   <Filter size={14} />
                   {selectedFilterOption !== 'Tümü' && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                    <span className="ml-1 px-2.5 py-0.5 rounded-full bg-[#D36A47]/10 text-[#D36A47] text-[10px] font-black uppercase">
                       {selectedFilterOption}
                     </span>
                   )}
@@ -350,10 +337,10 @@ function Customers() {
                         <button
                           key={option}
                           onClick={() => handleFilterChange(option)}
-                          className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-all ${selectedFilterOption === option ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
+                          className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm transition-all ${selectedFilterOption === option ? 'bg-slate-900 text-white font-bold' : 'hover:bg-slate-50 text-slate-700'}`}
                         >
                           <span>{option}</span>
-                          {selectedFilterOption === option && <CheckCircle size={16} className="text-indigo-600" />}
+                          {selectedFilterOption === option && <CheckCircle size={16} className="text-white" />}
                         </button>
                       ))}
                     </div>
@@ -361,28 +348,28 @@ function Customers() {
                 )}
               </div>
 
-              <button onClick={openAddModal} className="btn-primary">
-                <Plus size={15} /> Yeni Müşteri
+              <button onClick={openAddModal} className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#0A1128] hover:bg-[#1E293B] shadow-lg shadow-[#0A1128]/20 px-5 py-2.5 rounded-xl transition-all">
+                <Plus size={16} /> <span className="hidden sm:inline">Yeni Müşteri Ekle</span><span className="sm:hidden">Yeni Ekle</span>
               </button>
             </div>
           </div>
 
           {/* Selection Action Bar */}
           {selectedCustomers.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl animate-fade-in">
-              <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                <span className="flex items-center justify-center bg-indigo-600 text-white w-7 h-7 rounded-lg text-xs font-bold">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-[#D36A47]/5 border border-[#D36A47]/20 p-4 rounded-xl animate-fade-in gap-3">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center justify-center bg-[#D36A47] text-white w-7 h-7 rounded-lg text-xs font-bold shadow-lg shadow-[#D36A47]/30">
                   {selectedCustomers.length}
                 </span>
-                <span className="text-sm font-semibold text-indigo-800">müşteri seçildi</span>
+                <span className="text-sm font-bold text-[#D36A47]">müşteri seçildi</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-100 transition-colors px-3 py-1.5 rounded-lg border border-indigo-200">
-                  <CheckSquare size={15} />
-                  <span className="hidden sm:inline">{selectedCustomers.length === filteredCustomers.length ? 'Seçimi Temizle' : 'Tümünü Seç'}</span>
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <button onClick={handleSelectAll} className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all px-4 py-2 rounded-lg border border-slate-200">
+                  <CheckSquare size={14} />
+                  <span>{selectedCustomers.length === filteredCustomers.length ? 'Seçimi Temizle' : 'Tümünü Seç'}</span>
                 </button>
-                <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors">
-                  <Trash2 size={15} /> <span>Silinmiş Yap</span>
+                <button onClick={handleDeleteSelected} className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 px-4 py-2 rounded-lg border border-red-100 transition-all">
+                  <UserX size={14} /> <span>Silinmiş Yap</span>
                 </button>
               </div>
             </div>

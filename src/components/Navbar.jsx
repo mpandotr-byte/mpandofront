@@ -95,18 +95,18 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
   return (
     <>
       <nav className="fixed top-0 left-0 w-full md:sticky md:left-auto z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 transition-all duration-300">
-        <div className="flex items-center justify-between px-6 py-3.5">
+        <div className="flex items-center justify-between px-4 md:px-6 py-3.5">
 
           <div className="flex items-center gap-3">
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all"
+              className="md:hidden p-2 text-slate-500 hover:text-[#D36A47] hover:bg-[#D36A47]/10 rounded-xl transition-all"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </button>
 
             <div className="flex flex-col">
-              <h1 className="text-lg font-bold text-slate-800 tracking-tight hidden md:block">
+              <h1 className="text-base md:text-lg font-extrabold text-[#0A1128] tracking-tight">
                 {title}
               </h1>
             </div>
@@ -119,28 +119,28 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 className={`relative p-2.5 rounded-xl transition-all duration-300 group ${isNotificationsOpen
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                    : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'
+                  ? 'bg-[#0A1128] text-white shadow-lg shadow-black/20'
+                  : 'text-slate-500 hover:text-[#D36A47] hover:bg-slate-100'
                   }`}
               >
                 <Bell className={`w-[19px] h-[19px] transition-transform duration-300 ${isNotificationsOpen ? 'scale-110' : 'group-hover:rotate-12'}`} />
                 {unreadCount > 0 && (
                   <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500 border-2 border-white"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D36A47] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#D36A47] border-2 border-white"></span>
                   </span>
                 )}
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-3 w-[360px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 z-50 animate-in fade-in zoom-in duration-200 origin-top-right overflow-hidden">
+                <div className="absolute right-0 mt-3 w-[calc(100vw-32px)] sm:w-[360px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 z-50 animate-in fade-in zoom-in duration-200 origin-top-right overflow-hidden">
                   <div className="px-5 py-4 border-b border-slate-100/60 flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-10">
                     <div>
                       <h3 className="text-sm font-bold text-slate-800">Bildirim Merkezi</h3>
                       <p className="text-[10px] text-slate-400 font-medium mt-0.5">Toplam {notifications.length} bildirim bulunmaktadır</p>
                     </div>
                     {unreadCount > 0 && (
-                      <span className="text-[10px] font-black tracking-wider uppercase bg-indigo-500 text-white px-2 py-1 rounded-md shadow-sm shadow-indigo-100">
+                      <span className="text-[10px] font-black tracking-wider uppercase bg-[#D36A47] text-white px-2 py-1 rounded-md shadow-sm shadow-[#D36A47]/20">
                         {unreadCount} Yeni
                       </span>
                     )}
@@ -153,7 +153,7 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
                           <div
                             key={notif.id}
                             onClick={() => handleNotificationClick(notif)}
-                            className={`group relative px-5 py-4 hover:bg-white transition-all cursor-pointer border-l-4 ${notif.unread ? 'border-l-indigo-500 bg-indigo-50/20' : 'border-l-transparent'
+                            className={`group relative px-5 py-4 hover:bg-white transition-all cursor-pointer border-l-4 ${notif.unread ? 'border-l-[#D36A47] bg-[#D36A47]/5' : 'border-l-transparent'
                               }`}
                           >
                             <div className="flex justify-between items-start mb-1">
@@ -205,7 +205,7 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2.5 pl-2 pr-2 py-1.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-indigo-500/20">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0A1128] to-[#1E293B] flex items-center justify-center text-white text-xs font-bold shadow-md shadow-black/20">
                   {user?.full_name?.charAt(0) || 'U'}
                 </div>
                 <span className="hidden md:block text-sm font-semibold text-slate-700">{user?.full_name}</span>
@@ -284,7 +284,7 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
                 onClick={() => handleMarkAsRead(selectedNotification.id)}
                 disabled={!selectedNotification.unread}
                 className={`flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border transition-colors ${selectedNotification.unread
-                  ? 'text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100'
+                  ? 'text-white bg-[#D36A47] border-[#D36A47] hover:bg-[#B95839]'
                   : 'text-slate-400 bg-slate-50 border-slate-200 cursor-not-allowed'
                   }`}
               >

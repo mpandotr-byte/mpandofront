@@ -158,8 +158,8 @@ export default function DataTable({
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) return <ArrowUpDown size={13} className="text-slate-300" />;
         return sortConfig.direction === 'asc'
-            ? <ArrowUp size={13} className="text-indigo-500" />
-            : <ArrowDown size={13} className="text-indigo-500" />;
+            ? <ArrowUp size={13} className="text-[#D36A47]" />
+            : <ArrowDown size={13} className="text-[#D36A47]" />;
     };
 
     // Page numbers to display
@@ -212,7 +212,7 @@ export default function DataTable({
                             placeholder={searchPlaceholder}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 focus:bg-white transition-all"
+                            className="w-full pl-10 pr-24 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#D36A47]/10 focus:border-[#D36A47]/30 transition-all shadow-sm"
                         />
                         {searchQuery && (
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -256,7 +256,7 @@ export default function DataTable({
                                                     });
                                                 }
                                             }}
-                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                                            className="w-4 h-4 rounded border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47]"
                                         />
                                     </th>
                                 )}
@@ -285,7 +285,7 @@ export default function DataTable({
                                             <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
                                                 <Database size={28} className="text-slate-300" />
                                             </div>
-                                            <p className="text-sm font-medium text-slate-500">{emptyMessage}</p>
+                                            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">{emptyMessage}</p>
                                             {searchQuery && (
                                                 <p className="text-xs text-slate-400 mt-1">
                                                     Farklı bir arama terimi deneyebilirsiniz.
@@ -312,7 +312,7 @@ export default function DataTable({
                                                     type="checkbox"
                                                     checked={selectedRows.includes(row[rowKey])}
                                                     onChange={() => onSelect && onSelect(row[rowKey])}
-                                                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                                                    className="w-4 h-4 rounded border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47]"
                                                 />
                                             </td>
                                         )}
