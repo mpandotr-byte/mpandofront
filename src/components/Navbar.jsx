@@ -118,60 +118,79 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
             <div className="relative" ref={notificationsDropdownRef}>
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className={`relative p-2.5 rounded-xl transition-all ${isNotificationsOpen ? 'bg-slate-100 text-slate-800' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                className={`relative p-2.5 rounded-xl transition-all duration-300 group ${isNotificationsOpen
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                    : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'
+                  }`}
               >
-                <Bell className="w-[18px] h-[18px]" />
+                <Bell className={`w-[19px] h-[19px] transition-transform duration-300 ${isNotificationsOpen ? 'scale-110' : 'group-hover:rotate-12'}`} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white animate-pulse" />
+                  <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500 border-2 border-white"></span>
+                  </span>
                 )}
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-[340px] bg-white rounded-2xl shadow-xl shadow-black/10 border border-slate-100 z-50 animate-scale-in overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
-                    <h3 className="text-sm font-bold text-slate-800">Bildirimler</h3>
+                <div className="absolute right-0 mt-3 w-[360px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 z-50 animate-in fade-in zoom-in duration-200 origin-top-right overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-100/60 flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-10">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">Bildirim Merkezi</h3>
+                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">Toplam {notifications.length} bildirim bulunmaktadır</p>
+                    </div>
                     {unreadCount > 0 && (
-                      <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">
+                      <span className="text-[10px] font-black tracking-wider uppercase bg-indigo-500 text-white px-2 py-1 rounded-md shadow-sm shadow-indigo-100">
                         {unreadCount} Yeni
                       </span>
                     )}
                   </div>
 
-                  <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                  <div className="max-h-[380px] overflow-y-auto custom-scrollbar bg-slate-50/20">
                     {notifications.length > 0 ? (
-                      notifications.map((notif) => (
-                        <div
-                          key={notif.id}
-                          onClick={() => handleNotificationClick(notif)}
-                          className={`px-4 py-3.5 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-none group ${notif.unread ? 'bg-indigo-50/30' : ''}`}
-                        >
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="flex items-start gap-2.5">
-                              {notif.unread && <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-1.5 flex-shrink-0" />}
-                              <p className={`text-sm ${notif.unread ? 'text-slate-800 font-bold' : 'text-slate-700 font-medium'}`}>
+                      <div className="divide-y divide-slate-50">
+                        {notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`group relative px-5 py-4 hover:bg-white transition-all cursor-pointer border-l-4 ${notif.unread ? 'border-l-indigo-500 bg-indigo-50/20' : 'border-l-transparent'
+                              }`}
+                          >
+                            <div className="flex justify-between items-start mb-1">
+                              <h4 className={`text-sm ${notif.unread ? 'text-slate-900 font-bold' : 'text-slate-700 font-semibold'} group-hover:text-indigo-600 transition-colors`}>
                                 {notif.title}
-                              </p>
+                              </h4>
+                              <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded-md group-hover:bg-indigo-50 group-hover:text-indigo-400 transition-colors">
+                                {notif.time}
+                              </span>
                             </div>
-                            <span className="text-[10px] text-slate-400 whitespace-nowrap pt-0.5">{notif.time}</span>
+                            <p className={`text-xs leading-relaxed line-clamp-2 ${notif.unread ? 'text-slate-600 font-medium' : 'text-slate-500'}`}>
+                              {notif.text}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0 text-[10px] font-bold text-indigo-500">
+                              Detayı Gör <ChevronDown className="w-3 h-3 rotate-270" />
+                            </div>
                           </div>
-                          <p className={`text-xs mt-1 line-clamp-2 ${notif.unread ? 'ml-4' : ''} ${notif.unread ? 'text-slate-600' : 'text-slate-500'}`}>
-                            {notif.text}
-                          </p>
-                        </div>
-                      ))
+                        ))}
+                      </div>
                     ) : (
-                      <div className="px-4 py-8 text-center text-sm text-slate-400">
-                        Hiç bildiriminiz yok.
+                      <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                          <Bell className="w-8 h-8 text-slate-200" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-800">Harika Haber!</h4>
+                        <p className="text-xs text-slate-500 mt-1">Şu anda yeni bir bildirim bulunmuyor. Her şey yolunda!</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="border-t border-slate-100 px-4 py-2.5 bg-slate-50/50">
+                  <div className="border-t border-slate-100/60 p-3 bg-white">
                     <button
                       onClick={() => window.location.href = '/messages'}
-                      className="w-full text-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                      className="group w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-indigo-600 hover:bg-slate-50 transition-all"
                     >
-                      Tüm mesajları göster
+                      Tüm Bildirimleri Yönet
+                      <Settings className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-500" />
                     </button>
                   </div>
                 </div>
@@ -265,8 +284,8 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
                 onClick={() => handleMarkAsRead(selectedNotification.id)}
                 disabled={!selectedNotification.unread}
                 className={`flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border transition-colors ${selectedNotification.unread
-                    ? 'text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100'
-                    : 'text-slate-400 bg-slate-50 border-slate-200 cursor-not-allowed'
+                  ? 'text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100'
+                  : 'text-slate-400 bg-slate-50 border-slate-200 cursor-not-allowed'
                   }`}
               >
                 <CheckCircle size={15} />
