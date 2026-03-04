@@ -23,7 +23,9 @@ import {
     Plus,
     PlusCircle,
     Compass,
-    FileText
+    FileText,
+    User,
+    Banknote
 } from 'lucide-react';
 import NewFloorModal from '../modals/blocks/NewFloorModal';
 import NewUnitModal from '../modals/units/NewUnitModal';
@@ -53,6 +55,7 @@ function BlockDetails() {
     const [block, setBlock] = useState(null);
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sales, setSales] = useState([]);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [expandedFloors, setExpandedFloors] = useState({});
     const [expandedUnits, setExpandedUnits] = useState({});
@@ -73,15 +76,17 @@ function BlockDetails() {
     const fetchBlockDetails = async () => {
         setLoading(true);
         try {
-            // Get project data for context (breadcrumbs etc)
-            const projectData = await api.get(`/projects/${projectId}`);
+            // Fetch project, block and sales data
+            const [projectData, blockResponse, salesData] = await Promise.all([
+                api.get(`/projects/${projectId}`),
+                api.get(`/projects/blocks/${blockId}`),
+                api.get(`/sales`).catch(() => [])
+            ]);
+
             setProject(projectData);
+            setSales(salesData || []);
 
-            // Fetch detailed block data using the specific endpoint
-            const response = await api.get(`/projects/blocks/${blockId}`);
-            console.log("API'den gelen blok verisi:", response);
-
-            let blockData = response.block || response.data || response;
+            let blockData = blockResponse.block || blockResponse.data || blockResponse;
 
             // Verileri normalize et
             const normalizeUnit = (u) => ({
@@ -432,6 +437,42 @@ function BlockDetails() {
                                     </h2>
 
                                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                        {/* Status Filter Pills */}
+                                        <div className="flex p-1 bg-slate-100/80 rounded-xl">
+                                            {['ALL', 'AVAILABLE', 'SOLD', 'RESERVED'].map((status) => (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => setStatusFilter(status)}
+                                                    className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${statusFilter === status
+                                                        ? 'bg-white text-[#D36A47] shadow-sm'
+                                                        : 'text-slate-400 hover:text-slate-600'
+                                                        }`}
+                                                >
+                                                    {status === 'ALL' ? 'HEPSİ' :
+                                                        status === 'AVAILABLE' ? 'SATILIK' :
+                                                            status === 'SOLD' ? 'SATILDI' : 'REZERVE'}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {/* Unit Type Dropdown */}
+                                        <div className="relative">
+                                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 cursor-pointer hover:bg-slate-50 transition-all shadow-sm">
+                                                <LayoutGrid size={14} className="text-[#0A1128]" />
+                                                <select
+                                                    value={typeFilter}
+                                                    onChange={(e) => setTypeFilter(e.target.value)}
+                                                    className="bg-transparent text-[11px] font-black text-slate-700 focus:outline-none cursor-pointer appearance-none pr-4 uppercase tracking-tight"
+                                                >
+                                                    <option value="ALL">Tüm Tipler</option>
+                                                    {unitTypes.map(type => (
+                                                        <option key={type} value={type}>{type}</option>
+                                                    ))}
+                                                </select>
+                                                <ChevronDown size={12} className="absolute right-3 text-slate-400 pointer-events-none" />
+                                            </div>
+                                        </div>
+
                                         <button
                                             onClick={() => {
                                                 const currentFloorCount = (block.floors || []).length;
@@ -444,54 +485,13 @@ function BlockDetails() {
                                                 setIsAddFloorModalOpen(true);
                                             }}
                                             disabled={(block.floors || []).length >= parseInt(block.floor_count || 0)}
-                                            className={`flex items-center gap-1.5 text-xs font-bold text-white px-4 py-2.5 rounded-xl transition-all shadow-lg order-last md:order-none ${(block.floors || []).length >= parseInt(block.floor_count || 0)
+                                            className={`flex items-center gap-1.5 text-[10px] font-black text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-[#D36A47]/10 ml-auto ${(block.floors || []).length >= parseInt(block.floor_count || 0)
                                                 ? 'bg-slate-400 cursor-not-allowed opacity-70'
-                                                : 'bg-[#D36A47] hover:bg-[#B95839] shadow-[#D36A47]/20'
+                                                : 'bg-[#D36A47] hover:bg-[#B95839] hover:scale-105 active:scale-95'
                                                 }`}
                                         >
-                                            <Plus size={14} /> <span className="hidden sm:inline">Yeni Kat Ekle</span><span className="sm:hidden">Yeni Kat</span>
+                                            <Plus size={14} /> <span>YENİ KAT EKLE</span>
                                         </button>
-
-                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 cursor-pointer focus-within:ring-2 focus-within:ring-[#D36A47]/10 transition-all">
-                                            <Filter size={14} className="text-slate-400" />
-                                            <select
-                                                value={statusFilter}
-                                                onChange={(e) => setStatusFilter(e.target.value)}
-                                                className="bg-transparent text-xs font-bold text-slate-600 focus:outline-none cursor-pointer appearance-none pr-4"
-                                            >
-                                                <option value="ALL">Tüm Durumlar</option>
-                                                <option value="AVAILABLE">Satılık</option>
-                                                <option value="SOLD">Satıldı</option>
-                                                <option value="RESERVED">Rezerve</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 cursor-pointer focus-within:ring-2 focus-within:ring-[#D36A47]/10 transition-all">
-                                            <LayoutGrid size={14} className="text-slate-400" />
-                                            <select
-                                                value={typeFilter}
-                                                onChange={(e) => setTypeFilter(e.target.value)}
-                                                className="bg-transparent text-xs font-bold text-slate-600 focus:outline-none cursor-pointer appearance-none pr-4"
-                                            >
-                                                <option value="ALL">Tüm Tipler</option>
-                                                {unitTypes.map(type => (
-                                                    <option key={type} value={type}>{type}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {(statusFilter !== 'ALL' || typeFilter !== 'ALL') && (
-                                            <button
-                                                onClick={() => {
-                                                    setStatusFilter('ALL');
-                                                    setTypeFilter('ALL');
-                                                }}
-                                                className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                                                title="Filtreleri Temizle"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
 
@@ -699,7 +699,21 @@ function BlockDetails() {
                                                                             <span className="text-xs bg-orange-50 text-orange-700 px-2.5 py-1 rounded-full font-bold border border-orange-100">
                                                                                 {unit.unit_type}
                                                                             </span>
+                                                                            {(unit.sales_status === 'SOLD' || unit.sales_status === 'SATILDI') && (() => {
+                                                                                const sale = sales.find(s => String(s.unit_id) === String(unit.id));
+                                                                                return sale ? (
+                                                                                    <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold border border-blue-100 flex items-center gap-1">
+                                                                                        <User size={10} /> {sale.customers?.full_name}
+                                                                                    </span>
+                                                                                ) : null;
+                                                                            })()}
                                                                         </div>
+                                                                        {unit.price && (
+                                                                            <div className="mt-2 text-xs font-black text-emerald-600 flex items-center gap-1">
+                                                                                <Banknote size={14} />
+                                                                                {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(unit.price)}
+                                                                            </div>
+                                                                        )}
                                                                     </div>
 
                                                                     {isUnitExpanded && (
@@ -711,12 +725,6 @@ function BlockDetails() {
                                                                                         <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-200 font-medium">
                                                                                             <Compass size={10} className="inline mr-1 mb-0.5" />
                                                                                             {unit.facade}
-                                                                                        </span>
-                                                                                    )}
-                                                                                    {unit.contract_no && (
-                                                                                        <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg border border-blue-100 font-medium">
-                                                                                            <FileText size={10} className="inline mr-1 mb-0.5" />
-                                                                                            {unit.contract_no}
                                                                                         </span>
                                                                                     )}
                                                                                 </div>

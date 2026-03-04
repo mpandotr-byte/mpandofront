@@ -4,7 +4,9 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import ProjectEditModal from '../modals/projects/ProjectEditModal';
-import NewProjectModal from '../modals/projects/NewProjectModal'; // Yeni import
+import NewProjectModal from '../modals/projects/NewProjectModal';
+import ExcelProjectModal from '../modals/projects/ExcelProjectModal';
+import * as XLSX from 'xlsx';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -28,7 +30,9 @@ import {
   Building2,
   Home,
   ArrowLeft,
-  X
+  X,
+  Upload,
+  Download
 } from 'lucide-react';
 
 const getStatusClasses = (status) => {
@@ -55,12 +59,23 @@ const getStatusIcon = (status) => {
 
 const getProgressBarColor = (status) => {
   switch (status) {
-    case 'Devam Ediyor': return 'bg-blue-600';
+    case 'Devam Ediyor': return 'bg-blue-500';
     case 'Planlanıyor': return 'bg-purple-500';
-    case 'Gecikmede': return 'bg-red-500';
-    case 'Bitiyor': return 'bg-yellow-500';
-    case 'Tamamlandı': return 'bg-green-600';
-    default: return 'bg-slate-500';
+    case 'Gecikmede': return 'bg-rose-500';
+    case 'Bitiyor': return 'bg-gradient-to-r from-blue-500 to-emerald-500';
+    case 'Tamamlandı': return 'bg-emerald-500';
+    default: return 'bg-slate-400';
+  }
+};
+
+const getStatusBorderColor = (status) => {
+  switch (status) {
+    case 'Devam Ediyor': return 'border-blue-500';
+    case 'Planlanıyor': return 'border-purple-500';
+    case 'Gecikmede': return 'border-rose-500';
+    case 'Bitiyor': return 'border-blue-500';
+    case 'Tamamlandı': return 'border-emerald-500';
+    default: return 'border-slate-300';
   }
 };
 
@@ -121,7 +136,8 @@ function Projects() {
   const [editFormData, setEditFormData] = useState(null);
 
   const [isColumnDropdownOpen, setIsColumnDropdownOpen] = useState(false);
-  const [visibleColumns, setVisibleColumns] = useState(optionalColumns.map(col => col.key));
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
+  const visibleColumns = optionalColumns.map(col => col.key); // Simplified state if needed or keep existing
   const columnDropdownRef = useRef(null);
 
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
@@ -355,6 +371,56 @@ function Projects() {
     setSelectedProjects([]);
   };
 
+  const handleExportExcel = () => {
+    const exportData = filteredProjects.map(p => ({
+      'Proje Adı': p.company,
+      'Müteahhit': p.contractor,
+      'Ünite Sayısı': p.total_units,
+      'Blok Sayısı': p.block_count,
+      'Satılan': p.sold_count,
+      'Boş': p.empty_count,
+      'Durum': p.status,
+      'İlerleme': `%${p.progress}`,
+      'Başlangıç': p.startDate,
+      'Bitiş': p.endDate,
+      'Adres': p.address,
+      'Açıklama': p.description
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Projeler');
+    XLSX.writeFile(wb, `Mpando_Projeler_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const handleImportExcel = async (data) => {
+    setLoading(true);
+    try {
+      // We can either send bulk or loop. For simplicity in this env, we loop or use a bulk endpoint if exists.
+      // Assuming we loop for now as per usual patterns in these tasks
+      await Promise.all(data.map(proj => {
+        const createData = {
+          name: proj.name,
+          address: proj.address,
+          status: proj.status,
+          description: proj.description,
+          start_date: proj.start_date,
+          end_date: proj.end_date,
+          created_by: user.id,
+          contractor_id: user.company_id
+        };
+        return api.post('/projects', createData);
+      }));
+      await fetchProjects();
+      alert('Projeler başarıyla aktarıldı.');
+    } catch (err) {
+      console.error("Toplu aktarım hatası:", err);
+      alert("Bazı projeler aktarılamadı. Lütfen verileri kontrol edin.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredProjects = (selectedStatusFilter === 'Hepsi'
     ? projects
     : projects.filter(proj => proj.status === selectedStatusFilter)
@@ -484,6 +550,24 @@ function Projects() {
                 )}
               </div>
 
+              <div className="flex items-center gap-1.5 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+                <button
+                  onClick={() => setIsExcelModalOpen(true)}
+                  className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-all"
+                  title="Excel'den İçe Aktar"
+                >
+                  <Upload size={14} /> İÇE AKTAR
+                </button>
+                <div className="w-px h-4 bg-slate-200" />
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all"
+                  title="Excel'e Dışarı Aktar"
+                >
+                  <Download size={14} /> DIŞA AKTAR
+                </button>
+              </div>
+
               <button onClick={openAddModal} className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#0A1128] hover:bg-slate-800 shadow-lg shadow-slate-900/20 px-5 py-2.5 rounded-xl transition-all">
                 <Plus size={16} /> Yeni Proje
               </button>
@@ -537,116 +621,96 @@ function Projects() {
                     <div
                       key={proj.id}
                       onClick={() => navigate(`/projects/${proj.id}`)}
-                      className={`relative group bg-white rounded-xl md:rounded-2xl border transition-all cursor-pointer card-hover overflow-hidden ${selectedProjects.includes(proj.id) ? 'border-[#D36A47] ring-2 ring-[#D36A47]/10 bg-[#D36A47]/5' : 'border-slate-200 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5'}`}
+                      className={`relative group bg-white rounded-xl border-[3px] transition-all cursor-pointer card-hover overflow-hidden ${selectedProjects.includes(proj.id) ? 'border-[#D36A47] ring-4 ring-[#D36A47]/5 bg-[#D36A47]/5' : `${getStatusBorderColor(proj.status)} hover:shadow-xl hover:shadow-slate-200/50`}`}
                     >
-                      {/* Top accent line */}
-                      <div className={`h-1.5 w-full ${proj.status === 'Devam Ediyor' ? 'bg-blue-500' :
-                        proj.status === 'Tamamlandı' ? 'bg-emerald-500' :
-                          proj.status === 'Planlanıyor' ? 'bg-amber-500' :
-                            proj.status === 'Gecikmede' ? 'bg-rose-500' :
-                              'bg-slate-300'
-                        }`} />
+                      {/* Border is now the accent, no separate top line needed */}
 
-                      <div className="p-4 md:p-5">
-                        {/* Selection Checkbox */}
-                        <div className="absolute top-4 md:top-5 right-4 md:right-5 z-10" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedProjects.includes(proj.id)}
-                            onChange={() => handleSelectProject(proj.id)}
-                            className="w-4 h-4 rounded border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47]"
-                          />
+                      <div className="p-3.5 md:p-4">
+                        {/* Actions Header */}
+                        <div className={`p-4 md:p-5 -mx-4 md:-mx-5 -mt-4 md:-mt-5 mb-4 ${proj.status === 'Devam Ediyor' ? 'bg-blue-50/40' :
+                          proj.status === 'Tamamlandı' ? 'bg-emerald-50/40' :
+                            proj.status === 'Planlanıyor' ? 'bg-purple-50/40' :
+                              proj.status === 'Gecikmede' ? 'bg-rose-50/40' :
+                                'bg-slate-50/40'
+                          } border-b border-slate-100/60`}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex flex-col min-w-0">
+                              <h3 className="text-sm md:text-base font-black text-slate-800 group-hover:text-[#D36A47] transition-colors line-clamp-1" title={proj.company}>
+                                {proj.company}
+                              </h3>
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <span className={`inline-flex items-center gap-1 border rounded-lg px-2 py-0.5 text-[10px] font-black uppercase tracking-tight ${getStatusClasses(proj.status)}`}>
+                                  {getStatusIcon(proj.status)} {proj.status}
+                                </span>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); openEditModal(proj); }}
+                                  className="p-1 text-slate-400 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-slate-200"
+                                  title="Düzenle"
+                                >
+                                  <Pencil size={12} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+                              <input
+                                type="checkbox"
+                                checked={selectedProjects.includes(proj.id)}
+                                onChange={() => handleSelectProject(proj.id)}
+                                className="w-5 h-5 rounded-lg border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47] bg-white"
+                              />
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Header */}
-                        <div className="mb-4">
-                          <h3 className="text-sm md:text-base font-bold text-slate-800 group-hover:text-[#D36A47] transition-colors line-clamp-1 pr-8" title={proj.company}>
-                            {proj.company}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`inline-flex items-center gap-1 border rounded-lg px-2 py-0.5 text-[10px] font-black uppercase ${getStatusClasses(proj.status)}`}>
-                              {getStatusIcon(proj.status)} {proj.status}
+                        <div className="p-0.5">
+
+                          {/* Stats Grid - Optimized */}
+                          <div className="grid grid-cols-2 gap-2 mb-4">
+                            <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-2 md:p-2.5">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <Building2 size={12} className="text-slate-400" />
+                                <span className="text-[9px] font-bold text-slate-400 uppercase">Blok</span>
+                              </div>
+                              <span className="text-xs font-black text-slate-800">{proj.block_count} Adet</span>
+                            </div>
+                            <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-2 md:p-2.5">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <Home size={12} className="text-slate-400" />
+                                <span className="text-[9px] font-bold text-slate-400 uppercase">Daire</span>
+                              </div>
+                              <span className="text-xs font-black text-slate-800">{proj.total_units} Adet</span>
+                            </div>
+                            <div className="bg-emerald-50/30 border border-emerald-100/50 rounded-xl p-2 md:p-2.5">
+                              <p className="text-[9px] font-bold text-emerald-600 uppercase mb-0.5">Satılan</p>
+                              <span className="text-xs font-black text-emerald-700">{proj.sold_count}</span>
+                            </div>
+                            <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-2 md:p-2.5">
+                              <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Boş</p>
+                              <span className="text-xs font-black text-slate-600">{proj.empty_count}</span>
+                            </div>
+                          </div>
+
+                          {/* Smooth Progress Bar */}
+                          <div className="mb-4">
+                            <div className="flex justify-between items-end mb-1.5">
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">İlerleme</span>
+                              <span className={`text-[11px] font-black ${proj.status === 'Tamamlandı' ? 'text-emerald-600' : 'text-slate-700'}`}>%{proj.progress || 0}</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-1000 ${getProgressBarColor(proj.status)}`}
+                                style={{ width: `${proj.progress || 0}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest group-hover:text-[#D36A47] transition-colors">
+                              Detaylar <ArrowLeft size={10} className="rotate-180" />
                             </span>
+                            <span className="text-[9px] font-bold text-slate-300">{proj.startDate}</span>
                           </div>
-                        </div>
-
-                        {/* Stats Grid - New Requirement */}
-                        <div className="grid grid-cols-2 gap-2 md:gap-3 mb-5">
-                          <div className="bg-slate-50 rounded-xl p-2 md:p-2.5 border border-slate-100/60">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Bloklar</p>
-                            <div className="flex items-center gap-2">
-                              <Building2 size={14} className="text-slate-400" />
-                              <span className="text-sm font-bold text-slate-700">{proj.block_count} Blok</span>
-                            </div>
-                          </div>
-                          <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Üniteler</p>
-                            <div className="flex items-center gap-2">
-                              <Home size={14} className="text-slate-400" />
-                              <span className="text-sm font-bold text-slate-700">{proj.total_units} Adet</span>
-                            </div>
-                          </div>
-                          <div className="bg-emerald-50/50 rounded-xl p-2.5 border border-emerald-100">
-                            <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1">Satılan</p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-black text-emerald-700">{proj.sold_count}</span>
-                              <div className="flex -space-x-1">
-                                {[...Array(3)].map((_, i) => (
-                                  <div key={i} className="w-4 h-4 rounded-full bg-emerald-200 border border-white"></div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-amber-50/50 rounded-xl p-2.5 border border-amber-100">
-                            <p className="text-[10px] font-bold text-amber-600 uppercase mb-1">Boş</p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-black text-amber-700">{proj.empty_count}</span>
-                              <div className="w-8 h-1.5 bg-amber-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-amber-500 rounded-full" style={{ width: '40%' }}></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Mini Progress Graph - New Requirement */}
-                        <div className="mb-4">
-                          <div className="flex justify-between items-end mb-1.5">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">İlerleme Aşaması</span>
-                            <span className="text-[11px] font-black text-slate-900">%{proj.progress || 0}</span>
-                          </div>
-                          <div className="flex gap-1 h-2">
-                            {[1, 2, 3, 4, 5].map((step) => {
-                              const stepProgress = (proj.progress || 0) / 20;
-                              const isActive = step <= stepProgress;
-                              const isPartial = step > stepProgress && step - 1 < stepProgress;
-
-                              return (
-                                <div key={step} className="flex-1 rounded-full bg-slate-100 overflow-hidden">
-                                  {isActive ? (
-                                    <div className={`h-full w-full ${getProgressBarColor(proj.status)}`} />
-                                  ) : isPartial ? (
-                                    <div className={`h-full ${getProgressBarColor(proj.status)}`} style={{ width: `${((proj.progress % 20) / 20) * 100}%` }} />
-                                  ) : null}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1 text-[10px] text-slate-400 font-bold uppercase transition-colors group-hover:text-[#D36A47]">
-                            Detayları Gör <ArrowLeft size={10} className="rotate-180" />
-                          </span>
-                        </div>
-
-                        {/* Action */}
-                        <div className="mt-4 pt-3 border-t border-slate-100">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); openEditModal(proj); }}
-                            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-slate-500 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all"
-                          >
-                            <Pencil size={13} /> Düzenle
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -673,6 +737,12 @@ function Projects() {
           onClose={closeAddModal}
           onChange={handleNewProjectChange}
           onAdd={handleAddNewProject}
+        />
+
+        <ExcelProjectModal
+          isOpen={isExcelModalOpen}
+          onClose={() => setIsExcelModalOpen(false)}
+          onImport={handleImportExcel}
         />
       </main >
     </div >

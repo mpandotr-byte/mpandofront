@@ -95,8 +95,8 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
   const { user } = useAuth();
 
   const sidebarWidthClass = isSidebarCollapsed
-    ? "w-[280px] md:w-20"
-    : "w-[280px] md:w-[280px]";
+    ? "w-[280px] lg:w-20"
+    : "w-[280px] lg:w-[280px]";
 
   const toggleDropdown = (dropdownName) => {
     setOpenDropdowns((prev) => ({ ...prev, [dropdownName]: !prev[dropdownName] }));
@@ -124,7 +124,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
         className={`fixed inset-y-0 left-0 z-50 flex flex-col ${sidebarWidthClass}
           bg-[#0A1128] border-r border-white/[0.06]
           transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) 
-          md:relative md:translate-x-0 
+          lg:relative lg:translate-x-0 
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Subtle gradient overlay */}
@@ -132,9 +132,13 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
         {/* Header */}
         <div className={`relative flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between px-5"} h-16 mb-1`}>
-          <div className="flex items-center gap-3">
+          <Link
+            to="/dashboard"
+            onClick={closeMobileMenu}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
+          >
             <div className={`rounded-xl flex items-center justify-center transition-all duration-300 ${isSidebarCollapsed ? "w-10 h-10" : "w-10 h-10 p-0"}`}>
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert" title="Mpando Logo" />
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain brightness-0 invert group-hover:scale-110 transition-transform" />
             </div>
             {!isSidebarCollapsed && (
               <div className="flex flex-col">
@@ -142,10 +146,10 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Construction</span>
               </div>
             )}
-          </div>
+          </Link>
 
           <button
-            className="md:hidden p-1 text-slate-500 hover:text-white transition-colors"
+            className="lg:hidden p-1 text-slate-500 hover:text-white transition-colors"
             onClick={closeMobileMenu}
           >
             {icons.Close}
@@ -153,7 +157,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
           {!isSidebarCollapsed && (
             <button
-              className="hidden md:block p-1.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+              className="hidden lg:block p-1.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
               onClick={toggleDesktopCollapse}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +168,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
           {isSidebarCollapsed && (
             <button
-              className="hidden md:flex absolute -right-3 top-6 w-6 h-6 bg-[#1e293b] border border-white/10 rounded-full items-center justify-center text-slate-400 shadow-lg hover:text-white hover:bg-indigo-600 hover:border-indigo-600 hover:scale-110 transition-all"
+              className="hidden lg:flex absolute -right-3 top-6 w-6 h-6 bg-[#1e293b] border border-white/10 rounded-full items-center justify-center text-slate-400 shadow-lg hover:text-white hover:bg-indigo-600 hover:border-indigo-600 hover:scale-110 transition-all"
               onClick={toggleDesktopCollapse}
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

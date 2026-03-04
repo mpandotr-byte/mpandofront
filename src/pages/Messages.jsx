@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import {
@@ -12,109 +12,134 @@ import {
   ArrowLeft,
   Filter,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Send,
+  MoreVertical,
+  Paperclip,
+  Plus,
+  Users,
+  Megaphone
 } from 'lucide-react';
 
-// Örnek Mesaj Verileri
-const initialMessages = [
+// Örnek Kullanıcılar / Konuşmalar
+const initialConversations = [
   {
     id: 1,
-    title: "Yeni Ödeme Alındı",
-    text: "Ahmet Yılmaz tarafından AKSU Rezidans A Blok 12 Nolu daire için 50.000₺ tutarında peşinat ödemesi sisteme girildi. Finans departmanı onayı beklenmektedir.",
-    sender: "Finans Departmanı",
+    user: {
+      id: 101,
+      name: "Ahmet Yılmaz",
+      role: "Şantiye Şefi",
+      avatar: null,
+      online: true
+    },
+    lastMessage: "Çimento sevkiyatı yola çıktı mı?",
     time: "5 dk önce",
-    date: "12 Eki 2023, 14:30",
-    unread: true,
-    type: "finance"
+    unreadCount: 2,
+    messages: [
+      { id: 1, text: "Selam Ahmet, şantiyedeki son durum nedir?", senderId: "me", time: "10:30" },
+      { id: 2, text: "Selamlar. Temel betonu döküldü, kurumasını bekliyoruz.", senderId: 101, time: "10:35" },
+      { id: 3, text: "Eline sağlık. Yarınki çimento sevkiyatı için onay verdim.", senderId: "me", time: "10:40" },
+      { id: 4, text: "Çimento sevkiyatı yola çıktı mı?", senderId: 101, time: "14:30" },
+    ]
   },
   {
     id: 2,
-    title: "Satış Onayı",
-    text: "A Blok 12 Nolu dairenin satışı yönetici tarafından onaylanmıştır. Sözleşme sürecine geçebilirsiniz. Lütfen gerekli evrakları hazırlayarak müşteriye iletin.",
-    sender: "Sistem",
+    user: {
+      id: 102,
+      name: "Mehmet Demir",
+      role: "Muhasebe",
+      avatar: null,
+      online: false
+    },
+    lastMessage: "Ödeme makbuzu ektedir.",
     time: "1 saat önce",
-    date: "12 Eki 2023, 13:45",
-    unread: true,
-    type: "system"
+    unreadCount: 0,
+    messages: [
+      { id: 1, text: "Mehmet Bey, AKSU projesinin hakkediş raporunu gönderiyorum.", senderId: "me", time: "09:00" },
+      { id: 2, text: "Aldım, kontrol edip ödemeyi geçeceğim.", senderId: 102, time: "09:15" },
+      { id: 3, text: "Ödeme makbuzu ektedir.", senderId: 102, time: "13:45" },
+    ]
   },
   {
     id: 3,
-    title: "Yeni Stok Talebi: Çimento",
-    text: "Şantiye alanından yeni bir malzeme talebi oluşturuldu: Çimento (100 Torba). Lütfen satın alma birimini bilgilendirin ve tedarik sürecini başlatın.",
-    sender: "Şantiye Şefi",
+    user: {
+      id: 103,
+      name: "Zeynep Kaya",
+      role: "Proje Müdürü",
+      avatar: null,
+      online: true
+    },
+    lastMessage: "Toplantı saat 15:00'e alındı.",
     time: "3 saat önce",
-    date: "12 Eki 2023, 11:20",
-    unread: false,
-    type: "stock"
-  },
-  {
-    id: 4,
-    title: "Proje Güncellemesi: Dolunay Yaşam Merkezi",
-    text: "Dolunay Yaşam Merkezi projesinin teslim tarihi hava koşulları sebebiyle 15 gün güncellenmiştir. Detayları proje sayfasından inceleyebilirsiniz. İlgili müşterilere otomatik bilgilendirme e-postası gönderilecektir.",
-    sender: "Proje Yöneticisi",
-    time: "1 gün önce",
-    date: "11 Eki 2023, 09:15",
-    unread: false,
-    type: "project"
-  },
-  {
-    id: 5,
-    title: "Aylık Rapor Özeti",
-    text: "Eylül ayı satış ve pazarlama performans raporunuz hazırlandı. İncelemek için dokümanlar sekmesini ziyaret edebilirsiniz.",
-    sender: "Yönetim",
-    time: "3 gün önce",
-    date: "09 Eki 2023, 16:00",
-    unread: false,
-    type: "system"
+    unreadCount: 1,
+    messages: [
+      { id: 1, text: "Yeni revizeler geldi mi?", senderId: "me", time: "11:00" },
+      { id: 2, text: "Evet, sisteme yükledim kontrol edebilirsin.", senderId: 103, time: "11:10" },
+      { id: 3, text: "Toplantı saat 15:00'e alındı.", senderId: 103, time: "11:20" },
+    ]
   }
 ];
 
-// Tip ikonları belirleme
-const getTypeIcon = (type) => {
-  switch (type) {
-    case 'finance': return <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><CheckCircle2 size={20} /></div>;
-    case 'stock': return <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center"><AlertCircle size={20} /></div>;
-    default: return <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><Mail size={20} /></div>;
-  }
-}
-
 function Messages() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [messages, setMessages] = useState(initialMessages);
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [conversations, setConversations] = useState(initialConversations);
+  const [selectedConv, setSelectedConv] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all'); // 'all', 'unread'
+  const [newMessage, setNewMessage] = useState('');
+  const chatEndRef = useRef(null);
+
+  // Sayfa yüklendiğinde veya sohbet değiştiğinde en alta kaydır
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedConv]);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-  // Arama ve Filtreleme
-  const filteredMessages = messages.filter(msg => {
-    const matchesSearch = msg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      msg.sender.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === 'unread' ? msg.unread : true;
-    return matchesSearch && matchesFilter;
-  });
+  // Arama
+  const filteredConversations = conversations.filter(conv =>
+    conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.user.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  // Mesaja Tıklama
-  const handleSelectMessage = (msg) => {
-    setSelectedMessage(msg);
-    // Tıklandığında otomatik okundu yap
-    if (msg.unread) {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, unread: false } : m));
-    }
+  // Mesaj Gönderme
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedConv) return;
+
+    const msg = {
+      id: Date.now(),
+      text: newMessage,
+      senderId: "me",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setConversations(prev => prev.map(c => {
+      if (c.id === selectedConv.id) {
+        return {
+          ...c,
+          messages: [...c.messages, msg],
+          lastMessage: newMessage,
+          time: "Az önce"
+        };
+      }
+      return c;
+    }));
+
+    // Seçili sohbeti de güncelle (ekrana anlık yansıması için)
+    setSelectedConv(prev => ({
+      ...prev,
+      messages: [...prev.messages, msg]
+    }));
+
+    setNewMessage('');
   };
 
-  // Silme İşlemi
-  const handleDelete = (id) => {
-    setMessages(prev => prev.filter(m => m.id !== id));
-    if (selectedMessage?.id === id) {
-      setSelectedMessage(null);
-    }
-  };
-
-  // Tümünü Okundu İşaretle
-  const markAllAsRead = () => {
-    setMessages(prev => prev.map(m => ({ ...m, unread: false })));
+  const handleSelectConversation = (conv) => {
+    setSelectedConv(conv);
+    // Okunmamışları sıfırla
+    setConversations(prev => prev.map(c =>
+      c.id === conv.id ? { ...c, unreadCount: 0 } : c
+    ));
   };
 
   return (
@@ -122,224 +147,169 @@ function Messages() {
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={() => setIsMobileMenuOpen(false)} />
 
       <main className="flex-1 flex flex-col h-screen">
-        <Navbar title="İletişim & Bildirimler" toggleMobileMenu={toggleMobileMenu} />
+        <Navbar title="İletişim & Mesajlar" toggleMobileMenu={toggleMobileMenu} />
 
-        <div className="flex-1 p-4 md:p-8 overflow-hidden">
+        <div className="flex-1 p-0 lg:p-6 xl:p-8 overflow-hidden">
           <div className="h-full flex flex-col gap-6">
 
             {/* Page Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight">Mesaj Merkezi</h1>
-                <p className="text-sm text-slate-500 font-medium">Tüm sistem bildirimlerini ve mesajlarını buradan yönetebilirsiniz.</p>
+            <div className="hidden lg:flex flex-col md:flex-row md:items-center justify-between gap-5 px-4 md:px-0">
+              <div className="space-y-1">
+                <h1 className="text-2xl md:text-3xl font-black text-[#0A1128] tracking-tight">Mesaj Merkezi</h1>
+                <p className="text-sm text-slate-500 font-medium">Ekibinizle anlık iletişim kurun ve süreçleri yönetin.</p>
               </div>
               <div className="flex items-center gap-3">
-                <div className="relative group flex-1 md:w-72">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Gönderen veya konu ara..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 rounded-2xl text-sm transition-all outline-none shadow-sm"
-                  />
-                </div>
-                <button
-                  onClick={markAllAsRead}
-                  className="hidden md:flex items-center gap-2 whitespace-nowrap px-4 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-2xl font-bold text-sm transition-all duration-300 shadow-sm"
-                >
-                  <CheckCircle size={18} />
-                  Tümünü Okundu İşaretle
+                <button className="flex items-center justify-center gap-2 px-5 py-3 bg-[#0A1128] text-white rounded-2xl font-bold text-sm transition-all hover:bg-slate-900 shadow-lg shadow-slate-200">
+                  <Megaphone size={18} />
+                  <span className="hidden sm:inline">Tümüne Duyuru Yap</span>
+                </button>
+                <button className="flex items-center justify-center w-12 h-12 bg-[#D36A47] text-white rounded-2xl font-bold transition-all hover:bg-[#C25936] shadow-lg shadow-[#D36A47]/20">
+                  <Plus size={24} />
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 bg-white rounded-[32px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex overflow-hidden border-b-8 border-b-indigo-500/10">
+            <div className="flex-1 bg-white lg:rounded-[32px] lg:border border-slate-200/60 lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex overflow-hidden lg:border-b-8 lg:border-b-[#0A1128]/5 shadow-inner">
 
-              {/* SOL PANEL: MESAJ LİSTESİ */}
-              <div className={`w-full md:w-[380px] lg:w-[420px] flex flex-col border-r border-slate-100 bg-slate-50/10 ${selectedMessage ? 'hidden md:flex' : 'flex'}`}>
+              {/* SOL PANEL: KONUŞMA LİSTESİ */}
+              <div className={`w-full lg:w-[320px] xl:w-[380px] flex flex-col border-r border-slate-100 bg-white ${selectedConv ? 'hidden lg:flex' : 'flex'}`}>
 
-                {/* Filtre Tabları */}
-                <div className="p-5 border-b border-slate-100">
-                  <div className="flex gap-2 p-1.5 bg-slate-100/80 backdrop-blur-sm rounded-2xl">
-                    <button
-                      onClick={() => setFilter('all')}
-                      className={`flex-1 text-sm font-bold py-2 rounded-xl transition-all duration-300 ${filter === 'all' ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                      Tümü
-                    </button>
-                    <button
-                      onClick={() => setFilter('unread')}
-                      className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2 rounded-xl transition-all duration-300 ${filter === 'unread' ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                      Okunmamış
-                      {messages.filter(m => m.unread).length > 0 && (
-                        <span className="min-w-[20px] h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[10px] font-black px-1 animate-pulse">
-                          {messages.filter(m => m.unread).length}
-                        </span>
-                      )}
-                    </button>
+                {/* Arama Barı */}
+                <div className="p-5 border-b border-slate-50">
+                  <div className="relative group">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#D36A47] transition-colors" size={18} />
+                    <input
+                      type="text"
+                      placeholder="Kullanıcı veya departman ara..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm transition-all outline-none focus:ring-2 focus:ring-[#D36A47]/10"
+                    />
                   </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
-                  {filteredMessages.length > 0 ? (
+                  {filteredConversations.length > 0 ? (
                     <div className="divide-y divide-slate-50">
-                      {filteredMessages.map((msg) => (
+                      {filteredConversations.map((conv) => (
                         <div
-                          key={msg.id}
-                          onClick={() => handleSelectMessage(msg)}
-                          className={`group relative p-5 cursor-pointer transition-all duration-300 hover:bg-white border-l-4 ${selectedMessage?.id === msg.id
-                              ? 'bg-white border-l-indigo-500 shadow-sm z-10'
-                              : 'border-l-transparent hover:border-l-slate-200'
-                            } ${msg.unread ? 'bg-indigo-50/10' : ''}`}
+                          key={conv.id}
+                          onClick={() => handleSelectConversation(conv)}
+                          className={`group relative p-5 cursor-pointer transition-all duration-300 hover:bg-slate-50 ${selectedConv?.id === conv.id ? 'bg-slate-50' : ''}`}
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${msg.type === 'finance' ? 'bg-emerald-50 text-emerald-600' :
-                                msg.type === 'stock' ? 'bg-amber-50 text-amber-600' :
-                                  'bg-indigo-50 text-indigo-600'
-                              }`}>
-                              {msg.sender}
-                            </span>
-                            <span className={`text-[10px] font-bold ${msg.unread ? 'text-indigo-600' : 'text-slate-400'}`}>
-                              {msg.time}
-                            </span>
+                          <div className="flex gap-4">
+                            <div className="relative flex-shrink-0">
+                              <div className="w-12 h-12 rounded-2xl bg-[#0A1128] text-white flex items-center justify-center font-bold text-lg shadow-inner">
+                                {conv.user.name.charAt(0)}
+                              </div>
+                              {conv.user.online && (
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-4 border-white" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start mb-1">
+                                <h4 className="text-sm font-black text-[#0A1128] truncate">{conv.user.name}</h4>
+                                <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap ml-2">{conv.time}</span>
+                              </div>
+                              <p className="text-[10px] text-[#D36A47] font-black uppercase tracking-widest mb-1">{conv.user.role}</p>
+                              <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-[#0A1128] font-black' : 'text-slate-400 font-medium'}`}>
+                                {conv.lastMessage}
+                              </p>
+                            </div>
+                            {conv.unreadCount > 0 && (
+                              <div className="flex-shrink-0 flex items-center">
+                                <div className="w-5 h-5 rounded-full bg-[#D36A47] text-white flex items-center justify-center text-[10px] font-black shadow-lg shadow-[#D36A47]/20">
+                                  {conv.unreadCount}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <h4 className={`text-sm mb-1.5 truncate group-hover:text-indigo-600 transition-colors ${msg.unread ? 'font-black text-slate-900' : 'font-bold text-slate-700'}`}>
-                            {msg.title}
-                          </h4>
-                          <p className={`text-xs line-clamp-2 leading-relaxed ${msg.unread ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>
-                            {msg.text}
-                          </p>
-
-                          {msg.unread && (
-                            <div className="absolute top-1/2 right-4 -translate-y-1/2 w-2 h-2 bg-indigo-500 rounded-full shadow-lg shadow-indigo-200" />
-                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                      <div className="w-20 h-20 bg-slate-50 rounded-[24px] flex items-center justify-center mb-4 transform rotate-12 transition-transform hover:rotate-0">
-                        <MailOpen size={36} className="text-slate-200" />
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-800">Sonuç Bulunamadı</h4>
-                      <p className="text-xs text-slate-500 mt-1 max-w-[200px]">Arama kriterlerinize uygun mesaj bulunmuyor.</p>
+                      <Users size={40} className="text-slate-100 mb-4" />
+                      <h4 className="text-sm font-bold text-slate-400">Sonuç Bulunamadı</h4>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* SAĞ PANEL: MESAJ DETAYLARI */}
-              <div className={`flex-1 flex flex-col bg-white ${!selectedMessage ? 'hidden md:flex' : 'flex'}`}>
-
-                {selectedMessage ? (
+              {/* SAĞ PANEL: SOHBET EKRANI */}
+              <div className={`flex-1 flex flex-col bg-slate-50/30 ${!selectedConv ? 'hidden lg:flex' : 'flex'}`}>
+                {selectedConv ? (
                   <>
-                    <div className="flex items-center justify-between p-5 border-b border-slate-100">
-                      <button
-                        onClick={() => setSelectedMessage(null)}
-                        className="md:hidden flex items-center gap-2 text-sm font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-xl transition-all hover:bg-slate-200"
-                      >
-                        <ArrowLeft size={18} /> Geri Dön
-                      </button>
-
-                      <div className="flex items-center gap-2 ml-auto">
-                        <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                          <Mail size={18} />
+                    <div className="flex items-center justify-between p-4 md:p-6 border-b border-white bg-white/60 backdrop-blur-md">
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => setSelectedConv(null)} className="lg:hidden p-2 text-slate-500 hover:text-[#0A1128]">
+                          <ArrowLeft size={20} />
                         </button>
-                        <button
-                          onClick={() => handleDelete(selectedMessage.id)}
-                          className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-xl transition-all duration-300"
-                        >
-                          <Trash2 size={18} /> Bu Mesajı Sil
-                        </button>
+                        <div className="w-10 h-10 rounded-xl bg-[#0A1128] text-white flex items-center justify-center font-bold">
+                          {selectedConv.user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-black text-[#0A1128] leading-tight">{selectedConv.user.name}</h3>
+                          <p className="text-[10px] font-bold text-[#D36A47] uppercase tracking-wider">{selectedConv.user.role}</p>
+                        </div>
                       </div>
+                      <button className="p-2.5 text-slate-400 hover:text-[#0A1128] hover:bg-white rounded-xl transition-all">
+                        <MoreVertical size={20} />
+                      </button>
                     </div>
 
-                    {/* Mesaj İçeriği */}
-                    <div className="flex-1 p-6 lg:p-10 overflow-y-auto custom-scrollbar">
-                      <div className="max-w-4xl mx-auto">
-                        <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
-                          <div className="transform transition-transform hover:scale-110">
-                            {getTypeIcon(selectedMessage.type)}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2 flex-wrap">
-                              <span className="text-[10px] font-black tracking-widest uppercase bg-slate-900 text-white px-2 py-1 rounded-md shadow-lg shadow-slate-200">
-                                {selectedMessage.type}
-                              </span>
-                              <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 italic">
-                                {selectedMessage.date}
-                              </span>
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed opacity-90">
+                      {selectedConv.messages.map((msg) => (
+                        <div key={msg.id} className={`flex ${msg.senderId === 'me' ? 'justify-end' : 'justify-start'}`}>
+                          <div className="max-w-[80%] md:max-w-[70%] space-y-1">
+                            <div className={`px-5 py-3.5 rounded-3xl text-sm font-medium shadow-sm ${msg.senderId === 'me' ? 'bg-[#0A1128] text-white rounded-tr-none' : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                              }`}>
+                              {msg.text}
                             </div>
-                            <h1 className="text-3xl font-black text-slate-800 leading-tight mb-3">
-                              {selectedMessage.title}
-                            </h1>
-                            <div className="flex items-center gap-4 text-sm text-slate-500 font-bold bg-indigo-50/30 self-start px-4 py-2 rounded-2xl border border-indigo-100/50">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white">
-                                  {selectedMessage.sender.charAt(0)}
-                                </div>
-                                <span className="text-slate-700">{selectedMessage.sender}</span>
-                              </div>
-                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
-                              <div className="flex items-center gap-2">
-                                <Clock size={16} className="text-indigo-400" />
-                                <span>{selectedMessage.time}</span>
-                              </div>
+                            <div className={`flex items-center gap-2 px-1 ${msg.senderId === 'me' ? 'justify-end' : 'justify-start'}`}>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{msg.time}</span>
+                              {msg.senderId === 'me' && <CheckCircle2 size={12} className="text-emerald-500" />}
                             </div>
                           </div>
                         </div>
+                      ))}
+                      <div ref={chatEndRef} />
+                    </div>
 
-                        <div className="relative">
-                          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-indigo-500 rounded-full opacity-20"></div>
-                          <div className="bg-white rounded-[32px] p-8 text-base text-slate-700 leading-relaxed shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)] border border-slate-100/60 relative overflow-hidden group">
-                            {/* Süsleme Arka Plan */}
-                            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-50 rounded-full mix-blend-multiply filter blur-3xl opacity-30 group-hover:opacity-60 transition-opacity"></div>
-
-                            <p className="relative z-10 whitespace-pre-wrap">
-                              {selectedMessage.text}
-                            </p>
-                          </div>
+                    <div className="p-4 md:p-6 bg-white border-t border-slate-100">
+                      <form onSubmit={handleSendMessage} className="flex items-center gap-3">
+                        <button type="button" className="p-3 text-slate-400 hover:text-[#D36A47] hover:bg-slate-50 rounded-2xl transition-all">
+                          <Paperclip size={20} />
+                        </button>
+                        <div className="flex-1 relative flex items-center">
+                          <input
+                            type="text"
+                            placeholder="Mesajınızı yazın..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            className="w-full pl-5 pr-14 py-4 bg-slate-50 border-none rounded-[2rem] text-sm font-medium focus:ring-4 focus:ring-[#D36A47]/5 focus:bg-white transition-all outline-none"
+                          />
+                          <button type="submit" disabled={!newMessage.trim()} className="absolute right-2 p-3 bg-[#D36A47] text-white rounded-full shadow-lg hover:bg-[#C25936] disabled:bg-slate-200 transition-all active:scale-90">
+                            <Send size={18} />
+                          </button>
                         </div>
-
-                        <div className="mt-12 pt-8 border-t border-slate-100">
-                          <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Önerilen Aksiyonlar</h5>
-                          <div className="flex flex-wrap gap-4">
-                            <button className="group flex items-center gap-3 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-indigo-200 hover:bg-slate-900 hover:shadow-slate-200 transition-all duration-500 border border-transparent">
-                              İlgili Bölüme Giderek İncele
-                              <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button className="flex items-center gap-3 px-6 py-3.5 bg-white border-2 border-slate-100 text-slate-600 rounded-2xl font-extrabold text-sm hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all duration-300">
-                              Mesajı Arşivle
-                            </button>
-                            <button className="flex items-center gap-3 px-6 py-3.5 bg-slate-50 text-slate-400 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-all">
-                              Yöneticiye Bildir
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                      </form>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50/20 p-10 text-center">
-                    <div className="relative mb-8">
-                      <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-3xl animate-pulse"></div>
-                      <div className="relative w-32 h-32 bg-white rounded-[40px] shadow-2xl shadow-indigo-100 flex items-center justify-center transform hover:rotate-6 transition-transform duration-500 border border-slate-100">
-                        <Mail size={60} className="text-indigo-500" />
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-white/40 backdrop-blur-sm">
+                    <div className="relative mb-10">
+                      <div className="absolute inset-0 bg-[#D36A47]/5 rounded-full blur-[80px] animate-pulse"></div>
+                      <div className="relative w-32 h-32 bg-white rounded-[40px] shadow-2xl flex items-center justify-center border border-slate-50">
+                        <MailOpen size={56} className="text-[#D36A47]/20" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-black text-slate-800 mb-2">Seçili Mesaj Yok</h3>
-                    <p className="text-sm text-slate-500 max-w-sm leading-relaxed">
-                      Okumak istediğiniz bildirimi sol listeden seçerek detaylarına ulaşabilir, hızlı aksiyonlar alabilirsiniz.
-                    </p>
+                    <h3 className="text-2xl font-black text-[#0A1128] mb-2">Ekibinizle Sohbet Edin</h3>
+                    <p className="text-sm text-slate-500 max-w-[280px] mx-auto font-medium">Soldaki listeden bir ekip arkadaşınızı seçerek yazışmaya başlayabilirsiniz.</p>
                   </div>
                 )}
-
               </div>
-
             </div>
-
           </div>
         </div>
       </main>

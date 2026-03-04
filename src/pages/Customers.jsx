@@ -18,7 +18,10 @@ import {
   UserX,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  X,
+  ShoppingCart,
+  Search
 } from 'lucide-react';
 
 const getCompanyNameById = (companyId, companies) => {
@@ -63,6 +66,10 @@ function Customers() {
   const [selectedFilterOption, setSelectedFilterOption] = useState('Varolan Kayıtlar');
   const [loading, setLoading] = useState(true);
   const filterDropdownRef = useRef(null);
+
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedCustomerForDetails, setSelectedCustomerForDetails] = useState(null);
+  const [customerSales, setCustomerSales] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -169,9 +176,14 @@ function Customers() {
 
   const handleAddNewCustomer = async () => {
     if (!newCustomerData.full_name || !newCustomerData.phone) { alert('Müşteri Adı Soyadı ve Telefon alanları zorunludur.'); return; }
-    if (!newCustomerData.company_id || !newCustomerData.employee_id) { alert('Şirket Adı ve Sorumlu Çalışan alanları zorunludur.'); return; }
     try {
-      const createData = { ...newCustomerData, contractor_id: user.company_id, is_deleted: false };
+      const createData = {
+        ...newCustomerData,
+        company_id: user.company_id, // Auto-assign company
+        employee_id: user.id, // Auto-assign current user as responsible employee
+        contractor_id: user.company_id,
+        is_deleted: false
+      };
       await api.post('/customers', createData);
       await fetchData();
       closeAddModal();
@@ -190,7 +202,6 @@ function Customers() {
   };
   const handleUpdateCustomer = async () => {
     if (!editFormData.full_name || !editFormData.phone) { alert('Müşteri Adı Soyadı ve Telefon alanları boş bırakılamaz.'); return; }
-    if (!editFormData.company_id || !editFormData.employee_id) { alert('Şirket Adı ve Sorumlu Çalışan alanları boş bırakılamaz.'); return; }
     try {
       const updateData = {
         company_id: editFormData.company_id, employee_id: editFormData.employee_id,
@@ -203,6 +214,26 @@ function Customers() {
     } catch (err) {
       console.error("Müşteri güncelleme hatası:", err); alert("Güncelleme sırasında hata oluştu.");
     }
+  };
+
+  const openDetailsModal = async (customer) => {
+    setSelectedCustomerForDetails(customer);
+    setIsDetailsModalOpen(true);
+    try {
+      const salesData = await api.get(`/sales`);
+      const filteredSales = (salesData || []).filter(s => String(s.musteri_id) === String(customer.id));
+      setCustomerSales(filteredSales);
+    } catch (err) {
+      console.error("Satışlar yüklenemedi:", err);
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setTimeout(() => {
+      setSelectedCustomerForDetails(null);
+      setCustomerSales([]);
+    }, 300);
   };
 
   const toggleFilterDropdown = () => setIsFilterDropdownOpen(prev => !prev);
@@ -229,12 +260,15 @@ function Customers() {
       key: 'full_name',
       label: 'Müşteri',
       render: (val, row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0A1128] to-[#1E293B] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-black/10">
+        <div
+          className="flex items-center gap-3 cursor-pointer group"
+          onClick={() => openDetailsModal(row)}
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0A1128] to-[#1E293B] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
             {val?.charAt(0) || '?'}
           </div>
           <div>
-            <p className="font-semibold text-slate-800 text-[13px]">{val}</p>
+            <p className="font-semibold text-slate-800 text-[13px] group-hover:text-indigo-600 transition-colors">{val}</p>
             {row.email !== '-' && (
               <p className="text-[11px] text-slate-400 flex items-center gap-1">
                 <Mail size={10} />{row.email}
@@ -410,6 +444,96 @@ function Customers() {
           companies={companies}
           employees={employees}
         />
+
+        {/* --- Customer Details Modal --- */}
+        {isDetailsModalOpen && selectedCustomerForDetails && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+              <div className="relative p-6 md:p-8 bg-gradient-to-br from-[#0A1128] to-[#1E293B] text-white">
+                <button onClick={closeDetailsModal} className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+                  <X size={20} />
+                </button>
+                <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                  <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl font-black border border-white/20 shadow-inner">
+                    {selectedCustomerForDetails.full_name?.charAt(0)}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">{selectedCustomerForDetails.full_name}</h2>
+                    <div className="flex flex-wrap gap-4 mt-2 text-white/70 text-sm font-medium">
+                      <span className="flex items-center gap-1.5"><Phone size={14} className="text-[#D36A47]" /> {selectedCustomerForDetails.phone}</span>
+                      <span className="flex items-center gap-1.5"><Mail size={14} className="text-[#D36A47]" /> {selectedCustomerForDetails.email}</span>
+                      <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#D36A47]" /> {selectedCustomerForDetails.address}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Purchase History */}
+                  <div>
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <ShoppingCart size={16} className="text-indigo-500" /> Satın Alma Geçmişi
+                    </h3>
+                    <div className="space-y-3">
+                      {customerSales.length > 0 ? customerSales.map((sale, idx) => (
+                        <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-bold text-slate-800 text-sm">{sale.projects?.name || 'Proje'}</p>
+                              <p className="text-xs text-slate-500 font-medium">{sale.interested_product || 'Ünite Detayı'}</p>
+                            </div>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${sale.sale_status === 'Satıldı' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                              {sale.sale_status}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
+                            <span className="text-xs font-bold text-slate-400">{new Date(sale.created_at).toLocaleDateString('tr-TR')}</span>
+                            <span className="text-sm font-black text-slate-800">{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.offered_price || 0)}</span>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="text-center py-10 bg-white rounded-2xl border border-slate-100 border-dashed">
+                          <p className="text-xs font-bold text-slate-400 uppercase">Kayıt Bulunmuyor</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Activity & Performance */}
+                  <div>
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <CheckCircle size={16} className="text-emerald-500" /> Müşteri Etkileşimi
+                    </h3>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-slate-600">Toplam Teklif</span>
+                        <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xs">{customerSales.length}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-slate-600">Kazanılan Satış</span>
+                        <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs">{customerSales.filter(s => s.sale_status === 'Satıldı').length}</span>
+                      </div>
+                      <div className="pt-4 border-t border-slate-100">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Müşteri Puanı</p>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 w-[85%]" />
+                          </div>
+                          <span className="text-xs font-black text-slate-700">%85</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onClick={closeDetailsModal} className="px-6 py-2.5 bg-[#0A1128] text-white rounded-xl text-xs font-black shadow-lg shadow-[#0A1128]/20 hover:scale-105 transition-transform uppercase tracking-wider">Kapat</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

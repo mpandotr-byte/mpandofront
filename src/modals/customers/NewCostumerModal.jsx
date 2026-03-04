@@ -26,14 +26,14 @@ export default function NewCustomerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
-        
+
         {/* --- Header --- */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
           <div>
             <h2 className="text-lg font-bold text-slate-800">Yeni Müşteri Ekle</h2>
             <p className="text-xs text-slate-500 mt-0.5">Sisteme yeni bir müşteri kaydı oluşturun.</p>
           </div>
-          <button 
+          <button
             type="button"
             onClick={onClose}
             className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
@@ -44,19 +44,19 @@ export default function NewCustomerModal({
 
         {/* --- Form Body (Scrollable) --- */}
         <div className="p-6 overflow-y-auto custom-scrollbar">
-          <form 
-            id="new-customer-form" 
-            onSubmit={(e) => { e.preventDefault(); onAdd(); }} 
+          <form
+            id="new-customer-form"
+            onSubmit={(e) => { e.preventDefault(); onAdd(); }}
             className="space-y-6"
           >
-            
+
             {/* Bölüm 1: Kişisel ve İletişim Bilgileri */}
             <div>
               <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <User size={14} /> Kişisel ve İletişim Bilgileri
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
+
                 {/* Müşteri Adı Soyadı */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">
@@ -139,75 +139,7 @@ export default function NewCustomerModal({
               </div>
             </div>
 
-            <hr className="border-slate-100" />
-
-            {/* Bölüm 2: Kurumsal Atamalar */}
-            <div>
-              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Briefcase size={14} /> Şirket & Atama Bilgileri
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Şirket Adı */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">
-                    Şirket Adı <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Building2 size={16} />
-                    </div>
-                    <select
-                      name="company_id"
-                      value={newCustomerData.company_id || ''}
-                      onChange={onChange}
-                      required
-                      className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled>Seçiniz</option>
-                      {companies.map(company => (
-                        <option key={company.id} value={company.id}>
-                          {company.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Sorumlu Çalışan */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">
-                    Sorumlu Çalışan <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Briefcase size={16} />
-                    </div>
-                    <select
-                      name="employee_id"
-                      value={newCustomerData.employee_id || ''}
-                      onChange={onChange}
-                      required
-                      className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled>Seçiniz</option>
-                      {employees.map(employee => (
-                        <option key={employee.id} value={employee.id}>
-                          {employee.full_name || employee.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <hr className="border-slate-100" />
-
-            {/* Bölüm 3: Adres Bilgileri */}
+            {/* Bölüm 2: Adres Bilgileri */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                 <MapPin size={16} className="text-slate-400" /> Adres Detayı

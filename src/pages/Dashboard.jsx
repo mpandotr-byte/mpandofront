@@ -116,11 +116,11 @@ function StatCard({ title, value, subtext, trend, trendUp, icon, iconBg, iconCol
   }
   return (
     <div className="group bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm card-hover relative overflow-hidden">
-      {/* Subtle gradient glow on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 via-transparent to-purple-50/0 group-hover:from-indigo-50/40 group-hover:to-purple-50/30 transition-all duration-500 pointer-events-none rounded-2xl" />
+      {/* Subtle orange gradient glow on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#D36A47]/[0.02] via-transparent to-[#D36A47]/[0.05] group-hover:from-[#D36A47]/[0.08] group-hover:to-[#D36A47]/[0.05] transition-all duration-500 pointer-events-none rounded-2xl" />
 
       <div className="relative flex justify-between items-start mb-3.5">
-        <div className={`p-2.5 rounded-xl ${iconBg || 'bg-indigo-50'} ${iconColor || 'text-indigo-600'} transition-transform group-hover:scale-110 duration-300`}>
+        <div className={`p-2.5 rounded-xl ${iconBg || 'bg-[#D36A47]/10'} ${iconColor || 'text-[#D36A47]'} transition-transform group-hover:scale-110 duration-300`}>
           {icon}
         </div>
         {trend && (
@@ -132,7 +132,7 @@ function StatCard({ title, value, subtext, trend, trendUp, icon, iconBg, iconCol
       </div>
       <h3 className="relative text-slate-500 text-[11px] font-bold uppercase tracking-[0.08em] mb-1">{title}</h3>
       <div className="relative flex items-end gap-2">
-        <span className="text-[22px] font-extrabold text-slate-800 tracking-tight">{value}</span>
+        <span className="text-[22px] font-extrabold text-[#0A1128] tracking-tight">{value}</span>
         {subtext && <span className="text-[11px] text-slate-400 mb-0.5 font-medium">{subtext}</span>}
       </div>
     </div>
@@ -145,9 +145,9 @@ function SectionHeader({ title, subtitle, action, icon }) {
   return (
     <div className="flex items-center justify-between mb-5">
       <div className="flex items-center gap-2.5">
-        {icon && <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">{icon}</div>}
+        {icon && <div className="p-1.5 rounded-lg bg-[#D36A47]/10 text-[#D36A47]">{icon}</div>}
         <div>
-          <h2 className="text-[15px] font-bold text-slate-800">{title}</h2>
+          <h2 className="text-[15px] font-bold text-[#0A1128]">{title}</h2>
           {subtitle && <p className="text-[11px] text-slate-400 font-medium mt-0.5">{subtitle}</p>}
         </div>
       </div>
@@ -166,12 +166,10 @@ function Dashboard() {
   const [recentPayments, setRecentPayments] = useState(defaultPayments);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [criticalStockCount, setCriticalStockCount] = useState(0);
-  const [stockDataState, setStockDataState] = useState(defaultStockData);
-  const [purchaseRequests, setPurchaseRequests] = useState([]);
-  const [recentActivities, setRecentActivities] = useState(defaultActivities);
+  const [users, setUsers] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState({
-    projects: true, finance: true, stock: true, activities: true, requests: true
+    projects: true, finance: true, users: true, activities: true
   });
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -272,27 +270,16 @@ function Dashboard() {
         setLoading(prev => ({ ...prev, finance: false }));
       };
 
-      // 3. Stock & Requests
-      const fetchStockData = async () => {
+      // 3. Users list for performance
+      const fetchUsersData = async () => {
         try {
-          const [stocks, prs] = await Promise.all([api.get('/inventory/stocks'), api.get('/inventory/purchase-requests')]);
-          const myStocks = (stocks || []).filter(s => String(s.company_id) === String(user.company_id));
-          console.log("Stock data sample:", myStocks[0]); // Debug: API veri yapısını kontrol et
-          setCriticalStockCount(myStocks.filter(s => (Number(s.quantity) || 0) < 100).length);
-          setStockDataState(myStocks.slice(0, 7).map((s, i) => ({
-            name: s.materials_catalog?.name || s.material_name || s.name || s.product_name || s.item_name || `Ürün ${i + 1}`,
-            value: Number(s.quantity) || 0,
-            color: STOCK_COLORS[i % STOCK_COLORS.length]
-          })));
-          setPurchaseRequests((prs || []).filter(p => validUserIds.includes(String(p.requested_by))).slice(0, 5).map(p => ({
-            id: p.id,
-            name: p.materials_catalog?.name || p.material_name || 'Bilinmeyen Malzeme',
-            projectName: p.projects?.name || 'Proje',
-            quantity: p.required_quantity || p.quantity || 0,
-            status: p.status === 'APPROVED' ? 'Onaylandı' : (p.status === 'REJECTED' ? 'Reddedildi' : 'Bekliyor')
-          })));
-        } catch (e) { console.error("Inventory error:", e); }
-        setLoading(prev => ({ ...prev, stock: false, requests: false }));
+          const uData = await api.get('/users');
+          const myUsers = (uData || []).filter(u => String(u.company_id) === String(user.company_id));
+          setUsers(myUsers);
+        } catch (e) {
+          console.error("Users list couldn't be fetched:", e);
+        }
+        setLoading(prev => ({ ...prev, users: false }));
       };
 
       // 4. Activities
@@ -325,7 +312,7 @@ function Dashboard() {
 
       fetchProjectsData();
       fetchFinanceData();
-      fetchStockData();
+      fetchUsersData();
       fetchActivitiesData();
     };
 
@@ -335,7 +322,7 @@ function Dashboard() {
   const netProfit = totalIncome - totalExpense;
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
+    <div className="flex min-h-screen bg-[#F8FAFC] font-sans text-slate-800">
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={closeMobileMenu} />
 
       <main className="flex-1 overflow-y-auto h-screen pt-16 md:pt-0">
@@ -344,30 +331,46 @@ function Dashboard() {
         <div className="px-4 sm:px-6 md:px-8 pb-12 pt-6 space-y-7">
 
           {/* ═════════════════ WELCOME BANNER ═════════════════ */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 rounded-2xl p-6 lg:p-8 text-white animate-fade-in">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iYSIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSI0MCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNhKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==')] opacity-50" />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/20 rounded-full translate-y-1/2 -translate-x-1/4 blur-xl" />
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#0A1128] via-[#111A35] to-[#010614] rounded-[2rem] p-8 lg:p-12 text-white animate-fade-in shadow-2xl shadow-[#0A1128]/20 border border-white/[0.05]">
+            {/* Background Pattern & Premium Glow */}
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iYSIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSI0MCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAyKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNhKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==')] opacity-20" />
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#D36A47]/10 rounded-full blur-[100px]" />
+            <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#D36A47]/5 rounded-full blur-[80px]" />
 
-            <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Zap size={18} className="text-amber-300" />
-                  <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">Genel Bakış</span>
-                </div>
-                <h1 className="text-xl lg:text-2xl font-extrabold tracking-tight mb-1">
-                  Hoş Geldiniz, {user?.full_name?.split(' ')[0] || 'Kullanıcı'} 👋
-                </h1>
-                <p className="text-white/60 text-sm font-medium">
-                  Projeleriniz ve finansal durumunuz hakkında güncel bilgiler aşağıda.
-                </p>
+            {/* Orange Logo Watermark behind text */}
+            <div className="absolute right-0 bottom-0 translate-y-1/4 translate-x-1/4 opacity-10 pointer-events-none group">
+              <div className="relative">
+                <div className="absolute inset-0 blur-3xl bg-[#D36A47]/40 rounded-full" />
+                <Activity size={360} strokeWidth={0.5} className="relative text-[#D36A47] -rotate-12 transition-transform duration-700 group-hover:rotate-0" />
               </div>
-              <div className="flex items-center gap-3">
+            </div>
+
+            <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#D36A47]/20 border border-[#D36A47]/30 shadow-inner">
+                    <Zap size={20} className="text-[#D36A47] fill-[#D36A47]/20" />
+                  </div>
+                  <span className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">Kontrol Paneli</span>
+                </div>
+
+                <div className="max-w-2xl">
+                  <h1 className="text-3xl lg:text-4xl font-black tracking-tight mb-3 leading-tight">
+                    Hoş Geldiniz, <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-[#D36A47]">{user?.full_name?.split(' ')[0] || 'Kullanıcı'} 👋</span>
+                  </h1>
+                  <p className="text-slate-400 text-sm lg:text-base font-medium leading-relaxed">
+                    İşletmenizin nabzını tutun. Projelerinizdeki son durumu ve finansal sağlığınızı buradan anlık olarak izleyebilirsiniz.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => window.location.href = '/projects'}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-sm font-semibold hover:bg-white/20 transition-all"
+                  className="group flex items-center gap-3 px-8 py-4 bg-[#D36A47] text-white rounded-2xl text-sm font-bold shadow-xl shadow-[#D36A47]/30 hover:bg-[#C25936] hover:-translate-y-1 transition-all duration-300 active:scale-95"
                 >
-                  <Eye size={15} /> Projeleri Gör
+                  <Eye size={18} className="group-hover:scale-110 transition-transform" />
+                  Projeleri Yönet
                 </button>
               </div>
             </div>
@@ -408,7 +411,7 @@ function Dashboard() {
                   value={activeProjectsCount.toString()}
                   subtext={`/ ${projects.length} proje`}
                   icon={<Briefcase size={20} />}
-                  iconBg="bg-indigo-50" iconColor="text-indigo-600"
+                  iconBg="bg-[#D36A47]/10" iconColor="text-[#D36A47]"
                   trend={`%${projectTrend}`} trendUp={projectTrend >= 50}
                   loading={loading.projects}
                 />
@@ -431,13 +434,13 @@ function Dashboard() {
                   loading={loading.finance}
                 />
                 <StatCard
-                  title="Kritik Stok"
-                  value={criticalStockCount.toString()}
-                  subtext="ürün tükenmek üzere"
-                  icon={<AlertTriangle size={20} />}
-                  iconBg={criticalStockCount > 0 ? "bg-red-50" : "bg-slate-50"}
-                  iconColor={criticalStockCount > 0 ? "text-red-500" : "text-slate-500"}
-                  loading={loading.stock}
+                  title="Kullanıcı Sayısı"
+                  value={users.length.toString()}
+                  subtext="aktif personel"
+                  icon={<Users size={20} />}
+                  iconBg="bg-blue-50"
+                  iconColor="text-blue-600"
+                  loading={loading.users}
                 />
               </div>
             );
@@ -456,7 +459,7 @@ function Dashboard() {
                   action={
                     <button
                       onClick={() => window.location.href = '/projects'}
-                      className="flex items-center gap-1 text-indigo-600 text-xs font-bold hover:text-indigo-800 transition-colors px-2.5 py-1 rounded-lg hover:bg-indigo-50"
+                      className="flex items-center gap-1 text-[#D36A47] text-xs font-bold hover:text-[#C25936] transition-colors px-2.5 py-1 rounded-lg hover:bg-[#D36A47]/10"
                     >
                       Tümü <ArrowRight size={13} />
                     </button>
@@ -481,7 +484,7 @@ function Dashboard() {
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0 mr-3">
-                        <h4 className="font-bold text-slate-800 text-[13px] truncate group-hover:text-indigo-600 transition-colors">{project.name}</h4>
+                        <h4 className="font-bold text-slate-800 text-[13px] truncate group-hover:text-[#D36A47] transition-colors">{project.name}</h4>
                       </div>
                       <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusClasses(project.status)}`}>
                         {getStatusIcon(project.status)} {project.status}
@@ -538,12 +541,12 @@ function Dashboard() {
                     <BarChart data={financialData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barGap={4} barCategoryGap="25%">
                       <defs>
                         <linearGradient id="barIncome" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#818cf8" />
-                          <stop offset="100%" stopColor="#6366f1" />
+                          <stop offset="0%" stopColor="#D36A47" />
+                          <stop offset="100%" stopColor="#C25936" />
                         </linearGradient>
                         <linearGradient id="barExpense" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#fda4af" />
-                          <stop offset="100%" stopColor="#f43f5e" />
+                          <stop offset="0%" stopColor="#1E293B" />
+                          <stop offset="100%" stopColor="#0A1128" />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -560,168 +563,91 @@ function Dashboard() {
           </div>
 
 
-          {/* ═════════════════ MATERIALS & STOCK ═════════════════ */}
+          {/* ═════════════════ USER PERFORMANCE ═════════════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
 
-            {/* Purchase Requests Table */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            {/* User Performance Table */}
+            <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
               <div className="p-5 pb-3 border-b border-slate-100">
                 <SectionHeader
-                  title="Malzeme Satın Alma Talepleri"
-                  icon={<Package size={15} />}
-                  action={
-                    <button className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 px-2.5 py-1 rounded-lg hover:bg-indigo-50 transition-colors">
-                      <Plus size={14} /> Yeni Talep
-                    </button>
-                  }
+                  title="Saha Personel Performansı"
+                  subtitle="Aktiflik ve ekleme durumları"
+                  icon={<Activity size={15} />}
                 />
               </div>
               <div className="overflow-x-auto">
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>MALZEME</th>
-                      <th>PROJE</th>
-                      <th className="text-center">MİKTAR</th>
-                      <th className="text-right">DURUM</th>
+                      <th>PERSONEL</th>
+                      <th>ROL</th>
+                      <th className="text-center">AKTİF PROJELER</th>
+                      <th className="text-center">SON AKTİVİTE</th>
+                      <th className="text-right">PERFORMANS</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {loading.requests ? (
+                    {loading.users ? (
                       [...Array(3)].map((_, i) => (
                         <tr key={i}>
                           <td className="py-4"><div className="h-4 bg-slate-100 rounded w-2/3 animate-shimmer"></div></td>
-                          <td className="py-4"><div className="h-4 bg-slate-50 rounded w-1/2 animate-shimmer" style={{ animationDelay: '0.1s' }}></div></td>
-                          <td className="py-4"><div className="h-4 bg-slate-100 rounded w-10 mx-auto animate-shimmer" style={{ animationDelay: '0.2s' }}></div></td>
-                          <td className="py-4"><div className="h-4 bg-slate-50 rounded w-20 ml-auto animate-shimmer" style={{ animationDelay: '0.3s' }}></div></td>
+                          <td className="py-4"><div className="h-4 bg-slate-50 rounded w-1/2 animate-shimmer"></div></td>
+                          <td className="py-4"><div className="h-4 bg-slate-100 rounded w-10 mx-auto animate-shimmer"></div></td>
+                          <td className="py-4"><div className="h-4 bg-slate-50 rounded w-20 ml-auto animate-shimmer"></div></td>
+                          <td className="py-4"><div className="h-4 bg-slate-50 rounded w-32 ml-auto animate-shimmer"></div></td>
                         </tr>
                       ))
-                    ) : purchaseRequests.length > 0 ? purchaseRequests.map((item, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
-                              <Package size={14} />
+                    ) : users.length > 0 ? users.map((u, idx) => {
+                      const userProjects = projects.filter(p => String(p.contractor_id) === String(u.id)).length;
+                      const performanceScore = Math.floor(Math.random() * 40) + 60; // Mock score
+                      return (
+                        <tr key={idx}>
+                          <td>
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-[#0A1128] flex items-center justify-center text-white text-[10px] font-black">
+                                {u.full_name?.charAt(0) || u.name?.charAt(0) || '?'}
+                              </div>
+                              <span className="font-semibold text-slate-700 text-[13px]">{u.full_name || u.name}</span>
                             </div>
-                            <span className="font-semibold text-slate-700 text-[13px]">{item.name}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="text-[11px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">
-                            {item.projectName}
-                          </span>
-                        </td>
-                        <td className="text-center">
-                          <span className="font-bold text-slate-800 text-[13px]">{item.quantity}</span>
-                        </td>
-                        <td className="text-right">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${item.status === 'Onaylandı' || item.status === 'Tamamlandı'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : item.status === 'Teklif Bekleniyor' || item.status === 'Bekliyor'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : item.status === 'Reddedildi'
-                                ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                : 'bg-slate-50 text-slate-600 border-slate-200'
-                            }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Onaylandı' || item.status === 'Tamamlandı'
-                              ? 'bg-emerald-500'
-                              : item.status === 'Teklif Bekleniyor' || item.status === 'Bekliyor'
-                                ? 'bg-amber-500'
-                                : item.status === 'Reddedildi'
-                                  ? 'bg-rose-500'
-                                  : 'bg-slate-400'
-                              }`}></span>
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    )) : (
+                          </td>
+                          <td>
+                            <span className="text-[11px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">
+                              {u.role || 'Personel'}
+                            </span>
+                          </td>
+                          <td className="text-center">
+                            <span className="font-bold text-slate-800 text-[13px]">{userProjects}</span>
+                          </td>
+                          <td className="text-center">
+                            <span className="text-[11px] text-slate-500 font-medium">Bu Hafta</span>
+                          </td>
+                          <td className="text-right">
+                            <div className="flex flex-col items-end gap-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-slate-400">%{performanceScore}</span>
+                                <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-emerald-500 rounded-full"
+                                    style={{ width: `${performanceScore}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
                       <tr>
-                        <td colSpan="4">
+                        <td colSpan="5">
                           <div className="flex flex-col items-center py-10 text-slate-400">
-                            <Package size={28} className="mb-2 text-slate-300" />
-                            <p className="text-sm font-medium">Henüz talep kaydı bulunmamaktadır.</p>
+                            <Users size={28} className="mb-2 text-slate-300" />
+                            <p className="text-sm font-medium">Kullanıcı verisi bulunamadı.</p>
                           </div>
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
-              </div>
-            </div>
-
-            {/* Stock Donut Chart */}
-            <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-              <div className="p-5 pb-3 border-b border-slate-100">
-                <SectionHeader
-                  title="Stok Durumu"
-                  icon={<Layers size={15} />}
-                  action={
-                    <button className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition-colors">
-                      <MoreHorizontal size={18} />
-                    </button>
-                  }
-                />
-              </div>
-
-              <div className="p-5 flex flex-col items-center">
-                <div className="w-full h-[200px] relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={stockDataState}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={58}
-                        outerRadius={82}
-                        paddingAngle={4}
-                        dataKey="value"
-                        nameKey="name"
-                        stroke="none"
-                      >
-                        {stockDataState.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          const d = payload[0];
-                          return (
-                            <div className="bg-white/95 backdrop-blur-lg rounded-xl border border-slate-200 px-4 py-2.5 shadow-xl shadow-black/5">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.payload?.color || d.color }} />
-                                <span className="text-xs font-bold text-slate-800">{d.name || d.payload?.name || 'Ürün'}</span>
-                              </div>
-                              <p className="text-xs text-slate-500 mt-1">Miktar: <span className="font-bold text-slate-800">{d.value}</span></p>
-                            </div>
-                          );
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Center label */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p className="text-2xl font-extrabold text-slate-800">
-                      {stockDataState.reduce((sum, s) => sum + s.value, 0)}
-                    </p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Toplam</p>
-                  </div>
-                </div>
-
-                {/* Legend */}
-                <div className="w-full space-y-1.5 mt-3">
-                  {stockDataState.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-colors group">
-                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                      <span className="flex-1 text-[12px] text-slate-600 truncate font-medium" title={item.name}>{item.name}</span>
-                      <span className="text-[12px] font-bold text-slate-800">{item.value}</span>
-                    </div>
-                  ))}
-                  {stockDataState.length === 0 && (
-                    <div className="text-center py-4 text-sm text-slate-400">Stok verisi bulunamadı.</div>
-                  )}
-                </div>
               </div>
             </div>
           </div>
@@ -742,7 +668,7 @@ function Dashboard() {
               <div className="p-5">
                 <div className="relative pl-1">
                   {/* Vertical Line */}
-                  <div className="absolute left-[17px] top-3 bottom-4 w-[2px] bg-gradient-to-b from-indigo-200 via-slate-100 to-transparent rounded-full"></div>
+                  <div className="absolute left-[17px] top-3 bottom-4 w-[2px] bg-gradient-to-b from-[#D36A47]/30 via-slate-100 to-transparent rounded-full"></div>
 
                   <div className="space-y-5">
                     {loading.activities ? (
@@ -758,8 +684,8 @@ function Dashboard() {
                     ) : recentActivities.length > 0 ? recentActivities.map((act, idx) => (
                       <div key={act.id} className="relative flex gap-3.5 group">
                         <div className={`relative z-10 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${idx === 0
-                          ? 'bg-indigo-100 text-indigo-600 shadow-sm shadow-indigo-100'
-                          : 'bg-white border border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200'
+                          ? 'bg-[#D36A47]/10 text-[#D36A47] shadow-sm shadow-[#D36A47]/10'
+                          : 'bg-white border border-slate-200 text-slate-400 group-hover:text-[#D36A47] group-hover:border-[#D36A47]/30'
                           }`}>
                           {act.icon}
                         </div>
@@ -794,7 +720,7 @@ function Dashboard() {
                   subtitle="Son finansal hareketler"
                   icon={<DollarSign size={15} />}
                   action={
-                    <button className="flex items-center gap-1 text-indigo-600 text-xs font-bold hover:text-indigo-800 transition-colors px-2.5 py-1 rounded-lg hover:bg-indigo-50">
+                    <button className="flex items-center gap-1 text-[#D36A47] text-xs font-bold hover:text-[#C25936] transition-colors px-2.5 py-1 rounded-lg hover:bg-[#D36A47]/10">
                       Tümünü Gör <ArrowRight size={13} />
                     </button>
                   }

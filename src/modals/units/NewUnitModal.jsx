@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Home, LayoutGrid, CheckCircle, Compass, Construction, FileText } from 'lucide-react';
+import { X, Save, Home, LayoutGrid, CheckCircle, Compass, Banknote } from 'lucide-react';
 
 const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
     const isEdit = !!unitData;
@@ -9,8 +9,7 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
         unit_type: '2+1',
         sales_status: 'AVAILABLE',
         facade: '',
-        structure_type: 'Betonarme',
-        contract_no: ''
+        price: ''
     });
 
     useEffect(() => {
@@ -21,8 +20,7 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
                     unit_type: unitData.unit_type ?? '2+1',
                     sales_status: unitData.sales_status ?? 'AVAILABLE',
                     facade: unitData.facade ?? '',
-                    structure_type: unitData.structure_type ?? 'Betonarme',
-                    contract_no: unitData.contract_no ?? ''
+                    price: unitData.price ?? ''
                 });
             } else {
                 setFormData({
@@ -30,8 +28,7 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
                     unit_type: '2+1',
                     sales_status: 'AVAILABLE',
                     facade: '',
-                    structure_type: 'Betonarme',
-                    contract_no: ''
+                    price: ''
                 });
             }
         }
@@ -54,8 +51,8 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 flex flex-col">
+        <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 pointer-events-auto pt-20">
+            <div className="bg-white rounded-[32px] shadow-[0_30px_70px_rgba(0,0,0,0.3)] w-full max-w-lg overflow-hidden border border-white/20 flex flex-col animate-in slide-in-from-top-10 duration-500 cubic-bezier(0.16, 1, 0.3, 1)">
 
                 {/* --- Header --- */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white">
@@ -153,46 +150,26 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
                                         name="facade"
                                         value={formData.facade}
                                         onChange={handleChange}
-                                        placeholder="Örn: Kuzey-Batı, Deniz Cephe"
+                                        placeholder="Örn: Kuzey-Batı"
                                         className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
                                     />
                                 </div>
                             </div>
 
-                            {/* Yapı Tipi */}
+                            {/* Fiyat */}
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Yapı Tipi</label>
+                                <label className="text-sm font-medium text-slate-700">Fiyat (₺)</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <Construction size={16} />
-                                    </div>
-                                    <select
-                                        name="structure_type"
-                                        value={formData.structure_type}
-                                        onChange={handleChange}
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                    >
-                                        <option value="Betonarme">Betonarme</option>
-                                        <option value="Çelik">Çelik</option>
-                                        <option value="Karma">Karma</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Sözleşme No */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Sözleşme No</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <FileText size={16} />
+                                        <Banknote size={16} />
                                     </div>
                                     <input
-                                        type="text"
-                                        name="contract_no"
-                                        value={formData.contract_no}
+                                        type="number"
+                                        name="price"
+                                        value={formData.price}
                                         onChange={handleChange}
-                                        placeholder="Örn: SZ-2024-001"
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
+                                        placeholder="Satış Fiyatı"
+                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400 font-bold text-emerald-600"
                                     />
                                 </div>
                             </div>
