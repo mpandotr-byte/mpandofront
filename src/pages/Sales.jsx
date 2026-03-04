@@ -155,22 +155,42 @@ function Sales() {
   const handleAddNewSale = async () => {
     if (!newSaleData.musteri_id || !newSaleData.proje_id) { alert('Müşteri ve Proje alanları zorunludur.'); return; }
     try {
-      const dataToSend = { ...newSaleData };
-      if (dataToSend.musteri_id) dataToSend.musteri_id = Number(dataToSend.musteri_id);
-      if (dataToSend.proje_id) dataToSend.proje_id = Number(dataToSend.proje_id);
-      if (dataToSend.unit_id) dataToSend.unit_id = Number(dataToSend.unit_id);
-      if (dataToSend.offered_price) dataToSend.offered_price = Number(dataToSend.offered_price);
+      const dataToSend = {
+        ...newSaleData,
+        project_id: Number(newSaleData.proje_id),
+        customer_id: Number(newSaleData.musteri_id),
+        unit_id: newSaleData.unit_id ? Number(newSaleData.unit_id) : null,
+        offered_price: newSaleData.offered_price ? Number(newSaleData.offered_price) : 0,
+        company_id: user.company_id,
+        employee_id: user.id
+      };
+
+      // Remove the old names before sending
+      delete dataToSend.proje_id;
+      delete dataToSend.musteri_id;
 
       let addedSale;
       if (newSaleData.contract_file) {
         const formData = new FormData();
-        Object.keys(dataToSend).forEach(key => { if (dataToSend[key] !== null && dataToSend[key] !== undefined) formData.append(key, dataToSend[key]); });
+        Object.keys(dataToSend).forEach(key => {
+          if (dataToSend[key] !== null && dataToSend[key] !== undefined) {
+            formData.append(key, dataToSend[key]);
+          }
+        });
         addedSale = await api.upload('/sales', formData);
       } else {
         addedSale = await api.post('/sales', dataToSend);
       }
-      if (addedSale) { setSales([addedSale, ...sales]); closeAddModal(); fetchSales(); }
-    } catch (err) { console.error('Yeni satış eklenirken hata:', err); alert('Satış eklenemedi.'); }
+
+      if (addedSale) {
+        setSales([addedSale, ...sales]);
+        closeAddModal();
+        fetchSales();
+      }
+    } catch (err) {
+      console.error('Yeni satış eklenirken hata:', err);
+      alert('Satış eklenemedi.');
+    }
   };
 
   const openEditModal = (sale) => { setSelectedSaleForEdit(sale); setEditFormData({ ...sale }); setIsEditModalOpen(true); };
@@ -188,21 +208,34 @@ function Sales() {
   const handleUpdateSale = async () => {
     if (!editFormData.musteri_id || !editFormData.id) { alert('Hatalı veri gönderimi.'); return; }
     try {
-      const dataToSend = { ...editFormData };
-      if (dataToSend.musteri_id) dataToSend.musteri_id = Number(dataToSend.musteri_id);
-      if (dataToSend.proje_id) dataToSend.proje_id = Number(dataToSend.proje_id);
-      if (dataToSend.unit_id) dataToSend.unit_id = Number(dataToSend.unit_id);
-      if (dataToSend.offered_price) dataToSend.offered_price = Number(dataToSend.offered_price);
+      const dataToSend = {
+        ...editFormData,
+        project_id: Number(editFormData.proje_id),
+        customer_id: Number(editFormData.musteri_id),
+        unit_id: editFormData.unit_id ? Number(editFormData.unit_id) : null,
+        offered_price: editFormData.offered_price ? Number(editFormData.offered_price) : 0
+      };
+
+      delete dataToSend.proje_id;
+      delete dataToSend.musteri_id;
 
       if (editFormData.contract_file) {
         const formData = new FormData();
-        Object.keys(dataToSend).forEach(key => { if (dataToSend[key] !== null && dataToSend[key] !== undefined) formData.append(key, dataToSend[key]); });
+        Object.keys(dataToSend).forEach(key => {
+          if (dataToSend[key] !== null && dataToSend[key] !== undefined) {
+            formData.append(key, dataToSend[key]);
+          }
+        });
         await api.put(`/sales/${selectedSaleForEdit.id}`, formData);
       } else {
         await api.put(`/sales/${selectedSaleForEdit.id}`, dataToSend);
       }
-      closeEditModal(); fetchSales();
-    } catch (err) { console.error('Güncelleme sırasında hata:', err); alert('Güncellenemedi.'); }
+      closeEditModal();
+      fetchSales();
+    } catch (err) {
+      console.error('Güncelleme sırasında hata:', err);
+      alert('Güncellenemedi.');
+    }
   };
 
   const openDetailsModal = (sale) => { setSelectedSaleForDetails(sale); setIsDetailsModalOpen(true); };
