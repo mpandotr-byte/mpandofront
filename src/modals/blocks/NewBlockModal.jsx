@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Building2, Layers } from 'lucide-react';
+import { X, Save, Building2, Zap, Droplets, Flame, ArrowRight, Info, Plus } from 'lucide-react';
+import { api } from '../../api/client';
 
 const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) => {
     const isEdit = !!blockData;
+    const [recipes, setRecipes] = useState([]);
+    const [loadingRecipes, setLoadingRecipes] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -10,20 +13,54 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
         building_type: 'Konut',
         foundation_area_m2: '',
         total_facade_m2: '',
-        elevator_count: ''
+        elevator_count: '',
+        // Tesisat Metrajları
+        elec_points: '',
+        waste_water_mt: '',
+        fresh_water_mt: '',
+        gas_line_mt: '',
+        // Reçete Atamaları
+        elevator_recipe_id: '',
+        foundation_recipe_id: '',
+        facade_recipe_id: '',
+        roof_recipe_id: '',
+        plumbing_recipe_id: '',
+        basement_recipe_id: ''
     });
 
     useEffect(() => {
+        const fetchRecipes = async () => {
+            setLoadingRecipes(true);
+            try {
+                const data = await api.get('/recipes');
+                setRecipes(data || []);
+            } catch (err) {
+                console.error("Recipe fetch error:", err);
+            } finally {
+                setLoadingRecipes(false);
+            }
+        };
+
         if (isOpen) {
-            console.log("Modal opened with blockData:", blockData);
+            fetchRecipes();
             if (blockData) {
                 setFormData({
                     name: blockData.name ?? '',
                     floor_count: blockData.floor_count ?? '',
                     building_type: blockData.building_type ?? 'Konut',
-                    foundation_area_m2: blockData.foundation_area_m2 ?? blockData.foundation_area ?? '',
-                    total_facade_m2: blockData.total_facade_m2 ?? blockData.total_facade ?? '',
-                    elevator_count: blockData.elevator_count ?? ''
+                    foundation_area_m2: blockData.foundation_area_m2 ?? '',
+                    total_facade_m2: blockData.total_facade_m2 ?? '',
+                    elevator_count: blockData.elevator_count ?? '',
+                    elec_points: blockData.elec_points ?? '',
+                    waste_water_mt: blockData.waste_water_mt ?? '',
+                    fresh_water_mt: blockData.fresh_water_mt ?? '',
+                    gas_line_mt: blockData.gas_line_mt ?? '',
+                    elevator_recipe_id: blockData.elevator_recipe_id ?? '',
+                    foundation_recipe_id: blockData.foundation_recipe_id ?? '',
+                    facade_recipe_id: blockData.facade_recipe_id ?? '',
+                    roof_recipe_id: blockData.roof_recipe_id ?? '',
+                    plumbing_recipe_id: blockData.plumbing_recipe_id ?? '',
+                    basement_recipe_id: blockData.basement_recipe_id ?? ''
                 });
             } else {
                 setFormData({
@@ -32,7 +69,17 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                     building_type: 'Konut',
                     foundation_area_m2: '',
                     total_facade_m2: '',
-                    elevator_count: ''
+                    elevator_count: '',
+                    elec_points: '',
+                    waste_water_mt: '',
+                    fresh_water_mt: '',
+                    gas_line_mt: '',
+                    elevator_recipe_id: '',
+                    foundation_recipe_id: '',
+                    facade_recipe_id: '',
+                    roof_recipe_id: '',
+                    plumbing_recipe_id: '',
+                    basement_recipe_id: ''
                 });
             }
         }
@@ -54,160 +101,139 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
             floor_count: parseInt(formData.floor_count || 0),
             foundation_area_m2: formData.foundation_area_m2 !== '' ? parseFloat(formData.foundation_area_m2) : null,
             total_facade_m2: formData.total_facade_m2 !== '' ? parseFloat(formData.total_facade_m2) : null,
-            elevator_count: formData.elevator_count !== '' ? parseInt(formData.elevator_count) : 0
+            elevator_count: formData.elevator_count !== '' ? parseInt(formData.elevator_count) : 0,
+            elec_points: parseInt(formData.elec_points || 0),
+            waste_water_mt: parseFloat(formData.waste_water_mt || 0),
+            fresh_water_mt: parseFloat(formData.fresh_water_mt || 0),
+            gas_line_mt: parseFloat(formData.gas_line_mt || 0)
         });
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 flex flex-col">
-
-                {/* --- Header --- */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-800">{isEdit ? 'Bloku Düzenle' : 'Yeni Blok Ekle'}</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                            {isEdit ? 'Blok bilgilerini güncelleyin.' : 'Projeye yeni bir yapı bloğu tanımlayın.'}
-                        </p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500">
+                <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-white">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-[#0A1128] flex items-center justify-center text-white shadow-lg">
+                            <Building2 size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">
+                                {isEdit ? 'Blok Yapı Paneli' : 'Yeni Blok Oluşturma'}
+                            </h2>
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">GENEL YAPI VE TEKNİK PARAMETRELER</p>
+                        </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
+                    <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-full text-slate-400 hover:text-[#D36A47] transition-all"><X size={24} /></button>
                 </div>
 
-                {/* --- Form Body --- */}
-                <div className="p-6 overflow-y-auto max-h-[70vh]">
-                    <form id="block-form" onSubmit={handleSubmit} className="space-y-4">
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Blok Adı */}
-                            <div className="space-y-1.5 md:col-span-2">
-                                <label className="text-sm font-medium text-slate-700">Blok Adı / Tanımı <span className="text-red-500">*</span></label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <Building2 size={16} />
+                <div className="p-8 overflow-y-auto custom-scrollbar">
+                    <form id="block-form" onSubmit={handleSubmit} className="space-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-3">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-slate-200" /> BLOK KİMLİĞİ VE ANA ÖLÇÜLER</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    <div className="space-y-1.5 md:col-span-2">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Blok Adı / Tanımı</label>
+                                        <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Örn: A Blok" required className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-[1.25rem] focus:ring-4 focus:ring-[#D36A47]/10 focus:border-[#D36A47] outline-none transition-all text-sm font-bold" />
                                     </div>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        placeholder="Örn: A Blok, Ana Bina"
-                                        required
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                    />
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Yapı Tipi</label>
+                                        <select name="building_type" value={formData.building_type} onChange={handleChange} className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-[1.25rem] focus:ring-4 focus:ring-[#D36A47]/10 focus:border-[#D36A47] outline-none transition-all text-sm font-bold">
+                                            <option value="Konut">Konut</option>
+                                            <option value="Ticari">Ticari</option>
+                                            <option value="Karma">Karma</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-[#D36A47] uppercase tracking-wider ml-1 flex items-center gap-1.5">TEMEL ALANI <span className="bg-[#D36A47]/10 text-[9px] px-1.5 py-0.5 rounded text-[#D36A47]">AI STATİK</span></label>
+                                        <div className="relative">
+                                            <input type="number" name="foundation_area_m2" value={formData.foundation_area_m2} onChange={handleChange} className="block w-full px-4 py-3 bg-orange-50/30 border border-orange-100 rounded-[1.25rem] focus:ring-4 focus:ring-[#D36A47]/10 focus:border-[#D36A47] outline-none transition-all text-sm font-bold text-orange-900" />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-orange-400">m²</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-blue-600 uppercase tracking-wider ml-1 flex items-center gap-1.5">DIŞ CEPHE <span className="bg-blue-50 text-[9px] px-1.5 py-0.5 rounded text-blue-600">AI MİMARİ</span></label>
+                                        <div className="relative">
+                                            <input type="number" name="total_facade_m2" value={formData.total_facade_m2} onChange={handleChange} className="block w-full px-4 py-3 bg-blue-50/30 border border-blue-100 rounded-[1.25rem] focus:ring-4 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm font-bold text-blue-900" />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-blue-400">m²</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Yapı Tipi */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Yapı Tipi</label>
-                                <select
-                                    name="building_type"
-                                    value={formData.building_type}
-                                    onChange={handleChange}
-                                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                >
-                                    <option value="Konut">Konut</option>
-                                    <option value="Ticari">Ticari</option>
-                                    <option value="Karma">Karma</option>
-                                    <option value="Endüstriyel">Endüstriyel</option>
-                                </select>
-                            </div>
-
-                            {/* Kat Sayısı */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Kat Sayısı <span className="text-red-500">*</span></label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <Layers size={16} />
+                            <div className="lg:col-span-3">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-slate-200" /> TESİSAT METRAJ VE ÜNİTE VERİLERİ</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
+                                        <div className="flex items-center gap-2 text-amber-600"><Zap size={16} /> <span className="text-[10px] font-black uppercase">Elektrik (Priz/Sorti)</span></div>
+                                        <div className="relative">
+                                            <input type="number" name="elec_points" value={formData.elec_points} onChange={handleChange} placeholder="0" className="w-full bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400">ADET</span>
+                                        </div>
                                     </div>
-                                    <input
-                                        type="number"
-                                        name="floor_count"
-                                        value={formData.floor_count}
-                                        onChange={handleChange}
-                                        placeholder="Örn: 5"
-                                        required
-                                        min="1"
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                    />
+                                    <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
+                                        <div className="flex items-center gap-2 text-blue-600"><Droplets size={16} /> <span className="text-[10px] font-black uppercase">Pis/Temiz Su (PİMAŞ/PPRC)</span></div>
+                                        <div className="flex gap-2">
+                                            <input type="number" name="waste_water_mt" value={formData.waste_water_mt} onChange={handleChange} placeholder="PİMAŞ MT" className="w-1/2 bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
+                                            <input type="number" name="fresh_water_mt" value={formData.fresh_water_mt} onChange={handleChange} placeholder="PPRC MT" className="w-1/2 bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
+                                        <div className="flex items-center gap-2 text-rose-600"><Flame size={16} /> <span className="text-[10px] font-black uppercase">Doğalgaz (HAT MT)</span></div>
+                                        <div className="relative">
+                                            <input type="number" name="gas_line_mt" value={formData.gas_line_mt} onChange={handleChange} placeholder="0" className="w-full bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400">METRE</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
+                                        <div className="flex items-center gap-2 text-slate-700"><ArrowRight size={16} /> <span className="text-[10px] font-black uppercase">Asansör</span></div>
+                                        <div className="flex gap-2">
+                                            <input type="number" name="elevator_count" value={formData.elevator_count} onChange={handleChange} placeholder="ADET" className="w-1/3 bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
+                                            <select name="elevator_recipe_id" value={formData.elevator_recipe_id} onChange={handleChange} className="w-2/3 bg-white px-3 py-2 rounded-xl border border-slate-200 text-[10px] font-black outline-none"><option value="">REÇETE SEÇ</option>{recipes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Temel Alanı */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Temel Alanı (m²)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    name="foundation_area_m2"
-                                    value={formData.foundation_area_m2}
-                                    onChange={handleChange}
-                                    placeholder="Örn: 450.50"
-                                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                />
-                            </div>
-
-                            {/* Dış Cephe Alanı */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Dış Cephe Alanı (m²)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    name="total_facade_m2"
-                                    value={formData.total_facade_m2}
-                                    onChange={handleChange}
-                                    placeholder="Örn: 2200.00"
-                                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                />
-                            </div>
-
-                            {/* Asansör Sayısı */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Asansör Sayısı</label>
-                                <input
-                                    type="number"
-                                    name="elevator_count"
-                                    value={formData.elevator_count}
-                                    onChange={handleChange}
-                                    placeholder="Örn: 2"
-                                    min="0"
-                                    className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                />
+                            <div className="lg:col-span-3">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-slate-200" /> BLOK GENELİ REÇETE ATAMALARI</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="space-y-4">
+                                        <RecipeSelector label="TEMEL REÇETESİ" name="foundation_recipe_id" value={formData.foundation_recipe_id} recipes={recipes} onChange={handleChange} />
+                                        <RecipeSelector label="DIŞ CEPHE REÇETESİ" name="facade_recipe_id" value={formData.facade_recipe_id} recipes={recipes} onChange={handleChange} />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <RecipeSelector label="ÇATI REÇETESİ" name="roof_recipe_id" value={formData.roof_recipe_id} recipes={recipes} onChange={handleChange} />
+                                        <RecipeSelector label="TESİSAT REÇETELERİ" name="plumbing_recipe_id" value={formData.plumbing_recipe_id} recipes={recipes} onChange={handleChange} />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <RecipeSelector label="BODRUM REÇETESİ" name="basement_recipe_id" value={formData.basement_recipe_id} recipes={recipes} onChange={handleChange} />
+                                        <div className="flex h-full items-center justify-center p-6 border-2 border-dashed border-slate-100 rounded-[2rem] text-slate-300"><Plus size={32} /></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
                     </form>
                 </div>
 
-                {/* --- Footer --- */}
-                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
-                    >
-                        İptal
-                    </button>
-                    <button
-                        type="submit"
-                        form="block-form"
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
-                    >
-                        <Save size={16} />
-                        {isEdit ? 'Değişiklikleri Kaydet' : 'Bloku Ekle'}
-                    </button>
+                <div className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-slate-400"><Info size={18} /><span className="text-[10px] font-black uppercase tracking-widest text-[#0A1128]">Veriler Yapı Maliyetini Etkiler</span></div>
+                    <div className="flex items-center gap-4">
+                        <button type="button" onClick={onClose} className="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-800 transition-all">İptal</button>
+                        <button type="submit" form="block-form" className="inline-flex items-center gap-3 px-10 py-4 text-xs font-black uppercase tracking-widest text-white bg-[#D36A47] hover:bg-[#C25936] rounded-2xl transition-all shadow-xl shadow-[#D36A47]/20 hover:scale-105 active:scale-95"><Save size={18} /> {isEdit ? 'DEĞİŞİKLİKLERİ KAYDET' : 'BLOK OLUŞTUR'}</button>
+                    </div>
                 </div>
-
             </div>
         </div>
     );
 };
 
-export default BlockModal;
+const RecipeSelector = ({ label, name, value, recipes, onChange }) => (
+    <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+        <select name={name} value={value} onChange={onChange} className="w-full bg-white px-4 py-3 rounded-2xl border border-slate-200 text-xs font-bold outline-none focus:border-[#D36A47] focus:ring-4 focus:ring-[#D36A47]/5 transition-all"><option value="">REÇETE SEÇİMİ BEKLENİYOR...</option>{recipes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
+    </div>
+);
 
+export default BlockModal;

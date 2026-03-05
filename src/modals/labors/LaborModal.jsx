@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Hammer, Info, Layers, Ruler, Hash, Clock, CircleDollarSign } from 'lucide-react';
+import { X, Save, Hammer, Info, Layers, Ruler, Hash, Clock } from 'lucide-react';
 
 const initialFormState = {
     code: '',
     name: '',
     category_id: '',
     unit: 'm²',
-    unit_price: '',
-    currency: 'TRY',
     notes: ''
 };
 
@@ -20,8 +18,6 @@ export default function LaborModal({ isOpen, onClose, labor, onSave, categories,
                 ...labor,
                 category_id: labor.category_id || '',
                 unit: labor.unit || 'm²',
-                unit_price: labor.unit_price || '',
-                currency: labor.currency || 'TRY',
                 notes: labor.notes || ''
             });
         } else {
@@ -139,31 +135,7 @@ export default function LaborModal({ isOpen, onClose, labor, onSave, categories,
                                     </select>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Unit Price */}
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Birim Fiyat</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300">
-                                        <CircleDollarSign size={18} />
-                                    </div>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        name="unit_price"
-                                        value={formData.unit_price}
-                                        onChange={handleChange}
-                                        placeholder="Örn: 250"
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#D36A47] transition-all outline-none font-medium"
-                                    />
-                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                        <span className="text-xs font-bold text-slate-400">TRY</span>
-                                    </div>
-                                </div>
-                            </div>
-
+                        </div>                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Code (Display Only or Preview) */}
                             <div className="space-y-2 opacity-60">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">İşçilik Kodu</label>
@@ -177,7 +149,6 @@ export default function LaborModal({ isOpen, onClose, labor, onSave, categories,
                                 </div>
                             </div>
                         </div>
-
                         {/* Notes */}
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Notlar / Açıklama</label>

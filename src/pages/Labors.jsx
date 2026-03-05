@@ -16,7 +16,6 @@ import {
     Trash2,
     Search,
     Hash,
-    CircleDollarSign,
     Ruler
 } from 'lucide-react';
 import LaborModal from '../modals/labors/LaborModal';
@@ -170,16 +169,7 @@ function Labors() {
                 </div>
             )
         },
-        {
-            key: 'unit_price',
-            label: 'Birim Fiyat',
-            render: (val, row) => (
-                <div className="flex items-center gap-1.5 font-bold text-slate-700 text-[13px]">
-                    <CircleDollarSign size={14} className="text-emerald-500" />
-                    <span>{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(val || 0)} {row.currency}</span>
-                </div>
-            )
-        },
+
         {
             key: 'created_at',
             label: 'Oluşturulma',
@@ -239,7 +229,7 @@ function Labors() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase">İşçilik Kütüphanesi</h1>
-                                        <p className="text-white/50 text-sm font-medium">Birim fiyat ve hizmet maliyet yönetimi</p>
+                                        <p className="text-white/50 text-sm font-medium">Hizmet kalemleri ve işçilik tanımları yönetimi</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-8">

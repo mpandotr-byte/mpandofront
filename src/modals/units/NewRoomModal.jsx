@@ -1,50 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Maximize, Ruler, Type, Hash, AlignLeft, DoorOpen, Layout } from 'lucide-react';
+import { X, Save, Maximize, Ruler, DoorOpen, Layout, Info, Plus, ChevronRight, PenTool } from 'lucide-react';
+import { api } from '../../api/client';
 
 const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
     const isEdit = !!roomData;
+    const [recipes, setRecipes] = useState([]);
 
     const [formData, setFormData] = useState({
         name: '',
         room_type: '',
         area_m2: '',
-        perimeter_m: '',
-        wall_area_m2: '',
-        ceiling_area_m2: '',
+        wall_area_m2: '', // Net Duvar Yüzeyi
         door_count: 0,
         window_count: 0,
+        perimeter_m: '',
+        ceiling_area_m2: '',
         floor_height_m: '',
-        notes: ''
+        notes: '',
+        wall_recipe_id: '',
+        floor_recipe_id: '',
+        ceiling_recipe_id: '',
+        extra_recipe_id: ''
     });
 
     useEffect(() => {
+        const fetchRecipes = async () => {
+            try {
+                const data = await api.get('/recipes');
+                setRecipes(data || []);
+            } catch (err) {
+                console.error("Recipe fetch error:", err);
+            }
+        };
+
         if (isOpen) {
+            fetchRecipes();
             if (roomData) {
                 setFormData({
                     name: roomData.name || '',
                     room_type: roomData.room_type || '',
-                    area_m2: roomData.area_m2 || roomData.area || '',
-                    perimeter_m: roomData.perimeter_m || '',
+                    area_m2: roomData.area_m2 || '',
                     wall_area_m2: roomData.wall_area_m2 || '',
-                    ceiling_area_m2: roomData.ceiling_area_m2 || '',
                     door_count: roomData.door_count || 0,
                     window_count: roomData.window_count || 0,
+                    perimeter_m: roomData.perimeter_m || '',
+                    ceiling_area_m2: roomData.ceiling_area_m2 || '',
                     floor_height_m: roomData.floor_height_m || '',
-                    notes: roomData.notes || ''
+                    notes: roomData.notes || '',
+                    wall_recipe_id: roomData.wall_recipe_id || '',
+                    floor_recipe_id: roomData.floor_recipe_id || '',
+                    ceiling_recipe_id: roomData.ceiling_recipe_id || '',
+                    extra_recipe_id: roomData.extra_recipe_id || ''
                 });
             } else {
-                setFormData({
-                    name: '',
-                    room_type: '',
-                    area_m2: '',
-                    perimeter_m: '',
-                    wall_area_m2: '',
-                    ceiling_area_m2: '',
-                    door_count: 0,
-                    window_count: 0,
-                    floor_height_m: '',
-                    notes: ''
-                });
+                setFormData(prev => ({ ...prev, name: '' }));
             }
         }
     }, [isOpen, roomData]);
@@ -58,230 +67,89 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onAdd({
-            ...formData,
-            unit_id: unitId,
-            id: roomData?.id,
-            area_m2: formData.area_m2 !== '' ? parseFloat(formData.area_m2) : null,
-            perimeter_m: formData.perimeter_m !== '' ? parseFloat(formData.perimeter_m) : null,
-            wall_area_m2: formData.wall_area_m2 !== '' ? parseFloat(formData.wall_area_m2) : null,
-            ceiling_area_m2: formData.ceiling_area_m2 !== '' ? parseFloat(formData.ceiling_area_m2) : null,
-            floor_height_m: formData.floor_height_m !== '' ? parseFloat(formData.floor_height_m) : null,
-            door_count: parseInt(formData.door_count) || 0,
-            window_count: parseInt(formData.window_count) || 0
-        });
+        onAdd({ ...formData, unit_id: unitId, id: roomData?.id });
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-10">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-800">{isEdit ? 'Odayı Düzenle' : 'Yeni Oda Ekle'}</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Daireye oda veya mekan detaylarını ekleyin.</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-md animate-in fade-in duration-300 font-sans text-slate-900">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500">
+                <div className="flex items-center justify-between px-10 py-8 border-b border-slate-100 bg-white">
+                    <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-[1.25rem] bg-[#D36A47] flex items-center justify-center text-white shadow-lg"><PenTool size={28} /></div>
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{isEdit ? 'Mahal Düzenleme' : 'Oda (Mahal) Oluşturma'}</h2>
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em] mt-1 flex items-center gap-2"><ChevronRight size={14} className="text-[#D36A47]" /> DETAYLI ÜRETİM VE METRAJ NOKTASI</p>
+                        </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
+                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center hover:bg-slate-50 rounded-full text-slate-400 hover:text-rose-500 transition-all border border-transparent hover:border-rose-100"><X size={24} /></button>
                 </div>
 
-                {/* Form Body */}
-                <div className="p-6 overflow-y-auto">
-                    <form id="new-room-form" onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Oda Bilgileri */}
-                            <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                                    <Type size={14} /> Temel Bilgiler
-                                </h3>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-slate-700">Oda Adı <span className="text-red-500">*</span></label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <Type size={16} />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            placeholder="Örn: Salon, Yatak Odası"
-                                            required
-                                            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                        />
-                                    </div>
-                                    <div className="flex flex-wrap gap-1.5 mt-2">
-                                        {['Salon', 'Yatak Odası', 'Mutfak', 'Banyo', 'Antre', 'Balkon'].map(preset => (
-                                            <button
-                                                key={preset}
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, name: preset, room_type: preset }))}
-                                                className="text-[10px] bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-600 px-2 py-1 rounded transition-colors"
-                                            >
-                                                + {preset}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-slate-700">Oda Tipi</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <Layout size={16} />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="room_type"
-                                            value={formData.room_type}
-                                            onChange={handleChange}
-                                            placeholder="Örn: Islak Hacim, Kuru Hacim"
-                                            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
-                                        />
-                                    </div>
-                                </div>
+                <div className="p-10 overflow-y-auto custom-scrollbar">
+                    <form id="new-room-form" onSubmit={handleSubmit} className="space-y-12">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                            <div className="md:col-span-2 lg:col-span-4 space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Oda İsmi</label>
+                                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Örn: Salon" required className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#D36A47]/10 outline-none font-bold text-sm" />
                             </div>
-
-                            {/* Ölçüler */}
-                            <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                                    <Maximize size={14} /> Ölçüler ve Teknik Detaylar
-                                </h3>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-700">Zemin Alanı (m²)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            name="area_m2"
-                                            value={formData.area_m2}
-                                            onChange={handleChange}
-                                            placeholder="0.00"
-                                            className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-700">Tavan Alanı (m²)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            name="ceiling_area_m2"
-                                            value={formData.ceiling_area_m2}
-                                            onChange={handleChange}
-                                            placeholder="0.00"
-                                            className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-700">Duvar Alanı (m²)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            name="wall_area_m2"
-                                            value={formData.wall_area_m2}
-                                            onChange={handleChange}
-                                            placeholder="0.00"
-                                            className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-700">Kat Yüksekliği (m)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            name="floor_height_m"
-                                            value={formData.floor_height_m}
-                                            onChange={handleChange}
-                                            placeholder="0.00"
-                                            className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-700">Kapı Sayısı</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                                <X size={14} />
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="door_count"
-                                                value={formData.door_count}
-                                                onChange={handleChange}
-                                                className="block w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-medium text-slate-700">Pencere Sayısı</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                                <Layout size={14} />
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="window_count"
-                                                value={formData.window_count}
-                                                onChange={handleChange}
-                                                className="block w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="md:col-span-2 lg:col-span-3 space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mahal Tipi</label>
+                                <select name="room_type" value={formData.room_type} onChange={handleChange} className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl outline-none font-bold text-sm">
+                                    <option value="">SEÇİNİZ</option>
+                                    <option value="Salon">Salon</option>
+                                    <option value="Mutfak">Mutfak</option>
+                                    <option value="Banyo">Banyo</option>
+                                    <option value="YatakOdasi">Yatak Odası</option>
+                                    <option value="Balkon">Balkon</option>
+                                </select>
+                            </div>
+                            <div className="lg:col-span-12"><hr className="border-white" /></div>
+                            <div className="md:col-span-1 lg:col-span-3 space-y-2">
+                                <label className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] ml-1">ZEMİN ALANI <span className="text-[9px] bg-indigo-50 px-1.5 py-0.5 rounded uppercase">AI</span></label>
+                                <div className="relative"><input type="number" name="area_m2" value={formData.area_m2} onChange={handleChange} className="block w-full px-5 py-4 bg-indigo-50/20 border border-indigo-100 rounded-2xl font-black text-indigo-900 outline-none focus:ring-4 transition-all" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-indigo-300">m²</span></div>
+                            </div>
+                            <div className="md:col-span-1 lg:col-span-3 space-y-2">
+                                <label className="text-[10px] font-black text-teal-600 uppercase tracking-[0.2em] ml-1">DUVAR YÜZEYİ <span className="text-[9px] bg-teal-50 px-1.5 py-0.5 rounded uppercase">NET AI</span></label>
+                                <div className="relative"><input type="number" name="wall_area_m2" value={formData.wall_area_m2} onChange={handleChange} className="block w-full px-5 py-4 bg-teal-50/20 border border-teal-100 rounded-2xl font-black text-teal-900 outline-none focus:ring-4 transition-all" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-teal-300">m²</span></div>
+                            </div>
+                            <div className="md:col-span-1 lg:col-span-3 space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">KAPI ADET</label>
+                                <div className="relative"><input type="number" name="door_count" value={formData.door_count} onChange={handleChange} className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-black outline-none transition-all" /><DoorOpen size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" /></div>
+                            </div>
+                            <div className="md:col-span-1 lg:col-span-3 space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">PENCERE ADET</label>
+                                <div className="relative"><input type="number" name="window_count" value={formData.window_count} onChange={handleChange} className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-black outline-none transition-all" /><Layout size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" /></div>
                             </div>
                         </div>
 
-                        {/* Notlar */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                                <AlignLeft size={16} /> Notlar
-                            </label>
-                            <textarea
-                                name="notes"
-                                value={formData.notes}
-                                onChange={handleChange}
-                                rows="3"
-                                placeholder="Oda hakkında ek bilgiler..."
-                                className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400 resize-none"
-                            ></textarea>
+                        <div>
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-4"><span className="w-10 h-px bg-slate-200" /> REÇETE ATAMALARI (İÇ MEKAN)</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                <RecipeSelector label="DUVAR REÇETESİ" name="wall_recipe_id" value={formData.wall_recipe_id} recipes={recipes} onChange={handleChange} />
+                                <RecipeSelector label="ZEMİN REÇETESİ" name="floor_recipe_id" value={formData.floor_recipe_id} recipes={recipes} onChange={handleChange} />
+                                <RecipeSelector label="TAVAN REÇETESİ" name="ceiling_recipe_id" value={formData.ceiling_recipe_id} recipes={recipes} onChange={handleChange} />
+                                <RecipeSelector label="EK REÇETE" name="extra_recipe_id" value={formData.extra_recipe_id} recipes={recipes} onChange={handleChange} />
+                            </div>
                         </div>
                     </form>
                 </div>
 
-                {/* Footer */}
-                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3 sticky bottom-0">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
-                    >
-                        İptal
-                    </button>
-                    <button
-                        type="submit"
-                        form="new-room-form"
-                        className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm shadow-blue-100"
-                    >
-                        <Save size={18} />
-                        {isEdit ? 'Değişiklikleri Kaydet' : 'Odayı Kaydet'}
-                    </button>
+                <div className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-slate-400 font-bold"><Info size={20} /> <span className="text-[10px] uppercase tracking-widest text-[#0A1128]">TEKNİK VERİLER OTOMATİK METRAJ MOTORUNU BESLER</span></div>
+                    <div className="flex gap-4">
+                        <button type="button" onClick={onClose} className="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-800 transition-all">VAZGEÇ</button>
+                        <button type="submit" form="new-room-form" className="inline-flex items-center gap-4 px-12 py-5 text-xs font-black uppercase tracking-widest text-white bg-[#D36A47] hover:bg-[#C25936] rounded-[1.5rem] transition-all shadow-xl shadow-[#D36A47]/20 hover:scale-105 active:scale-95"><Save size={20} /> {isEdit ? 'DEĞİŞİKLİKLERİ KAYDET' : 'MAHAL KAYDET'}</button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
+
+const RecipeSelector = ({ label, name, value, recipes, onChange }) => (
+    <div className="space-y-3">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+        <select name={name} value={value} onChange={onChange} className="w-full bg-white px-5 py-4 rounded-2xl border border-slate-200 text-xs font-black outline-none focus:border-[#D36A47] focus:ring-4 focus:ring-[#D36A47]/5 transition-all appearance-none cursor-pointer"><option value="">SEÇİM BEKLENİYOR</option>{recipes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
+    </div>
+);
 
 export default NewRoomModal;
