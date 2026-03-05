@@ -266,7 +266,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                     {!isSidebarCollapsed && (
                       <div className="flex flex-col items-start">
                         <span className="text-sm font-bold text-white leading-none mb-1">{module.title}</span>
-                        <span className="text-[10px] text-slate-500 font-medium">Yönetmek için tıkla</span>
+
                       </div>
                     )}
                   </button>
