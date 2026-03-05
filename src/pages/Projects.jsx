@@ -79,6 +79,17 @@ const getStatusBorderColor = (status) => {
   }
 };
 
+const getStatusBgColor = (status) => {
+  switch (status) {
+    case 'Devam Ediyor': return 'bg-blue-50/30';
+    case 'Planlanıyor': return 'bg-purple-50/30';
+    case 'Gecikmede': return 'bg-rose-50/30';
+    case 'Bitiyor': return 'bg-gradient-to-br from-blue-50/40 to-emerald-50/40';
+    case 'Tamamlandı': return 'bg-emerald-50/80';
+    default: return 'bg-white';
+  }
+};
+
 // --- Örnek Projeler ---
 const initialProjectList = [
   { id: 1, company: 'AKSU', unit: '18', address: '', status: 'Devam Ediyor', created_at: '01.01.2024', created_by: 'Ali Yılmaz', description: '', startDate: '2023-01-10', endDate: '2024-12-31', contractor: 'Ali Yılmaz' },
@@ -621,7 +632,7 @@ function Projects() {
                     <div
                       key={proj.id}
                       onClick={() => navigate(`/projects/${proj.id}`)}
-                      className={`relative group bg-white rounded-xl border-[3px] transition-all cursor-pointer card-hover overflow-hidden ${selectedProjects.includes(proj.id) ? 'border-[#D36A47] ring-4 ring-[#D36A47]/5 bg-[#D36A47]/5' : `${getStatusBorderColor(proj.status)} hover:shadow-xl hover:shadow-slate-200/50`}`}
+                      className={`relative group rounded-xl border-[3px] transition-all cursor-pointer card-hover overflow-hidden ${selectedProjects.includes(proj.id) ? 'border-[#D36A47] ring-4 ring-[#D36A47]/5 bg-[#D36A47]/5' : `${getStatusBorderColor(proj.status)} ${getStatusBgColor(proj.status)} hover:shadow-xl hover:shadow-slate-200/50`}`}
                     >
                       {/* Border is now the accent, no separate top line needed */}
 

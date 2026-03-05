@@ -307,6 +307,33 @@ function Sales() {
       )
     },
     {
+      header: "Liste Fiyatı",
+      key: "list_price",
+      render: (val) => val ? (
+        <span className="font-semibold text-slate-500">
+          {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val)}
+        </span>
+      ) : '-'
+    },
+    {
+      header: "Verilen Fiyat",
+      key: "offered_price",
+      render: (val) => val ? (
+        <span className="font-bold text-blue-600">
+          {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val)}
+        </span>
+      ) : '-'
+    },
+    {
+      header: "Müşteri Teklifi",
+      key: "customer_offer",
+      render: (val) => val ? (
+        <span className="font-bold text-orange-600">
+          {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val)}
+        </span>
+      ) : '-'
+    },
+    {
       key: 'notes',
       label: 'Notlar',
       render: (val) => (

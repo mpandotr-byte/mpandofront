@@ -70,6 +70,7 @@ function Customers() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedCustomerForDetails, setSelectedCustomerForDetails] = useState(null);
   const [customerSales, setCustomerSales] = useState([]);
+  const [customerUnits, setCustomerUnits] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -80,6 +81,7 @@ function Customers() {
           api.get('/companies'),
           api.get('/users')
         ]);
+        // ... (rest of fetchData logic is fine)
 
         const filteredCompanies = (companiesData || []).filter(c => String(c.contractor_id) === String(user.company_id) || String(c.id) === String(user.company_id));
         const filteredEmployees = (usersData || []).filter(u => String(u.company_id) === String(user.company_id));
@@ -220,11 +222,27 @@ function Customers() {
     setSelectedCustomerForDetails(customer);
     setIsDetailsModalOpen(true);
     try {
-      const salesData = await api.get(`/sales`);
-      const filteredSales = (salesData || []).filter(s => String(s.musteri_id) === String(customer.id));
+      const [salesData, unitsData, projectsData] = await Promise.all([
+        api.get('/sales'),
+        api.get('/projects/units').catch(() => []),
+        api.get('/projects').catch(() => [])
+      ]);
+
+      const filteredSales = (salesData || []).filter(s => String(s.customer_id) === String(customer.id) || String(s.musteri_id) === String(customer.id));
       setCustomerSales(filteredSales);
+
+      // Find units owned by this customer
+      const ownedUnits = (unitsData || []).filter(u => String(u.customer_id) === String(customer.id)).map(u => {
+        const project = projectsData.find(p => p.id === u.project_id);
+        return {
+          ...u,
+          project_name: project?.name || 'Bilinmeyen Proje'
+        };
+      });
+      setCustomerUnits(ownedUnits);
+
     } catch (err) {
-      console.error("Satışlar yüklenemedi:", err);
+      console.error("Detaylar yüklenemedi:", err);
     }
   };
 
@@ -233,6 +251,7 @@ function Customers() {
     setTimeout(() => {
       setSelectedCustomerForDetails(null);
       setCustomerSales([]);
+      setCustomerUnits([]);
     }, 300);
   };
 
@@ -473,6 +492,29 @@ function Customers() {
                   {/* Purchase History */}
                   <div>
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Home size={16} className="text-orange-500" /> Sahip Olduğu Mülkler
+                    </h3>
+                    <div className="space-y-3 mb-8">
+                      {customerUnits.length > 0 ? customerUnits.map((unit, idx) => (
+                        <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-bold text-slate-800 text-sm">{unit.project_name}</p>
+                              <p className="text-xs text-slate-500 font-medium">Birim: {unit.unit_number || 'Bilinmiyor'}</p>
+                            </div>
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-600">
+                              TAPULU
+                            </span>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="text-center py-6 bg-white rounded-2xl border border-slate-100 border-dashed">
+                          <p className="text-[10px] font-black text-slate-300 uppercase">Kayıt Bulunmuyor</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                       <ShoppingCart size={16} className="text-indigo-500" /> Satın Alma Geçmişi
                     </h3>
                     <div className="space-y-3">
@@ -493,8 +535,8 @@ function Customers() {
                           </div>
                         </div>
                       )) : (
-                        <div className="text-center py-10 bg-white rounded-2xl border border-slate-100 border-dashed">
-                          <p className="text-xs font-bold text-slate-400 uppercase">Kayıt Bulunmuyor</p>
+                        <div className="text-center py-6 bg-white rounded-2xl border border-slate-100 border-dashed">
+                          <p className="text-[10px] font-black text-slate-300 uppercase">Kayıt Bulunmuyor</p>
                         </div>
                       )}
                     </div>

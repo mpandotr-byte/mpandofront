@@ -72,6 +72,8 @@ function BlockDetails() {
     const [selectedFloorForUnit, setSelectedFloorForUnit] = useState(null);
     const [selectedUnitForRoom, setSelectedUnitForRoom] = useState(null);
     const [activeUnitMenu, setActiveUnitMenu] = useState(null);
+    const [isUnitDetailsModalOpen, setIsUnitDetailsModalOpen] = useState(false);
+    const [selectedUnitForDetails, setSelectedUnitForDetails] = useState(null);
 
     const fetchBlockDetails = async () => {
         setLoading(true);
@@ -315,11 +317,9 @@ function BlockDetails() {
         }));
     };
 
-    const toggleUnit = (unitId) => {
-        setExpandedUnits(prev => ({
-            ...prev,
-            [unitId]: !prev[unitId]
-        }));
+    const toggleUnit = (unit) => {
+        setSelectedUnitForDetails(unit);
+        setIsUnitDetailsModalOpen(true);
     };
 
     useEffect(() => {
@@ -607,184 +607,123 @@ function BlockDetails() {
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-6 animate-in fade-in slide-in-from-top-2 duration-200 px-1 sm:px-0">
                                                         {(floor.units || []).sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })).map(unit => {
                                                             const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
-                                                            const isUnitExpanded = !!expandedUnits[unit.id];
+                                                            const isSold = unit.sales_status === 'SOLD' || unit.sales_status === 'SATILDI';
+
                                                             return (
-                                                                <div key={unit.id} className="border border-slate-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all h-fit relative">
-                                                                    <div
-                                                                        className="p-3 sm:p-4 cursor-pointer hover:bg-slate-50 transition-colors"
-                                                                        onClick={() => toggleUnit(unit.id)}
-                                                                    >
-                                                                        <div className="font-bold text-base text-slate-800 flex items-center justify-between gap-2">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div className="w-7 h-7 rounded-lg bg-[#D36A47]/10 flex items-center justify-center text-[#D36A47]">
-                                                                                    <Home size={16} />
-                                                                                </div>
-                                                                                <span className="truncate whitespace-nowrap text-sm sm:text-base font-extrabold tracking-tight">
-                                                                                    {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div className="relative unit-actions-container">
-                                                                                    <button
-                                                                                        onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            setActiveUnitMenu(activeUnitMenu === unit.id ? null : unit.id);
-                                                                                        }}
-                                                                                        className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-500 hover:text-slate-800 transition-all border border-transparent hover:border-slate-200 shadow-sm"
-                                                                                        title="Daire İşlemleri"
-                                                                                    >
-                                                                                        <MoreVertical size={16} />
-                                                                                    </button>
+                                                                <div
+                                                                    key={unit.id}
+                                                                    onClick={() => toggleUnit(unit)}
+                                                                    className="group bg-white rounded-2xl border border-slate-200 p-4 hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#D36A47]/30 transition-all cursor-pointer relative overflow-hidden"
+                                                                >
+                                                                    {/* Status Accent */}
+                                                                    <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full blur-3xl opacity-10 transition-colors ${statusDetails.classes.split(' ')[0]}`} />
 
-                                                                                    {activeUnitMenu === unit.id && (
-                                                                                        <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 py-1.5 z-[9999] animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-150 origin-bottom-right">
-                                                                                            <div className="px-3 py-1.5 mb-1 text-center border-b border-slate-50">
-                                                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Daire İşlemleri</p>
-                                                                                            </div>
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    setEditingRoom(null);
-                                                                                                    setSelectedUnitForRoom(unit.id);
-                                                                                                    setSelectedFloorForUnit(floor.id);
-                                                                                                    setIsAddRoomModalOpen(true);
-                                                                                                    setActiveUnitMenu(null);
-                                                                                                }}
-                                                                                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#D36A47] hover:bg-[#D36A47]/5 transition-colors"
-                                                                                            >
-                                                                                                <div className="bg-[#D36A47]/10 p-1.5 rounded-lg">
-                                                                                                    <PlusCircle size={14} />
-                                                                                                </div>
-                                                                                                Oda Ekle
-                                                                                            </button>
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    setEditingUnit(unit);
-                                                                                                    setSelectedFloorForUnit(floor.id);
-                                                                                                    setIsAddUnitModalOpen(true);
-                                                                                                    setActiveUnitMenu(null);
-                                                                                                }}
-                                                                                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
-                                                                                            >
-                                                                                                <div className="bg-slate-100 p-1.5 rounded-lg text-slate-500">
-                                                                                                    <Edit2 size={13} />
-                                                                                                </div>
-                                                                                                Daireyi Düzenle
-                                                                                            </button>
-                                                                                            <div className="h-px bg-slate-100 my-1 mx-2"></div>
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    handleDeleteUnit(unit.id);
-                                                                                                    setActiveUnitMenu(null);
-                                                                                                }}
-                                                                                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors"
-                                                                                            >
-                                                                                                <div className="bg-red-100 p-1.5 rounded-lg text-red-500">
-                                                                                                    <Trash2 size={13} />
-                                                                                                </div>
-                                                                                                Daireyi Sil
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    )}
+                                                                    <div className="relative flex flex-col h-full">
+                                                                        <div className="flex items-start justify-between mb-4">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D36A47] group-hover:bg-[#D36A47] group-hover:text-white transition-all shadow-inner">
+                                                                                    <Home size={24} />
                                                                                 </div>
-                                                                                {isUnitExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2 mt-2">
-                                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${statusDetails.classes}`}>
-                                                                                {statusDetails.label}
-                                                                            </span>
-                                                                            <span className="text-xs bg-orange-50 text-orange-700 px-2.5 py-1 rounded-full font-bold border border-orange-100">
-                                                                                {unit.unit_type}
-                                                                            </span>
-                                                                            {(unit.sales_status === 'SOLD' || unit.sales_status === 'SATILDI') && (() => {
-                                                                                const sale = sales.find(s => String(s.unit_id) === String(unit.id));
-                                                                                return sale ? (
-                                                                                    <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold border border-blue-100 flex items-center gap-1">
-                                                                                        <User size={10} /> {sale.customers?.full_name}
+                                                                                <div>
+                                                                                    <h4 className="text-lg font-black text-slate-800 tracking-tight">
+                                                                                        {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
+                                                                                    </h4>
+                                                                                    <span className="text-[10px] font-bold text-slate-400 border border-slate-100 px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                                                                                        {unit.unit_type}
                                                                                     </span>
-                                                                                ) : null;
-                                                                            })()}
-                                                                        </div>
-                                                                        {unit.price && (
-                                                                            <div className="mt-2 text-xs font-black text-emerald-600 flex items-center gap-1">
-                                                                                <Banknote size={14} />
-                                                                                {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(unit.price)}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-
-                                                                    {isUnitExpanded && (
-                                                                        <div className="p-4 pt-0 space-y-2 border-t border-slate-100 bg-slate-50/30 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                                            <div className="pt-3 space-y-2">
-                                                                                {/* Ek Detaylar */}
-                                                                                <div className="flex flex-wrap gap-2 mb-3">
-                                                                                    {unit.facade && (
-                                                                                        <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-200 font-medium">
-                                                                                            <Compass size={10} className="inline mr-1 mb-0.5" />
-                                                                                            {unit.facade}
-                                                                                        </span>
-                                                                                    )}
                                                                                 </div>
+                                                                            </div>
 
-                                                                                {(unit.rooms || []).length === 0 ? (
-                                                                                    <p className="text-xs text-slate-400 italic text-center py-2">Oda tanımlanmamış</p>
-                                                                                ) : (
-                                                                                    (unit.rooms || []).map(room => (
-                                                                                        <div key={room.id} className="group/room flex items-center justify-between text-sm text-slate-600 bg-white rounded-lg px-3 py-2 border border-slate-100 shadow-sm transition-all hover:border-blue-100 hover:shadow-md">
-                                                                                            <div className="flex items-center gap-2 font-medium">
-                                                                                                <Maximize size={14} className="text-slate-400" />
-                                                                                                <div className="flex flex-col">
-                                                                                                    <span>{room.name || room.room_name || 'Oda'}</span>
-                                                                                                    {room.room_type && <span className="text-[9px] text-slate-400 font-normal">{room.room_type}</span>}
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <div className="flex items-center gap-3">
-                                                                                                <div className="font-bold text-slate-700">
-                                                                                                    {room.area_m2 || room.area || 0} m²
-                                                                                                </div>
-                                                                                                <div className="flex items-center gap-1 opacity-0 group-hover/room:opacity-100 transition-opacity">
-                                                                                                    <button
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            setEditingRoom(room);
-                                                                                                            setSelectedUnitForRoom(unit.id);
-                                                                                                            setSelectedFloorForUnit(floor.id);
-                                                                                                            setIsAddRoomModalOpen(true);
-                                                                                                        }}
-                                                                                                        className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600 transition-colors"
-                                                                                                        title="Odayı Düzenle"
-                                                                                                    >
-                                                                                                        <Edit2 size={12} />
-                                                                                                    </button>
-                                                                                                    <button
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            handleDeleteRoom(room.id, floor.id);
-                                                                                                        }}
-                                                                                                        className="p-1 hover:bg-red-50 rounded text-slate-400 hover:text-red-500 transition-colors"
-                                                                                                        title="Odayı Sil"
-                                                                                                    >
-                                                                                                        <Trash2 size={12} />
-                                                                                                    </button>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    ))
-                                                                                )}
-                                                                                {(unit.rooms || []).length > 0 && (
-                                                                                    <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-100 text-xs font-bold text-slate-800">
-                                                                                        <span>Toplam Alan:</span>
-                                                                                        <span className="text-blue-600">
-                                                                                            {(unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0).toFixed(2)} m²
-                                                                                        </span>
+                                                                            <div className="relative unit-actions-container" onClick={e => e.stopPropagation()}>
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        setActiveUnitMenu(activeUnitMenu === unit.id ? null : unit.id);
+                                                                                    }}
+                                                                                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                                                                                >
+                                                                                    <MoreVertical size={18} />
+                                                                                </button>
+
+                                                                                {activeUnitMenu === unit.id && (
+                                                                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                setEditingRoom(null);
+                                                                                                setSelectedUnitForRoom(unit.id);
+                                                                                                setSelectedFloorForUnit(floor.id);
+                                                                                                setIsAddRoomModalOpen(true);
+                                                                                                setActiveUnitMenu(null);
+                                                                                            }}
+                                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                                                                                        >
+                                                                                            <PlusCircle size={14} /> Oda Ekle
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                setEditingUnit(unit);
+                                                                                                setSelectedFloorForUnit(floor.id);
+                                                                                                setIsAddUnitModalOpen(true);
+                                                                                                setActiveUnitMenu(null);
+                                                                                            }}
+                                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                                                                                        >
+                                                                                            <Edit2 size={14} /> Düzenle
+                                                                                        </button>
+                                                                                        <div className="h-px bg-slate-50 my-1 mx-2" />
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                handleDeleteUnit(unit.id);
+                                                                                                setActiveUnitMenu(null);
+                                                                                            }}
+                                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                                                                                        >
+                                                                                            <Trash2 size={14} /> Sil
+                                                                                        </button>
                                                                                     </div>
                                                                                 )}
                                                                             </div>
                                                                         </div>
-                                                                    )}
+
+                                                                        <div className="grid grid-cols-2 gap-2 mb-4">
+                                                                            <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
+                                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Alan</p>
+                                                                                <p className="text-xs font-black text-slate-700">
+                                                                                    {(unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0).toFixed(1)} m²
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
+                                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cephe</p>
+                                                                                <p className="text-xs font-black text-slate-700 truncate">{unit.facade || '-'}</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="mt-auto flex items-center justify-between">
+                                                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
+                                                                                {statusDetails.label}
+                                                                            </span>
+                                                                            {unit.price && (
+                                                                                <span className="text-xs font-black text-emerald-600">
+                                                                                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.price)}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {isSold && (() => {
+                                                                            const sale = sales.find(s => String(s.unit_id) === String(unit.id));
+                                                                            return sale ? (
+                                                                                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+                                                                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-black ring-2 ring-white">
+                                                                                        {sale.customers?.full_name?.charAt(0).toUpperCase()}
+                                                                                    </div>
+                                                                                    <span className="text-[11px] font-bold text-slate-600 truncate">{sale.customers?.full_name}</span>
+                                                                                </div>
+                                                                            ) : null;
+                                                                        })()}
+                                                                    </div>
                                                                 </div>
                                                             );
                                                         })}
@@ -845,8 +784,152 @@ function BlockDetails() {
                 unitId={selectedUnitForRoom}
                 roomData={editingRoom}
             />
+            <UnitDetailsModal
+                isOpen={isUnitDetailsModalOpen}
+                unit={selectedUnitForDetails}
+                sales={sales}
+                onClose={() => {
+                    setIsUnitDetailsModalOpen(false);
+                    setSelectedUnitForDetails(null);
+                }}
+            />
         </div>
     );
 }
+
+const UnitDetailsModal = ({ isOpen, unit, sales, onClose }) => {
+    if (!isOpen || !unit) return null;
+
+    const sale = sales.find(s => String(s.unit_id) === String(unit.id));
+    const customer = sale?.customers;
+    const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
+    const totalArea = (unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0);
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div
+                className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 relative flex flex-col max-h-[90vh]"
+                onClick={e => e.stopPropagation()}
+            >
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-[#D36A47] hover:text-white transition-all z-10 shadow-sm"
+                >
+                    <X size={20} />
+                </button>
+
+                <div className="overflow-y-auto custom-scrollbar p-6 md:p-10">
+                    {/* Header */}
+                    <div className="flex items-center gap-5 mb-10">
+                        <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-[#0A1128] to-[#1e2a4a] flex items-center justify-center text-white shadow-xl shadow-slate-200">
+                            <Home size={32} />
+                        </div>
+                        <div>
+                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                                    {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
+                                </h2>
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusDetails.classes}`}>
+                                    {statusDetails.label}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-slate-500 font-bold text-xs uppercase tracking-wider">
+                                <span className="flex items-center gap-1.5"><LayoutGrid size={14} className="text-[#D36A47]" /> {unit.unit_type}</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                                <span className="flex items-center gap-1.5"><Maximize size={14} className="text-[#D36A47]" /> {totalArea.toFixed(2)} m² Toplam Alan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Info Section */}
+                        <div className="space-y-8">
+                            <div>
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Building2 size={16} className="text-[#D36A47]" /> Genel Bilgiler
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <span className="text-sm font-bold text-slate-500">Ünite No</span>
+                                        <span className="text-sm font-black text-slate-800">{unit.unit_number}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <span className="text-sm font-bold text-slate-500">Cephe</span>
+                                        <span className="text-sm font-black text-slate-800">{unit.facade || '-'}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <span className="text-sm font-bold text-slate-500">Liste Fiyatı</span>
+                                        <span className="text-sm font-black text-emerald-600">
+                                            {unit.price ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.price) : '-'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Owner Section if Sold */}
+                            {customer && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <User size={16} className="text-blue-500" /> Mal Sahibi Bilgileri
+                                    </h3>
+                                    <div className="p-5 bg-blue-50/50 rounded-3xl border border-blue-100 flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-blue-600 shadow-sm font-black text-xl">
+                                            {customer.full_name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="text-base font-black text-slate-800">{customer.full_name}</p>
+                                            <p className="text-xs font-bold text-slate-500">{customer.phone || 'Telefon Yok'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Rooms Section */}
+                        <div>
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Maximize size={16} className="text-[#D36A47]" /> Oda Detayları
+                            </h3>
+                            <div className="bg-slate-50 rounded-[2rem] p-4 border border-slate-100 max-h-[300px] overflow-y-auto custom-scrollbar">
+                                {(unit.rooms || []).length === 0 ? (
+                                    <div className="py-10 text-center">
+                                        <p className="text-sm font-bold text-slate-400 italic">Oda tanımlanmamış</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {(unit.rooms || []).map((room, idx) => (
+                                            <div key={idx} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 shadow-sm transition-all hover:scale-[1.02]">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                                                        <Maximize size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-slate-800">{room.name || room.room_name}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{room.room_type || 'Genel'}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-sm font-black text-[#D36A47] bg-orange-50 px-3 py-1 rounded-full">{room.area_m2 || room.area} m²</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 md:p-8 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">MPANDO EMLAK YÖNETİM SİSTEMİ</p>
+                    <button
+                        onClick={onClose}
+                        className="px-8 py-3 bg-[#0A1128] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
+                    >
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default BlockDetails;

@@ -11,6 +11,10 @@ import Sales from "./pages/Sales";
 import SecondHandListings from "./pages/SecondHandListings";
 import Messages from "./pages/Messages";
 import Notifications from "./pages/Notifications";
+import Materials from "./pages/Materials";
+import Labors from "./pages/Labors";
+import Recipes from "./pages/Recipes";
+import RecipeConsole from "./pages/RecipeConsole";
 
 function App() {
   return (
@@ -93,6 +97,30 @@ function App() {
           element={
             <PrivateRoute>
               <Notifications />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/materials"
+          element={
+            <PrivateRoute>
+              <Materials />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/labors"
+          element={
+            <PrivateRoute>
+              <Labors />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/recipes"
+          element={
+            <PrivateRoute>
+              <Recipes />
             </PrivateRoute>
           }
         />

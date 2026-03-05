@@ -316,21 +316,60 @@ const SaleEditModal = ({
                   </div>
                 </div>
 
-                {/* Verilen Teklif */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Verilen Teklif (₺)</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Banknote size={16} />
+                {/* Fiyatlandırma Bölümü */}
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  {/* Liste Fiyatı */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Liste Fiyatı (₺)</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Banknote size={14} />
+                      </div>
+                      <input
+                        type="number"
+                        name="list_price"
+                        value={saleData.list_price || ''}
+                        onChange={onChange}
+                        placeholder="0"
+                        className="block w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm font-semibold"
+                      />
                     </div>
-                    <input
-                      type="number"
-                      name="offered_price"
-                      value={saleData.offered_price || ''}
-                      onChange={onChange}
-                      placeholder="Örn: 4500000"
-                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400 font-medium"
-                    />
+                  </div>
+
+                  {/* Verilen Fiyat (Bizim Teklifimiz) */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Verilen Fiyat (₺)</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Banknote size={14} />
+                      </div>
+                      <input
+                        type="number"
+                        name="offered_price"
+                        value={saleData.offered_price || ''}
+                        onChange={onChange}
+                        placeholder="0"
+                        className="block w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm font-semibold text-blue-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Müşteri Teklifi */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Müşteri Teklifi (₺)</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Banknote size={14} />
+                      </div>
+                      <input
+                        type="number"
+                        name="customer_offer"
+                        value={saleData.customer_offer || ''}
+                        onChange={onChange}
+                        placeholder="0"
+                        className="block w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm font-semibold text-orange-600"
+                      />
+                    </div>
                   </div>
                 </div>
 

@@ -21,7 +21,7 @@ const icons = {
   ),
   Sales: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
   House: (
@@ -64,14 +64,34 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
     </svg>
   ),
+  Materials: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  ),
+  Hammer: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.77 3.77z" />
+    </svg>
+  ),
+  Construction: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
+  Accounting: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+  )
 };
 
-const navigationGroups = [
-  {
-    title: "GENEL İŞLEMLER",
+const navigationModules = {
+  sales: {
+    title: "Satış Bölümü",
+    icon: icons.Sales,
     items: [
       { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard" },
-      { name: "Projeler", icon: icons.Projects, href: "/projects" },
       { name: "Müşteriler", icon: icons.Personnel, href: "/customers" },
       { name: "Satış Kayıtları", icon: icons.Sales, href: "/sales" },
       {
@@ -82,17 +102,45 @@ const navigationGroups = [
           { name: "2. El İlanlar", icon: icons.SecondHandListings, href: "/second-hand-listings" },
         ],
       },
-      { name: "Mesajlar", icon: icons.Messages, href: "/messages" },
     ],
   },
-];
+  construction: {
+    title: "İnşaat Bölümü",
+    icon: icons.Construction,
+    items: [
+      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard" },
+      { name: "Projeler", icon: icons.Projects, href: "/projects" },
+      { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
+      { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
+      { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
+    ],
+  },
+  accounting: {
+    title: "Muhasebe",
+    icon: icons.Accounting,
+    items: [
+      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard" },
+      { name: "Gelir/Gider", icon: icons.Sales, href: "/accounting" },
+    ],
+  },
+};
 
 export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
+  const [activeModule, setActiveModule] = useState(null); // 'sales', 'construction', 'accounting'
   const toggleDesktopCollapse = () => setIsSidebarCollapsed(!isSidebarCollapsed);
   const location = useLocation();
   const { user } = useAuth();
+  const unreadMessagesCount = 3; // Placeholder for now
+
+  // current path based module detection (initial load)
+  React.useEffect(() => {
+    const path = location.pathname;
+    if (path === '/customers' || path === '/sales' || path === '/second-hand-listings') setActiveModule('sales');
+    else if (path === '/projects' || path === '/materials' || path === '/labors' || path === '/recipes' || path.startsWith('/projects/')) setActiveModule('construction');
+    else if (path === '/accounting') setActiveModule('accounting');
+  }, [location.pathname]);
 
   const sidebarWidthClass = isSidebarCollapsed
     ? "w-[280px] lg:w-20"
@@ -196,16 +244,55 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
         {/* Navigation */}
         <div className="relative flex-1 overflow-y-auto overflow-x-hidden px-3 scrollbar-hide">
-          <nav className="space-y-6 pb-6">
-            {navigationGroups.map((group, groupIdx) => (
-              <div key={groupIdx}>
+          <nav className="space-y-4 pb-6">
+            {!activeModule ? (
+              <div className="space-y-2 mt-2">
                 {!isSidebarCollapsed && (
-                  <p className="px-3 text-[10px] font-bold text-slate-600 uppercase tracking-[0.15em] mb-2 mt-2">
-                    {group.title}
+                  <p className="px-3 text-[10px] font-bold text-slate-600 uppercase tracking-[0.15em] mb-4">
+                    Bölüm Seçiniz
                   </p>
                 )}
+                {Object.entries(navigationModules).map(([key, module]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveModule(key)}
+                    className={`group flex items-center gap-3 px-3 py-4 rounded-2xl transition-all duration-300 w-full bg-white/[0.03] border border-white/[0.05] hover:bg-[#D36A47]/10 hover:border-[#D36A47]/30
+                      ${isSidebarCollapsed ? "justify-center px-0" : ""}`}
+                    title={isSidebarCollapsed ? module.title : undefined}
+                  >
+                    <span className="text-slate-400 group-hover:text-[#D36A47] transition-colors">
+                      {module.icon}
+                    </span>
+                    {!isSidebarCollapsed && (
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-bold text-white leading-none mb-1">{module.title}</span>
+                        <span className="text-[10px] text-slate-500 font-medium">Yönetmek için tıkla</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 animate-in fade-in slide-in-from-left-4 duration-300">
+                <button
+                  onClick={() => setActiveModule(null)}
+                  className={`flex items-center gap-2 mb-4 px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-wider transition-colors
+                    ${isSidebarCollapsed ? "justify-center px-0" : ""}`}
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  {!isSidebarCollapsed && "GERİ DÖN"}
+                </button>
+
+                {!isSidebarCollapsed && (
+                  <p className="px-3 text-[10px] font-bold text-[#D36A47] uppercase tracking-[0.15em] mb-3">
+                    {navigationModules[activeModule].title}
+                  </p>
+                )}
+
                 <ul className="space-y-0.5">
-                  {group.items.map((item, itemIdx) => {
+                  {navigationModules[activeModule].items.map((item, itemIdx) => {
                     if (item.type !== "dropdown") {
                       const isActive = isActivePath(item.href);
                       return (
@@ -301,13 +388,30 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                   })}
                 </ul>
               </div>
-            ))}
+            )}
           </nav>
         </div>
 
         {/* Bottom Section */}
         <div className="relative mt-auto border-t border-white/[0.06] p-3">
-          <ul className="space-y-1">
+          <ul className="space-y-1 mb-2">
+            <li>
+              <Link
+                to="/messages"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 transition-all relative
+                  ${isSidebarCollapsed ? "justify-center" : ""}
+                  ${isActivePath("/messages") ? "bg-[#D36A47]/10 text-white" : ""}`}
+                onClick={closeMobileMenu}
+              >
+                <span className={isActivePath("/messages") ? "text-[#D36A47]" : "text-slate-500"}>{icons.Messages}</span>
+                {!isSidebarCollapsed && <span className="text-sm font-semibold">Mesajlar</span>}
+                {unreadMessagesCount > 0 && (
+                  <span className={`absolute ${isSidebarCollapsed ? "top-2 right-4" : "right-3 top-3"} flex h-5 w-5 items-center justify-center rounded-full bg-[#D36A47] text-[10px] font-black text-white shadow-lg shadow-[#D36A47]/30 ring-2 ring-[#0A1128]`}>
+                    {unreadMessagesCount}
+                  </span>
+                )}
+              </Link>
+            </li>
             <li>
               <Link
                 to="/help"
@@ -323,15 +427,24 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
           {/* User Card */}
           {!isSidebarCollapsed && (
-            <div className="mt-2 mx-1 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <div className="mt-2 mx-1 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors group">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0A1128] to-[#1E293B] flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-black/20">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#D36A47] to-[#A35235] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-[#D36A47]/20 group-hover:scale-105 transition-transform">
                   {user?.full_name?.charAt(0) || 'M'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-300 truncate">{user?.full_name || 'Mpando User'}</p>
-                  <p className="text-[10px] text-slate-600 truncate uppercase tracking-tighter">Premium Plan</p>
+                  <p className="text-[13px] font-black text-white truncate leading-tight uppercase tracking-tight">{user?.full_name || 'Mustafa KARATAŞ'}</p>
+                  <p className="text-[10px] text-slate-500 truncate font-bold mt-0.5">
+                    {user?.company_name || 'İSKAR İnşaat'}-{user?.role || 'yönetici'}
+                  </p>
                 </div>
+              </div>
+            </div>
+          )}
+          {isSidebarCollapsed && (
+            <div className="flex justify-center py-2">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#D36A47] to-[#A35235] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-[#D36A47]/20">
+                {user?.full_name?.charAt(0) || 'M'}
               </div>
             </div>
           )}
