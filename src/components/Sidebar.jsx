@@ -96,7 +96,7 @@ const navigationModules = {
     title: "Satış Bölümü",
     icon: icons.Sales,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=sales" },
+      { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=sales" },
       { name: "Müşteriler", icon: icons.Personnel, href: "/customers" },
       { name: "Satış Kayıtları", icon: icons.Sales, href: "/sales" },
       {
@@ -113,7 +113,7 @@ const navigationModules = {
     title: "İnşaat Bölümü",
     icon: icons.Construction,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=construction" },
+      { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=construction" },
       { name: "Projeler", icon: icons.Projects, href: "/projects" },
       { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
       { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
@@ -125,7 +125,7 @@ const navigationModules = {
     title: "Satın Alma Bölümü",
     icon: icons.Purchasing,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=purchasing" },
+      { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=purchasing" },
       { name: "Satın Alma Talepleri", icon: icons.Purchasing, href: "/purchasing" },
     ],
   },
@@ -133,7 +133,7 @@ const navigationModules = {
     title: "Muhasebe",
     icon: icons.Accounting,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=accounting" },
+      { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=accounting" },
       { name: "Gelir/Gider", icon: icons.Sales, href: "/accounting" },
     ],
   },
