@@ -15,6 +15,8 @@ import Materials from "./pages/Materials";
 import Labors from "./pages/Labors";
 import Recipes from "./pages/Recipes";
 import RecipeConsole from "./pages/RecipeConsole";
+import Purchasing from "./pages/Purchasing";
+import Stock from "./pages/Stock";
 
 function App() {
   return (
@@ -124,8 +126,24 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/purchasing"
+          element={
+            <PrivateRoute>
+              <Purchasing />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/stock"
+          element={
+            <PrivateRoute>
+              <Stock />
+            </PrivateRoute>
+          }
+        />
       </Routes>
-    </BrowserRouter>
+    </BrowserRouter >
   );
 }
 

@@ -83,6 +83,11 @@ const icons = {
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
     </svg>
+  ),
+  Purchasing: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
   )
 };
 
@@ -91,7 +96,7 @@ const navigationModules = {
     title: "Satış Bölümü",
     icon: icons.Sales,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard" },
+      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=sales" },
       { name: "Müşteriler", icon: icons.Personnel, href: "/customers" },
       { name: "Satış Kayıtları", icon: icons.Sales, href: "/sales" },
       {
@@ -108,18 +113,27 @@ const navigationModules = {
     title: "İnşaat Bölümü",
     icon: icons.Construction,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard" },
+      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=construction" },
       { name: "Projeler", icon: icons.Projects, href: "/projects" },
       { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
       { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
       { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
+      { name: "Stok Yönetimi", icon: icons.Materials, href: "/stock" },
+    ],
+  },
+  purchasing: {
+    title: "Satın Alma Bölümü",
+    icon: icons.Purchasing,
+    items: [
+      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=purchasing" },
+      { name: "Satın Alma Talepleri", icon: icons.Purchasing, href: "/purchasing" },
     ],
   },
   accounting: {
     title: "Muhasebe",
     icon: icons.Accounting,
     items: [
-      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard" },
+      { name: "Dashboard", icon: icons.Dashboard, href: "/dashboard?tab=accounting" },
       { name: "Gelir/Gider", icon: icons.Sales, href: "/accounting" },
     ],
   },
@@ -139,6 +153,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
     const path = location.pathname;
     if (path === '/customers' || path === '/sales' || path === '/second-hand-listings') setActiveModule('sales');
     else if (path === '/projects' || path === '/materials' || path === '/labors' || path === '/recipes' || path.startsWith('/projects/')) setActiveModule('construction');
+    else if (path === '/purchasing') setActiveModule('purchasing');
     else if (path === '/accounting') setActiveModule('accounting');
   }, [location.pathname]);
 
