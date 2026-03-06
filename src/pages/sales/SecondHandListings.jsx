@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import { useAuth } from '../context/AuthContext';
-import NewSecondHandModal from '../modals/secondhand/NewSecondHandModal';
-import SecondHandEditModal from '../modals/secondhand/SecondHandEditModal';
-import SecondHandDetailsModal from '../modals/secondhand/SecondHandDetailsModal';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import { useAuth } from '../../context/AuthContext';
+import NewSecondHandModal from '../../modals/secondhand/NewSecondHandModal';
+import SecondHandEditModal from '../../modals/secondhand/SecondHandEditModal';
+import SecondHandDetailsModal from '../../modals/secondhand/SecondHandDetailsModal';
 
 import {
   Plus,

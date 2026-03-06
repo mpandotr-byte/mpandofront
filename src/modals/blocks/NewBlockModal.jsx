@@ -19,6 +19,8 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
         waste_water_mt: '',
         fresh_water_mt: '',
         gas_line_mt: '',
+        fire_system_mt: '',
+        roof_area_m2: '',
         // Reçete Atamaları
         elevator_recipe_id: '',
         foundation_recipe_id: '',
@@ -55,6 +57,8 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                     waste_water_mt: blockData.waste_water_mt ?? '',
                     fresh_water_mt: blockData.fresh_water_mt ?? '',
                     gas_line_mt: blockData.gas_line_mt ?? '',
+                    fire_system_mt: blockData.fire_system_mt ?? '',
+                    roof_area_m2: blockData.roof_area_m2 ?? '',
                     elevator_recipe_id: blockData.elevator_recipe_id ?? '',
                     foundation_recipe_id: blockData.foundation_recipe_id ?? '',
                     facade_recipe_id: blockData.facade_recipe_id ?? '',
@@ -74,6 +78,8 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                     waste_water_mt: '',
                     fresh_water_mt: '',
                     gas_line_mt: '',
+                    fire_system_mt: '',
+                    roof_area_m2: '',
                     elevator_recipe_id: '',
                     foundation_recipe_id: '',
                     facade_recipe_id: '',
@@ -105,7 +111,9 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
             elec_points: parseInt(formData.elec_points || 0),
             waste_water_mt: parseFloat(formData.waste_water_mt || 0),
             fresh_water_mt: parseFloat(formData.fresh_water_mt || 0),
-            gas_line_mt: parseFloat(formData.gas_line_mt || 0)
+            gas_line_mt: parseFloat(formData.gas_line_mt || 0),
+            fire_system_mt: parseFloat(formData.fire_system_mt || 0),
+            roof_area_m2: parseFloat(formData.roof_area_m2 || 0)
         });
     };
 
@@ -159,6 +167,13 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-blue-400">m²</span>
                                         </div>
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-emerald-600 uppercase tracking-wider ml-1 flex items-center gap-1.5">ÇATI ALANI <span className="bg-emerald-50 text-[9px] px-1.5 py-0.5 rounded text-emerald-600">AI MİMARİ</span></label>
+                                        <div className="relative">
+                                            <input type="number" name="roof_area_m2" value={formData.roof_area_m2} onChange={handleChange} className="block w-full px-4 py-3 bg-emerald-50/30 border border-emerald-100 rounded-[1.25rem] focus:ring-4 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all text-sm font-bold text-emerald-900" />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-emerald-400">m²</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -183,6 +198,13 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                                         <div className="flex items-center gap-2 text-rose-600"><Flame size={16} /> <span className="text-[10px] font-black uppercase">Doğalgaz (HAT MT)</span></div>
                                         <div className="relative">
                                             <input type="number" name="gas_line_mt" value={formData.gas_line_mt} onChange={handleChange} placeholder="0" className="w-full bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400">METRE</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
+                                        <div className="flex items-center gap-2 text-red-600"><Flame size={16} /> <span className="text-[10px] font-black uppercase">Yangın Tesisatı (MT)</span></div>
+                                        <div className="relative">
+                                            <input type="number" name="fire_system_mt" value={formData.fire_system_mt} onChange={handleChange} placeholder="0" className="w-full bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400">METRE</span>
                                         </div>
                                     </div>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import ProjectEditModal from '../modals/projects/ProjectEditModal';
-import BlockModal from '../modals/blocks/NewBlockModal';
-import { api } from '../api/client';
-import { useAuth } from '../context/AuthContext';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import ProjectEditModal from '../../modals/projects/ProjectEditModal';
+import BlockModal from '../../modals/blocks/NewBlockModal';
+import { api } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import {
     Plus,
     ArrowLeft,
@@ -70,7 +70,7 @@ const getProgressBarColor = (status) => {
     }
 };
 
-const ProjectStructure = ({ blocks, projectId, navigate, onAddBlock, onEditBlock, onDeleteBlock }) => {
+const ProjectStructure = ({ blocks, projectId, navigate, onAddBlock, onEditBlock, onDeleteBlock, selectedBlocks, onSelectBlock, onSelectAll, onBulkAssign }) => {
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mt-6">
             <div className="flex items-center justify-between mb-6">
@@ -85,6 +85,29 @@ const ProjectStructure = ({ blocks, projectId, navigate, onAddBlock, onEditBlock
                     <Plus size={14} /> Yeni Blok
                 </button>
             </div>
+
+            {selectedBlocks?.length > 0 && (
+                <div className="mb-6 flex items-center justify-between bg-blue-50 border border-blue-100 p-4 rounded-xl animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3">
+                        <span className="bg-blue-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedBlocks.length}</span>
+                        <span className="text-sm font-bold text-blue-900">Blok Seçildi</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => onSelectAll()}
+                            className="px-3 py-1.5 bg-white border border-blue-200 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 transition-colors"
+                        >
+                            {selectedBlocks.length === (blocks?.length || 0) ? 'Seçimi Kaldır' : 'Tümünü Seç'}
+                        </button>
+                        <button
+                            onClick={() => onBulkAssign()}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                        >
+                            <Layers size={14} /> Reçete Ata
+                        </button>
+                    </div>
+                </div>
+            )}
             {(!blocks || blocks.length === 0) ? (
                 <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-xl">
                     <p className="text-sm text-slate-400 font-medium">Bu projeye henüz blok eklenmemiş.</p>
@@ -123,6 +146,17 @@ const ProjectStructure = ({ blocks, projectId, navigate, onAddBlock, onEditBlock
                                     >
                                         <Trash2 size={14} />
                                     </button>
+                                    <div
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="ml-2 flex items-center"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedBlocks?.includes(block.id)}
+                                            onChange={() => onSelectBlock(block.id)}
+                                            className="w-5 h-5 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 bg-white"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex justify-between items-end text-sm">
@@ -174,6 +208,16 @@ function ProjectDetails() {
     const [editFormData, setEditFormData] = useState(null);
     const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
     const [editingBlock, setEditingBlock] = useState(null);
+    const [selectedBlocks, setSelectedBlocks] = useState([]);
+    const [recipes, setRecipes] = useState([]);
+    const [isBulkRecipeModalOpen, setIsBulkRecipeModalOpen] = useState(false);
+    const [bulkRecipeData, setBulkRecipeData] = useState({
+        foundation_recipe_id: '',
+        facade_recipe_id: '',
+        roof_recipe_id: '',
+        plumbing_recipe_id: '',
+        basement_recipe_id: ''
+    });
 
     const fetchProjectDetails = async () => {
         setLoading(true);
@@ -192,6 +236,10 @@ function ProjectDetails() {
 
             const data = await api.get(`/projects/${id}`);
             setProject(data);
+
+            // Reçeteleri de çek (bulk atama için)
+            const recipesData = await api.get('/recipes');
+            setRecipes(recipesData || []);
         } catch (err) {
             console.error("Proje detayları alınırken hata:", err);
         } finally {
@@ -324,6 +372,39 @@ function ProjectDetails() {
         }
     };
 
+    const handleSelectBlock = (blockId) => {
+        setSelectedBlocks(prev =>
+            prev.includes(blockId) ? prev.filter(id => id !== blockId) : [...prev, blockId]
+        );
+    };
+
+    const handleSelectAllBlocks = () => {
+        if (selectedBlocks.length === (project?.blocks?.length || 0)) {
+            setSelectedBlocks([]);
+        } else {
+            setSelectedBlocks(project?.blocks?.map(b => b.id) || []);
+        }
+    };
+
+    const handleBulkRecipeAssign = async () => {
+        if (selectedBlocks.length === 0) return;
+        try {
+            // Her seçili blok için güncelleme gönder
+            await Promise.all(selectedBlocks.map(blockId =>
+                api.put(`/projects/blocks/${blockId}`, {
+                    ...bulkRecipeData
+                })
+            ));
+            alert(`${selectedBlocks.length} bloka reçeteler başarıyla atandı.`);
+            setIsBulkRecipeModalOpen(false);
+            setSelectedBlocks([]);
+            await fetchProjectDetails();
+        } catch (err) {
+            console.error("Toplu reçete atama hatası:", err);
+            alert("Reçeteler atanırken bir hata oluştu.");
+        }
+    };
+
     const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -424,6 +505,10 @@ function ProjectDetails() {
                                     }}
                                     onEditBlock={handleEditBlock}
                                     onDeleteBlock={handleDeleteBlock}
+                                    selectedBlocks={selectedBlocks}
+                                    onSelectBlock={handleSelectBlock}
+                                    onSelectAll={handleSelectAllBlocks}
+                                    onBulkAssign={() => setIsBulkRecipeModalOpen(true)}
                                 />
                             </div>
 
@@ -540,9 +625,64 @@ function ProjectDetails() {
                     projectId={id}
                     blockData={editingBlock}
                 />
+
+                <BulkRecipeModal
+                    isOpen={isBulkRecipeModalOpen}
+                    onClose={() => setIsBulkRecipeModalOpen(false)}
+                    onSave={handleBulkRecipeAssign}
+                    recipes={recipes}
+                    formData={bulkRecipeData}
+                    onChange={(e) => {
+                        const { name, value } = e.target;
+                        setBulkRecipeData(prev => ({ ...prev, [name]: value }));
+                    }}
+                    selectedCount={selectedBlocks.length}
+                />
             </main>
         </div>
     );
 }
+
+const BulkRecipeModal = ({ isOpen, onClose, onSave, recipes, formData, onChange, selectedCount }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 flex flex-col animate-in zoom-in-95 duration-500">
+                <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-white">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                            <Layers size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">Toplu Reçete Atama</h2>
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">{selectedCount} BLOK SEÇİLDİ</p>
+                        </div>
+                    </div>
+                    <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-full text-slate-400 hover:text-blue-600 transition-all"><X size={24} /></button>
+                </div>
+                <div className="p-8 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <RecipeSelector label="TEMEL REÇETESİ" name="foundation_recipe_id" value={formData.foundation_recipe_id} recipes={recipes} onChange={onChange} />
+                        <RecipeSelector label="DIŞ CEPHE REÇETESİ" name="facade_recipe_id" value={formData.facade_recipe_id} recipes={recipes} onChange={onChange} />
+                        <RecipeSelector label="ÇATI REÇETESİ" name="roof_recipe_id" value={formData.roof_recipe_id} recipes={recipes} onChange={onChange} />
+                        <RecipeSelector label="TESİSAT REÇETELERİ" name="plumbing_recipe_id" value={formData.plumbing_recipe_id} recipes={recipes} onChange={onChange} />
+                        <RecipeSelector label="BODRUM REÇETESİ" name="basement_recipe_id" value={formData.basement_recipe_id} recipes={recipes} onChange={onChange} />
+                    </div>
+                </div>
+                <div className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-4">
+                    <button type="button" onClick={onClose} className="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-800 transition-all">İptal</button>
+                    <button onClick={onSave} className="inline-flex items-center gap-3 px-10 py-4 text-xs font-black uppercase tracking-widest text-white bg-blue-600 hover:bg-blue-700 rounded-2xl transition-all shadow-xl shadow-blue-600/20 hover:scale-105 active:scale-95"><Save size={18} /> SEÇİLİ BLOKLARA ATAYIN</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const RecipeSelector = ({ label, name, value, recipes, onChange }) => (
+    <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+        <select name={name} value={value} onChange={onChange} className="w-full bg-white px-4 py-3 rounded-2xl border border-slate-200 text-xs font-bold outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/5 transition-all"><option value="">SEÇİM YAPINIZ...</option>{recipes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
+    </div>
+);
 
 export default ProjectDetails;

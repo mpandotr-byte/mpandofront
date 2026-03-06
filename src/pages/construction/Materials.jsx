@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import { useAuth } from "../context/AuthContext";
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import { useAuth } from "../../context/AuthContext";
+import { api } from '../../api/client';
 import {
     Plus,
     Filter,
@@ -23,7 +23,7 @@ import {
     Building2,
     Search
 } from 'lucide-react';
-import MaterialModal from '../modals/materials/MaterialModal';
+import MaterialModal from '../../modals/materials/MaterialModal';
 
 const materialCategories = ['Kaba', 'İnce', 'Elektrik', 'Mekanik', 'Mobilya'];
 const unitOptions = ['m²', 'm³', 'kg', 'mt', 'Adet', 'Set'];

@@ -11,6 +11,8 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
         height_cm: '300',
         gross_area_m2: '',
         common_area_m2: '',
+        common_wall_area_m2: '',
+        common_ceiling_area_m2: '',
         wall_area_m2: '',
         stairs_m3: '',
         stairs_mt: '',
@@ -52,6 +54,8 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
                     height_cm: floorData.height_cm ?? '300',
                     gross_area_m2: floorData.gross_area_m2 ?? '',
                     common_area_m2: floorData.common_area_m2 ?? '',
+                    common_wall_area_m2: floorData.common_wall_area_m2 ?? '',
+                    common_ceiling_area_m2: floorData.common_ceiling_area_m2 ?? '',
                     wall_area_m2: floorData.wall_area_m2 ?? '',
                     stairs_m3: floorData.stairs_m3 ?? '',
                     stairs_mt: floorData.stairs_mt ?? '',
@@ -92,7 +96,9 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
             block_id: blockId,
             id: floorData?.id,
             floor_number: parseInt(formData.floor_number),
-            height_cm: parseFloat(formData.height_cm || 300)
+            height_cm: parseFloat(formData.height_cm || 300),
+            common_wall_area_m2: parseFloat(formData.common_wall_area_m2 || 0),
+            common_ceiling_area_m2: parseFloat(formData.common_ceiling_area_m2 || 0)
         });
     };
 
@@ -117,8 +123,10 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 <FormInput label="Kat Numarası" name="floor_number" value={formData.floor_number} onChange={handleChange} required type="number" />
                                 <FormInput label="Kat Brüt Alanı (AI)" name="gross_area_m2" value={formData.gross_area_m2} onChange={handleChange} color="blue" unit="m²" />
-                                <FormInput label="Kat Holü (Ortak)" name="common_area_m2" value={formData.common_area_m2} onChange={handleChange} color="indigo" unit="m²" />
-                                <FormInput label="Kat Duvarları (AI)" name="wall_area_m2" value={formData.wall_area_m2} onChange={handleChange} color="teal" unit="m²" />
+                                <FormInput label="Kat Holü Zemin (m2)" name="common_area_m2" value={formData.common_area_m2} onChange={handleChange} color="indigo" unit="m²" />
+                                <FormInput label="Kat Holü Duvar (m2)" name="common_wall_area_m2" value={formData.common_wall_area_m2} onChange={handleChange} color="indigo" unit="m²" />
+                                <FormInput label="Kat Holü Tavan (m2)" name="common_ceiling_area_m2" value={formData.common_ceiling_area_m2} onChange={handleChange} color="indigo" unit="m²" />
+                                <FormInput label="Tüm Kat Duvarları (AI)" name="wall_area_m2" value={formData.wall_area_m2} onChange={handleChange} color="teal" unit="m²" />
                                 <div className="space-y-1.5 font-bold md:col-span-2">
                                     <label className="text-[10px] font-black text-rose-600 uppercase tracking-widest ml-1">KAT MERDİVEN [m3 / mt / m2]</label>
                                     <div className="flex gap-2">

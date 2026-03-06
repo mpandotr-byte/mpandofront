@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import NewCostumerModal from '../modals/customers/NewCostumerModal';
-import CustomerEditModal from '../modals/customers/CostumerEditModal';
-import { useAuth } from "../context/AuthContext";
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import NewCostumerModal from '../../modals/customers/NewCostumerModal';
+import CustomerEditModal from '../../modals/customers/CostumerEditModal';
+import { useAuth } from "../../context/AuthContext";
+import { api } from '../../api/client';
 import {
   Plus,
   Trash2,

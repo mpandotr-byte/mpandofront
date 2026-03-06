@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import SaleEditModal from '../modals/sales/SaleEditModal';
-import NewSaleModal from '../modals/NewSaleModal';
-import SaleDetailsModal from '../modals/sales/SaleDetailsModal';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import SaleEditModal from '../../modals/sales/SaleEditModal';
+import NewSaleModal from '../../modals/NewSaleModal';
+import SaleDetailsModal from '../../modals/sales/SaleDetailsModal';
+import { useAuth } from '../../context/AuthContext';
+import { api } from '../../api/client';
 import {
   Plus,
   Trash2,

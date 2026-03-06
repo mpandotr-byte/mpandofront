@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import { api } from '../../api/client';
 import {
     ShoppingBag,
     Calculator,
@@ -28,7 +28,7 @@ import {
     ChevronRight,
     Maximize2
 } from 'lucide-react';
-import MaterialOfferModal from '../modals/purchasing/MaterialOfferModal';
+import MaterialOfferModal from '../../modals/purchasing/MaterialOfferModal';
 
 export default function Purchasing() {
     const [activeTab, setActiveTab] = useState('analysis'); // 'analysis', 'requests', 'rfq'

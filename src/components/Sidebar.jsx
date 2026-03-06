@@ -114,11 +114,18 @@ const navigationModules = {
     icon: icons.Construction,
     items: [
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=construction" },
-      { name: "Projeler", icon: icons.Projects, href: "/projects" },
       { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
       { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
+      { name: "Taşeron Yönetimi", icon: icons.Personnel, href: "/subcontractors" },
       { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
       { name: "Stok Yönetimi", icon: icons.Materials, href: "/stock" },
+    ],
+  },
+  projects: {
+    title: "Proje Yönetimi",
+    icon: icons.Projects,
+    items: [
+      { name: "Projeler", icon: icons.Projects, href: "/projects" },
     ],
   },
   purchasing: {
@@ -151,8 +158,9 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
   // current path based module detection (initial load)
   React.useEffect(() => {
     const path = location.pathname;
-    if (path === '/customers' || path === '/sales' || path === '/second-hand-listings') setActiveModule('sales');
-    else if (path === '/projects' || path === '/materials' || path === '/labors' || path === '/recipes' || path.startsWith('/projects/')) setActiveModule('construction');
+    if (path === '/projects' || path.startsWith('/projects/')) setActiveModule('projects');
+    else if (path === '/customers' || path === '/sales' || path === '/second-hand-listings') setActiveModule('sales');
+    else if (path === '/materials' || path === '/labors' || path === '/recipes' || path === '/subcontractors' || path.startsWith('/subcontractors/')) setActiveModule('construction');
     else if (path === '/purchasing') setActiveModule('purchasing');
     else if (path === '/accounting') setActiveModule('accounting');
   }, [location.pathname]);

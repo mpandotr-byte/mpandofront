@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import { useAuth } from "../context/AuthContext";
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import { useAuth } from "../../context/AuthContext";
+import { api } from '../../api/client';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart, Pie, AreaChart, Area, LineChart, Line
@@ -13,7 +13,7 @@ import {
   TrendingUp, Activity, ArrowRight, Layers, Zap,
   ShoppingCart, UserCheck, Construction, Building2,
   LayoutDashboard, Users, Heart, Target, Wallet, FileText, Calendar,
-  CreditCard, Bell
+  CreditCard, Bell, ClipboardCheck, AlertTriangle, MessageSquare, ListTodo, Star, UserPlus
 } from 'lucide-react';
 
 // --- SUB-COMPONENTS ---
@@ -78,8 +78,15 @@ export default function Dashboard() {
   const [totalReceivable, setTotalReceivable] = useState(0);
   const [totalPayable, setTotalPayable] = useState(0);
   const [departmentWorkload, setDepartmentWorkload] = useState([]);
-  const [criticalMaterials, setCriticalMaterials] = useState([]);
   const [supplierStats, setSupplierStats] = useState([]);
+
+  // New States for Construction & Sales
+  const [notes, setNotes] = useState([]);
+  const [attendanceAlerts, setAttendanceAlerts] = useState([]);
+  const [manufacturingApprovals, setManufacturingApprovals] = useState([]);
+  const [pendingCustomers, setPendingCustomers] = useState([]);
+  const [newCustomers, setNewCustomers] = useState([]);
+  const [staffPerformance, setStaffPerformance] = useState([]);
 
   const { user } = useAuth();
 
@@ -245,6 +252,36 @@ export default function Dashboard() {
         }));
         setSupplierStats(sStats);
 
+        // 8. Manufacturing Approvals (Simulated for now, can be linked to a real table later)
+        setManufacturingApprovals([
+          { id: 1, name: 'A Blok 3. Kat Beton Dökümü', project: 'İskaya Evleri', date: 'Bugün', status: 'Onay Bekliyor' },
+          { id: 2, name: 'B Blok Temel Demir Donatı', project: 'Vadi Panorama', date: 'Yarın', status: 'Onay Bekliyor' }
+        ]);
+
+        // 9. Attendance Alerts
+        setAttendanceAlerts([
+          { id: 1, project: 'Merkez Ofis Restorasyon', status: 'Girilmedi', color: '#f43f5e' },
+          { id: 2, project: 'Güneşli Konutları', status: 'Eksik', color: '#f59e0b' }
+        ]);
+
+        // 10. Notes & Reminders
+        setNotes([
+          { id: 1, content: 'Haftalık şantiye toplantısı @ 14:00', type: 'reminder', date: '06.03' },
+          { id: 2, content: 'Demir sevkiyatı kontrol edilecek', type: 'task', date: '07.03' }
+        ]);
+
+        // 11. Sales - Pending & New
+        setPendingCustomers(salesData.filter(s => s.sale_status === 'Beklemede').slice(0, 5));
+        setNewCustomers((salesData || []).slice(0, 5));
+
+        // 12. Staff Performance (Simulated)
+        setStaffPerformance([
+          { name: 'Ahmet Y.', sales: 12, target: 15 },
+          { name: 'Mehmet K.', sales: 18, target: 15 },
+          { name: 'Ayşe S.', sales: 14, target: 15 },
+          { name: 'Fatma B.', sales: 9, target: 15 },
+        ]);
+
       } catch (err) {
         console.error("Dashboard data fetching error:", err);
       } finally {
@@ -395,7 +432,7 @@ export default function Dashboard() {
           {activeTab === 'sales' && (
             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <ModuleCard title="Satış Hunisi" subtitle="Prospect Dönüşüm Oranları" icon={Target} color="#6366f1">
+                <ModuleCard title="Satış Hunisi" subtitle="Müşteri Dönüşüm Oranları" icon={Target} color="#6366f1">
                   <div className="h-[300px] w-full flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -416,13 +453,14 @@ export default function Dashboard() {
                   </div>
                 </ModuleCard>
 
-                <ModuleCard title="Nakit Akış Analizi" subtitle="Tahmini Dönüşüm" icon={Activity} color="#10b981">
+                <ModuleCard title="Personel Performans Grafiği" subtitle="Satış Adedi Hedef Analizi" icon={Star} color="#f59e0b">
                   <div className="h-[300px] w-full mt-6">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={financeHistory}>
+                      <BarChart data={staffPerformance}>
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} dy={10} />
                         <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '20px' }} />
-                        <Bar dataKey="income" radius={[10, 10, 0, 0]} maxBarSize={40} fill="#6366f1" />
+                        <Bar dataKey="sales" name="Gerçekleşen" radius={[10, 10, 0, 0]} maxBarSize={40} fill="#6366f1" />
+                        <Bar dataKey="target" name="Hedef" radius={[10, 10, 0, 0]} maxBarSize={40} fill="#e2e8f0" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -430,9 +468,9 @@ export default function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <ModuleCard title="Son Satışlar" subtitle="Sıcak Liste" icon={Heart} color="#6366f1">
+                <ModuleCard title="Onayi Bekleyen Müşteriler" subtitle="Evrak Bekleyenler" icon={UserCheck} color="#6366f1">
                   <div className="space-y-4 mt-6">
-                    {recentSales.map((sale) => (
+                    {pendingCustomers.map((sale) => (
                       <div key={sale.id} onClick={() => navigate('/sales')} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8FAFB] border border-white hover:border-indigo-100 transition-all cursor-pointer group">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-400 group-hover:text-indigo-500 shadow-sm">
@@ -445,32 +483,31 @@ export default function Dashboard() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-black text-slate-900 tracking-tighter">{formatCurrency(sale.offered_price)}</p>
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${sale.sale_status === 'Satıldı' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                            {sale.sale_status}
-                          </span>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">BEKLEMEDE</span>
                         </div>
                       </div>
                     ))}
+                    {pendingCustomers.length === 0 && <p className="text-center text-slate-300 py-10 uppercase text-[10px] font-black">Bekleyen İşlem Yok</p>}
                   </div>
                 </ModuleCard>
 
-                <ModuleCard title="Son Ödemeler" subtitle="Kasa Girişleri" icon={CreditCard} color="#10b981">
+                <ModuleCard title="Yeni Girilen Müşteriler" subtitle="Son 48 Saat" icon={UserPlus} color="#10b981">
                   <div className="space-y-4 mt-6">
-                    {recentPayments.map((pay) => (
-                      <div key={pay.id} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8FAFB] border border-white hover:border-emerald-100 transition-all cursor-pointer group">
+                    {newCustomers.map((sale) => (
+                      <div key={sale.id} onClick={() => navigate('/customers')} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8FAFB] border border-white hover:border-emerald-100 transition-all cursor-pointer group">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-300 group-hover:text-emerald-500 shadow-sm transition-colors">
-                            <DollarSign size={18} />
+                            <Users size={18} />
                           </div>
                           <div>
-                            <h5 className="text-sm font-black text-slate-900 uppercase tracking-tight">{pay.customer}</h5>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pay.date} • {pay.type}</p>
+                            <h5 className="text-sm font-black text-slate-900 uppercase tracking-tight">{sale.customers?.full_name || 'İsimsiz'}</h5>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{sale.projects?.name}</p>
                           </div>
                         </div>
-                        <p className="text-sm font-black text-emerald-600 tracking-tighter">+{formatCurrency(pay.amount)}</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">YENİ ADAY</p>
                       </div>
                     ))}
-                    {recentPayments.length === 0 && <p className="text-center text-slate-300 py-10 uppercase text-[10px] font-black">Ödeme Kaydı Yok</p>}
+                    {newCustomers.length === 0 && <p className="text-center text-slate-300 py-10 uppercase text-[10px] font-black">Yeni Kayıt Yok</p>}
                   </div>
                 </ModuleCard>
               </div>
@@ -479,62 +516,135 @@ export default function Dashboard() {
 
           {activeTab === 'construction' && (
             <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-500">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                {constructionProgress.map(p => (
-                  <div
-                    key={p.id}
-                    onClick={() => navigate(`/projects/${p.id}`)}
-                    className="bg-white p-8 rounded-[40px] border border-white shadow-sm hover:shadow-2xl hover:scale-[1.02] transition-all group cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center" style={{ color: p.color }}>
-                        <Building2 size={24} />
+              {/* Construction Alerts */}
+              {attendanceAlerts.length > 0 && (
+                <div className="grid grid-cols-1 gap-4">
+                  {attendanceAlerts.map(alert => (
+                    <div key={alert.id} className="bg-rose-50 border border-rose-200 p-4 rounded-3xl flex items-center justify-between animate-pulse">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-200">
+                          <AlertTriangle size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-rose-900 uppercase tracking-tight">Puantaj Uyarısı</p>
+                          <p className="text-xs font-bold text-rose-500 tracking-wide">[{alert.project}] projesinde bugün henüz puantaj girişi yapılmadı!</p>
+                        </div>
                       </div>
-                      <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest" style={{ backgroundColor: `${p.color}10`, color: p.color }}>
-                        {p.status}
-                      </span>
+                      <button onClick={() => navigate('/labors')} className="px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Puantajı Düzenle</button>
                     </div>
-                    <h4 className="text-xl font-black text-slate-900 tracking-tight uppercase mb-4 truncate text-ellipsis overflow-hidden whitespace-nowrap" title={p.name}>{p.name}</h4>
-                    <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
-                      <div className="h-full transition-all duration-1000" style={{ width: `${p.progress}%`, backgroundColor: p.color }} />
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tamamlanma</span>
-                      <span className="text-sm font-black text-slate-900">%{p.progress}</span>
-                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Quick Actions Card */}
+                <ModuleCard title="Hızlı İşlemler" subtitle="Şantiye & Depo Araçları" icon={Zap} color="#D36A47">
+                  <div className="grid grid-cols-2 gap-3 mt-6">
+                    <button onClick={() => navigate('/stock')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
+                      <Package className="text-[#D36A47] mb-2 group-hover:scale-110 transition-transform" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Malzeme Girişi</span>
+                    </button>
+                    <button onClick={() => navigate('/purchasing')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
+                      <ShoppingCart className="text-emerald-500 mb-2 group-hover:scale-110 transition-transform" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Satın Alma</span>
+                    </button>
+                    <button onClick={() => navigate('/labors')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
+                      <ClipboardCheck className="text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Puantaj</span>
+                    </button>
+                    <button onClick={() => navigate('/projects')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
+                      <Plus className="text-indigo-500 mb-2 group-hover:scale-110 transition-transform" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Yeni Proje</span>
+                    </button>
                   </div>
-                ))}
+                </ModuleCard>
+
+                {/* Notes & Reminders Card */}
+                <ModuleCard title="Notlar & Hatırlatmalar" subtitle="Kişisel İş Listesi" icon={ListTodo} color="#8b5cf6">
+                  <div className="space-y-3 mt-6">
+                    {notes.map(note => (
+                      <div key={note.id} className="flex items-center gap-3 p-3 bg-slate-50/50 border border-white rounded-2xl">
+                        <div className={`w-2 h-2 rounded-full ${note.type === 'reminder' ? 'bg-amber-400' : 'bg-[#D36A47]'}`} />
+                        <div className="flex-1">
+                          <p className="text-[12px] font-bold text-slate-900 leading-tight">{note.content}</p>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{note.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <button className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 hover:border-slate-400 hover:text-slate-600 transition-all uppercase tracking-widest flex items-center justify-center gap-2">
+                      <Plus size={14} /> Not Ekle
+                    </button>
+                  </div>
+                </ModuleCard>
+
+                {/* Manufacturing Approvals Card */}
+                <ModuleCard title="İmalat Onay Beleyenler" subtitle="Saha Kontrol Listesi" icon={CheckCircle} color="#10b981">
+                  <div className="space-y-4 mt-6">
+                    {manufacturingApprovals.map(approval => (
+                      <div key={approval.id} className="p-4 bg-slate-50 border border-white rounded-2xl hover:bg-white hover:shadow-lg hover:border-emerald-100 transition-all cursor-pointer group">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="text-[10px] font-black text-[#D36A47] uppercase tracking-widest mb-0.5">{approval.project}</p>
+                            <h5 className="text-[13px] font-black text-slate-900">{approval.name}</h5>
+                          </div>
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-lg tracking-widest">ONAY Bekliyor</span>
+                        </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{approval.date}</span>
+                          <button className="text-[9px] font-black text-emerald-600 uppercase tracking-widest group-hover:underline">Şimdi Onayla</button>
+                        </div>
+                      </div>
+                    ))}
+                    {manufacturingApprovals.length === 0 && <p className="text-center text-slate-300 py-10 uppercase text-[10px] font-black">Bekleyen Onay Yok</p>}
+                  </div>
+                </ModuleCard>
               </div>
 
-              <ModuleCard title="Kritik Malzeme Uyarıları" subtitle="Yüksek Termin Süreli Malzemeler" icon={Package} color="#D36A47">
-                <div className="mt-6 overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-100 text-left">
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Malzeme</th>
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Durum</th>
-                        <th className="pb-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Aksiyon</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {criticalMaterials.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="py-4 font-black text-slate-900 text-sm uppercase">{item.name}</td>
-                          <td className="py-4 text-sm font-black" style={{ color: item.color }}>{item.current}</td>
-                          <td className="py-4 text-right">
-                            <button onClick={() => navigate('/purchasing')} className="text-[10px] font-black text-[#D36A47] uppercase tracking-widest hover:underline cursor-pointer">Talep Aç</button>
-                          </td>
-                        </tr>
-                      ))}
-                      {criticalMaterials.length === 0 && (
-                        <tr>
-                          <td colSpan="3" className="py-10 text-center text-[10px] font-black text-slate-300 uppercase">Kritik Malzeme Yok</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2">
+                  <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-slate-200" /> AKTİF PROJE İLERLEME DURUMLARI</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {constructionProgress.slice(0, 4).map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => navigate(`/projects/${p.id}`)}
+                        className="bg-white p-6 rounded-[32px] border border-white shadow-sm hover:shadow-2xl hover:scale-[1.02] transition-all group cursor-pointer"
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center" style={{ color: p.color }}>
+                            <Building2 size={20} />
+                          </div>
+                          <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest" style={{ backgroundColor: `${p.color}10`, color: p.color }}>
+                            {p.status}
+                          </span>
+                        </div>
+                        <h4 className="text-md font-black text-slate-900 tracking-tight uppercase mb-4 truncate" title={p.name}>{p.name}</h4>
+                        <div className="relative h-1.5 bg-slate-100 rounded-full overflow-hidden mb-2">
+                          <div className="h-full transition-all duration-1000" style={{ width: `${p.progress}%`, backgroundColor: p.color }} />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tamamlanma</span>
+                          <span className="text-xs font-black text-slate-900">%{p.progress}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </ModuleCard>
+
+                <ModuleCard title="Kritik Malzemeler" subtitle="Termin Uyarıları" icon={Package} color="#D36A47">
+                  <div className="mt-4 space-y-4">
+                    {recentActivities.slice(0, 5).map((act, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-white">
+                        <div>
+                          <p className="text-[11px] font-black text-slate-900 uppercase truncate max-w-[120px]">{act.title}</p>
+                          <p className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest">{act.time}</p>
+                        </div>
+                        <button onClick={() => navigate('/purchasing')} className="text-[9px] font-black text-[#D36A47] uppercase tracking-widest hover:underline">Detay</button>
+                      </div>
+                    ))}
+                  </div>
+                </ModuleCard>
+              </div>
             </div>
           )}
 

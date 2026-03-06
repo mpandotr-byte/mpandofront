@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import { api } from '../api/client';
-import { useAuth } from '../context/AuthContext';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import { api } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import {
     ArrowLeft,
     Building2,
@@ -27,9 +27,9 @@ import {
     User,
     Banknote
 } from 'lucide-react';
-import NewFloorModal from '../modals/blocks/NewFloorModal';
-import NewUnitModal from '../modals/units/NewUnitModal';
-import NewRoomModal from '../modals/units/NewRoomModal';
+import NewFloorModal from '../../modals/blocks/NewFloorModal';
+import NewUnitModal from '../../modals/units/NewUnitModal';
+import NewRoomModal from '../../modals/units/NewRoomModal';
 
 const getUnitStatusDetails = (status) => {
     switch (String(status).toUpperCase()) {
@@ -74,6 +74,19 @@ function BlockDetails() {
     const [activeUnitMenu, setActiveUnitMenu] = useState(null);
     const [isUnitDetailsModalOpen, setIsUnitDetailsModalOpen] = useState(false);
     const [selectedUnitForDetails, setSelectedUnitForDetails] = useState(null);
+
+    const [selectedFloors, setSelectedFloors] = useState([]);
+    const [recipes, setRecipes] = useState([]);
+    const [isBulkFloorRecipeModalOpen, setIsBulkFloorRecipeModalOpen] = useState(false);
+    const [bulkFloorRecipeData, setBulkFloorRecipeData] = useState({
+        beton_recipe_id: '',
+        demir_recipe_id: '',
+        hall_floor_recipe_id: '',
+        hall_wall_recipe_id: '',
+        hall_ceiling_recipe_id: '',
+        stairs_recipe_id: '',
+        extra_recipe_id: ''
+    });
 
     const fetchBlockDetails = async () => {
         setLoading(true);
@@ -126,6 +139,10 @@ function BlockDetails() {
             }
 
             setBlock(blockData);
+
+            // Reçeteleri çek
+            const recipesData = await api.get('/recipes');
+            setRecipes(recipesData || []);
         } catch (err) {
             console.error("Blok detayları alınırken hata:", err);
         } finally {
@@ -371,6 +388,38 @@ function BlockDetails() {
     const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+    const handleSelectFloor = (floorId) => {
+        setSelectedFloors(prev =>
+            prev.includes(floorId) ? prev.filter(id => id !== floorId) : [...prev, floorId]
+        );
+    };
+
+    const handleSelectAllFloors = () => {
+        if (selectedFloors.length === (block?.floors?.length || 0)) {
+            setSelectedFloors([]);
+        } else {
+            setSelectedFloors(block?.floors?.map(f => f.id) || []);
+        }
+    };
+
+    const handleBulkFloorRecipeAssign = async () => {
+        if (selectedFloors.length === 0) return;
+        try {
+            await Promise.all(selectedFloors.map(floorId =>
+                api.put(`/projects/floors/${floorId}`, {
+                    ...bulkFloorRecipeData
+                })
+            ));
+            alert(`${selectedFloors.length} kata reçeteler başarıyla atandı.`);
+            setIsBulkFloorRecipeModalOpen(false);
+            setSelectedFloors([]);
+            await fetchBlockDetails();
+        } catch (err) {
+            console.error("Toplu kat reçete atama hatası:", err);
+            alert("Reçeteler atanırken bir hata oluştu.");
+        }
+    };
+
     return (
         <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
             <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={closeMobileMenu} />
@@ -495,6 +544,29 @@ function BlockDetails() {
                                     </div>
                                 </div>
 
+                                {selectedFloors.length > 0 && (
+                                    <div className="mb-6 flex items-center justify-between bg-[#0A1128]/5 border border-[#0A1128]/10 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="bg-[#0A1128] text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedFloors.length}</span>
+                                            <span className="text-sm font-bold text-[#0A1128]">Kat Seçildi</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={handleSelectAllFloors}
+                                                className="px-4 py-2 bg-white border border-slate-200 text-[#0A1128] rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
+                                            >
+                                                {selectedFloors.length === (block?.floors?.length || 0) ? 'Seçimi Kaldır' : 'Tümünü Seç'}
+                                            </button>
+                                            <button
+                                                onClick={() => setIsBulkFloorRecipeModalOpen(true)}
+                                                className="px-4 py-2 bg-[#D36A47] text-white rounded-xl text-xs font-bold hover:bg-[#B95839] transition-all flex items-center gap-2"
+                                            >
+                                                <Layers size={14} /> Reçete Ata
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="space-y-8">
                                     {filteredFloors.map((floor, index) => {
                                         const isExpanded = !!expandedFloors[floor.id];
@@ -507,6 +579,17 @@ function BlockDetails() {
                                                     className="font-bold text-slate-800 flex items-center justify-between mb-4 sticky top-[64px] md:top-0 bg-white/95 backdrop-blur-sm px-2 py-3 cursor-pointer hover:bg-slate-50 transition-all rounded-xl border border-transparent hover:border-slate-100 group shadow-sm sm:shadow-none"
                                                 >
                                                     <div className="flex items-center gap-3 flex-1" onClick={() => toggleFloor(floor.id)}>
+                                                        <div
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="mr-2 flex items-center"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedFloors.includes(floor.id)}
+                                                                onChange={() => handleSelectFloor(floor.id)}
+                                                                className="w-5 h-5 rounded-lg border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47] bg-white"
+                                                            />
+                                                        </div>
                                                         <div className="w-8 h-8 rounded-full bg-[#0A1128] text-white flex items-center justify-center sm:absolute sm:-left-[1.65rem] border-4 border-white shadow-md text-xs font-black">
                                                             {floor.floor_number}
                                                         </div>
@@ -783,6 +866,19 @@ function BlockDetails() {
                 onAdd={handleSaveRoom}
                 unitId={selectedUnitForRoom}
                 roomData={editingRoom}
+            />
+
+            <BulkFloorRecipeModal
+                isOpen={isBulkFloorRecipeModalOpen}
+                onClose={() => setIsBulkFloorRecipeModalOpen(false)}
+                onSave={handleBulkFloorRecipeAssign}
+                recipes={recipes}
+                formData={bulkFloorRecipeData}
+                onChange={(e) => {
+                    const { name, value } = e.target;
+                    setBulkFloorRecipeData(prev => ({ ...prev, [name]: value }));
+                }}
+                selectedCount={selectedFloors.length}
             />
             <UnitDetailsModal
                 isOpen={isUnitDetailsModalOpen}

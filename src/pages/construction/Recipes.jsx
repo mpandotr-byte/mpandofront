@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import { api } from '../../api/client';
 import {
     Plus,
     FileText,
@@ -18,7 +18,7 @@ import {
     Layout,
     BarChart3
 } from 'lucide-react';
-import RecipeModal from '../modals/recipes/RecipeModal';
+import RecipeModal from '../../modals/recipes/RecipeModal';
 import RecipeConsole from './RecipeConsole';
 import QuantitySummary from './QuantitySummary';
 

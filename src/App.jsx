@@ -1,22 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import ProjectDetails from "./pages/ProjectDetails";
-import BlockDetails from "./pages/BlockDetails";
-import Customers from "./pages/Customers";
-import Sales from "./pages/Sales";
-import SecondHandListings from "./pages/SecondHandListings";
-import Messages from "./pages/Messages";
-import Notifications from "./pages/Notifications";
-import Materials from "./pages/Materials";
-import Labors from "./pages/Labors";
-import Recipes from "./pages/Recipes";
-import RecipeConsole from "./pages/RecipeConsole";
-import Purchasing from "./pages/Purchasing";
-import Stock from "./pages/Stock";
+import Login from "./pages/auth/Login";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Projects from "./pages/construction/Projects";
+import ProjectDetails from "./pages/construction/ProjectDetails";
+import BlockDetails from "./pages/construction/BlockDetails";
+import Customers from "./pages/sales/Customers";
+import Sales from "./pages/sales/Sales";
+import SecondHandListings from "./pages/sales/SecondHandListings";
+import Messages from "./pages/system/Messages";
+import Notifications from "./pages/system/Notifications";
+import Materials from "./pages/construction/Materials";
+import Labors from "./pages/construction/Labors";
+import Recipes from "./pages/construction/Recipes";
+import RecipeConsole from "./pages/construction/RecipeConsole";
+import Purchasing from "./pages/purchasing/Purchasing";
+import Stock from "./pages/construction/Stock";
+import Subcontractors from "./pages/construction/Subcontractors";
+import SubcontractorDetails from "./pages/construction/SubcontractorDetails";
 
 function App() {
   return (
@@ -139,6 +141,22 @@ function App() {
           element={
             <PrivateRoute>
               <Stock />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/subcontractors"
+          element={
+            <PrivateRoute>
+              <Subcontractors />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/subcontractors/:id"
+          element={
+            <PrivateRoute>
+              <SubcontractorDetails />
             </PrivateRoute>
           }
         />

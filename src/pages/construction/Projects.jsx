@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import ProjectEditModal from '../modals/projects/ProjectEditModal';
-import NewProjectModal from '../modals/projects/NewProjectModal';
-import ExcelProjectModal from '../modals/projects/ExcelProjectModal';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import ProjectEditModal from '../../modals/projects/ProjectEditModal';
+import NewProjectModal from '../../modals/projects/NewProjectModal';
+import ExcelProjectModal from '../../modals/projects/ExcelProjectModal';
 import * as XLSX from 'xlsx';
-import { api } from '../api/client';
-import { useAuth } from '../context/AuthContext';
+import { api } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import {
   Plus,
   Trash2,

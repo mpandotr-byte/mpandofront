@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { api, setToken } from "../api/client";
+import { useAuth } from "../../context/AuthContext";
+import { api, setToken } from "../../api/client";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, Shield, BarChart3, Users, Zap, Briefcase, Building2, Package } from "lucide-react";
 

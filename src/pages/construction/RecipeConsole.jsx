@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { api } from '../api/client';
+import { api } from '../../api/client';
 import {
     Search,
     Building2,

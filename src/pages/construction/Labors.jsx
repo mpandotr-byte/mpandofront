@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import DataTable from '../components/DataTable';
-import { useAuth } from "../context/AuthContext";
-import { api } from '../api/client';
+import Sidebar from '../../components/Sidebar';
+import Navbar from '../../components/Navbar';
+import DataTable from '../../components/DataTable';
+import { useAuth } from "../../context/AuthContext";
+import { api } from '../../api/client';
 import {
     Plus,
     Filter,
@@ -18,7 +18,7 @@ import {
     Hash,
     Ruler
 } from 'lucide-react';
-import LaborModal from '../modals/labors/LaborModal';
+import LaborModal from '../../modals/labors/LaborModal';
 
 const unitOptions = ['m²', 'mt', 'm³', 'Saat', 'Adet'];
 
