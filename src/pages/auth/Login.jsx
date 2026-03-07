@@ -231,7 +231,7 @@ const Login = () => {
                 <div className="pt-6 text-center">
                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
                     © 2026 MPANDO CORE ENGINE <br />
-                    <span className="text-slate-800 mt-2 block">V 2.4.8 PREMIUM CLOUD</span>
+
                   </p>
                 </div>
               </div>
