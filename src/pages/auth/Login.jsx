@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api, setToken } from "../../api/client";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, Shield, BarChart3, Users, Zap, Briefcase, Building2, Package, Lock, Mail, HardHat, Construction } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Shield, BarChart3, Users, Zap, Briefcase, Building2, Package } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const Login = () => {
 
   // Dinamik istatistikler
   const [stats, setStats] = useState(() => {
+    // Önce localStorage'dan cache'lenmiş veriyi oku
     try {
       const cached = localStorage.getItem('mpando_login_stats');
       if (cached) {
@@ -23,8 +24,39 @@ const Login = () => {
         return { ...parsed, loadingStats: false };
       }
     } catch { }
-    return { projects: 12, users: 48, customers: 156, loadingStats: false };
+    return { projects: null, users: null, customers: null, loadingStats: true };
   });
+
+  const fetchAndCacheStats = async () => {
+    try {
+      const [projectsData, usersData, customersData] = await Promise.allSettled([
+        api.get('/projects'),
+        api.get('/users'),
+        api.get('/customers')
+      ]);
+
+      const newStats = {
+        projects: projectsData.status === 'fulfilled' ? (projectsData.value || []).length : stats.projects,
+        users: usersData.status === 'fulfilled' ? (usersData.value || []).length : stats.users,
+        customers: customersData.status === 'fulfilled' ? (customersData.value || []).length : stats.customers,
+        loadingStats: false
+      };
+
+      setStats(newStats);
+      // Cache'e kaydet
+      localStorage.setItem('mpando_login_stats', JSON.stringify({
+        projects: newStats.projects,
+        users: newStats.users,
+        customers: newStats.customers
+      }));
+    } catch {
+      setStats(prev => ({ ...prev, loadingStats: false }));
+    }
+  };
+
+  useEffect(() => {
+    fetchAndCacheStats();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,209 +66,263 @@ const Login = () => {
     try {
       const response = await api.post("/login", { email, password });
       setToken(response.token);
+
+      // Login başarılı — yeni token ile stats'ı çek ve cache'le
+      try {
+        const [projectsData, usersData, customersData] = await Promise.allSettled([
+          api.get('/projects'),
+          api.get('/users'),
+          api.get('/customers')
+        ]);
+        const freshStats = {
+          projects: projectsData.status === 'fulfilled' ? (projectsData.value || []).length : null,
+          users: usersData.status === 'fulfilled' ? (usersData.value || []).length : null,
+          customers: customersData.status === 'fulfilled' ? (customersData.value || []).length : null,
+        };
+        localStorage.setItem('mpando_login_stats', JSON.stringify(freshStats));
+      } catch { }
+
       login(response);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0A1128] font-sans flex text-left">
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-[#D36A47]/10 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-indigo-500/5 blur-[120px]" />
+  const features = [
+    { icon: <BarChart3 size={20} />, title: "Gerçek Zamanlı Analitik", desc: "Projelerin anlık durumunu takip edin" },
+    { icon: <Users size={20} />, title: "Ekip Yönetimi", desc: "Tüm ekibinizi tek platformda yönetin" },
+    { icon: <Shield size={20} />, title: "Güvenli Altyapı", desc: "Verileriniz her zaman güvende" },
+  ];
 
-        {/* Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.02]"
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-[#0a0a1a] font-sans flex">
+      {/* Animated Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/50 via-[#0a0a1a] to-purple-950/30" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px] animate-float" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px]" style={{ animation: 'float 4s ease-in-out infinite reverse' }} />
+        <div className="absolute top-[50%] left-[50%] w-[300px] h-[300px] rounded-full bg-blue-600/5 blur-[80px]" />
+
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: 'radial-gradient(#D36A47 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
+            backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+            backgroundSize: '60px 60px'
           }}
         />
       </div>
 
-      <div className="flex flex-col lg:flex-row w-full relative z-10">
+      {/* LEFT PANEL - Branding */}
+      <div className="hidden lg:flex w-[55%] relative z-10 flex-col justify-between p-12">
+        {/* Logo */}
+        <div className="flex items-center gap-3 animate-fade-in">
+          <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
+            <img className="w-7 h-7 object-contain" src="/logo.png" alt="logo" />
+          </div>
+          <span className="text-white text-xl font-bold tracking-tight">Mpando</span>
+        </div>
 
-        {/* LEFT PANEL - Information & Branding */}
-        <div className="hidden lg:flex lg:w-[60%] flex-col justify-between p-16 xl:p-24 border-r border-white/5">
-          {/* Logo Section */}
-          <div className="flex items-center gap-4 animate-fade-in">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#D36A47] to-[#A35235] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#D36A47]/20 border border-white/10">
-              <img className="w-9 h-9 object-contain brightness-0 invert" src="/logo.png" alt="logo" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-white tracking-tight leading-none uppercase">MPANDO</h1>
-              <p className="text-[#D36A47] text-[10px] font-black tracking-[0.4em] uppercase mt-1">Construction Core</p>
-            </div>
+        {/* Hero Content */}
+        <div className="max-w-xl animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-6">
+            <Zap size={14} />
+            İnşaat Yönetim Platformu
           </div>
 
-          {/* Hero Content */}
-          <div className="max-w-xl space-y-10">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#D36A47]/10 border border-[#D36A47]/20 text-[#D36A47] text-[10px] font-black uppercase tracking-widest animate-bounce-slow">
-                <Construction size={14} /> Yeni Nesil Şantiye Yönetimi
-              </div>
-              <h2 className="text-5xl xl:text-7xl font-black text-white leading-[1.1] tracking-tighter">
-                SAHAYI <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D36A47] to-[#E37A57]">DİJİTALLE</span> <br />
-                YÖNETİN.
-              </h2>
-              <p className="text-slate-400 text-lg leading-relaxed font-medium max-w-md">
-                Proje planlama, stok takibi, ekip yönetimi ve finansal analizleri tek platformda birleştirin.
-              </p>
-            </div>
+          <h1 className="text-5xl font-bold text-white leading-[1.15] mb-6">
+            Şantiye Yönetimi
+            <br />
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+              Yeni Nesil
+            </span>
+            {' '}Çözüm
+          </h1>
 
-            {/* Features Grid */}
-            <div className="grid grid-cols-2 gap-6">
-              {[
-                { icon: <HardHat />, title: "İş Güvenliği & Puantaj", color: "text-amber-400" },
-                { icon: <Package />, title: "Akıllı Stok Takibi", color: "text-emerald-400" },
-                { icon: <Briefcase />, title: "Maliyet Analizi", color: "text-[#D36A47]" },
-                { icon: <BarChart3 />, title: "Üretim İzleme", color: "text-blue-400" }
-              ].map((f, i) => (
-                <div key={i} className="flex items-center gap-4 p-5 rounded-[28px] bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-all group">
-                  <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${f.color} group-hover:scale-110 transition-transform`}>
-                    {React.cloneElement(f.icon, { size: 18 })}
-                  </div>
-                  <span className="text-white font-black text-[11px] uppercase tracking-wide leading-tight">{f.title}</span>
+          <p className="text-slate-400 text-lg leading-relaxed mb-10 max-w-md">
+            Projelerinizi, ekiplerinizi ve finansal süreçlerinizi tek bir platformda yönetin. Veri odaklı kararlar alın.
+          </p>
+
+          {/* Feature Cards */}
+          <div className="space-y-3">
+            {features.map((feature, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm hover:bg-white/[0.06] transition-all duration-300 group animate-slide-in-left"
+                style={{ animationDelay: `${0.4 + i * 0.1}s`, animationFillMode: 'both' }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                  {feature.icon}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Integration Stats */}
-          <div className="flex items-center gap-12">
-            <div className="space-y-1">
-              <p className="text-3xl font-black text-white">%{stats.projects}+</p>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Verim Artışı</p>
-            </div>
-            <div className="w-px h-10 bg-white/5" />
-            <div className="space-y-1">
-              <p className="text-3xl font-black text-white">{stats.users}</p>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Aktif Kullanıcı</p>
-            </div>
-            <div className="w-px h-10 bg-white/5" />
-            <div className="space-y-1">
-              <p className="text-3xl font-black text-white">{stats.customers}</p>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Çözüm Ortağı</p>
-            </div>
+                <div>
+                  <h3 className="text-white text-sm font-semibold mb-0.5">{feature.title}</h3>
+                  <p className="text-slate-500 text-xs">{feature.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* RIGHT PANEL - Login Card */}
-        <div className="w-full lg:w-[40%] flex items-center justify-center p-8 lg:p-16 relative">
-
-          <div className="w-full max-w-[440px] relative z-10">
-            {/* Mobile Header */}
-            <div className="lg:hidden flex flex-col items-center mb-12 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#D36A47] to-[#A35235] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#D36A47]/20 border border-white/10 mb-6">
-                <img className="w-10 h-10 object-contain brightness-0 invert" src="/logo.png" alt="logo" />
-              </div>
-              <h1 className="text-2xl font-black text-white tracking-tight uppercase">MPANDO</h1>
-              <p className="text-[#D36A47] text-[10px] font-black tracking-[0.4em] uppercase mt-1">Digital Construction</p>
-            </div>
-
-            <div className="bg-white/[0.04] backdrop-blur-3xl border border-white/[0.08] rounded-[48px] p-10 xl:p-14 shadow-2xl relative overflow-hidden group">
-              {/* Accent decoration */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#D36A47]/10 rounded-bl-[100px] -mr-8 -mt-8 blur-2xl group-hover:bg-[#D36A47]/20 transition-all duration-700" />
-
-              <div className="relative z-10 space-y-10">
-                <div className="space-y-3">
-                  <h3 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Giriş Yap</h3>
-                  <p className="text-slate-400 text-sm font-medium">Lütfen kimlik bilgilerinizle devam edin.</p>
-                </div>
-
-                {error && (
-                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 animate-shake">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    <span className="text-red-400 text-xs font-bold uppercase tracking-wide">{error}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-8">
-                    {/* Email Field */}
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2 block">Kurumsal E-Posta</label>
-                      <div className="relative group/input">
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-[#D36A47] transition-colors">
-                          <Mail size={18} />
-                        </div>
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="isadiyaman@iskar.com"
-                          required
-                          className="w-full pl-16 pr-6 py-5 bg-white/[0.03] border border-white/[0.06] rounded-[24px] text-white text-sm font-bold focus:bg-white/[0.07] focus:border-[#D36A47]/30 focus:ring-4 focus:ring-[#D36A47]/5 outline-none transition-all placeholder:text-slate-600"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Password Field */}
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center px-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block">Sistem Şifresi</label>
-                        <button type="button" className="text-[10px] font-black text-[#D36A47] uppercase tracking-widest hover:underline decoration-2 underline-offset-4 transition-all">Şifremi Unuttum</button>
-                      </div>
-                      <div className="relative group/input">
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-[#D36A47] transition-colors">
-                          <Lock size={18} />
-                        </div>
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                          className="w-full pl-16 pr-14 py-5 bg-white/[0.03] border border-white/[0.06] rounded-[24px] text-white text-sm font-bold focus:bg-white/[0.07] focus:border-[#D36A47]/30 focus:ring-4 focus:ring-[#D36A47]/5 outline-none transition-all placeholder:text-slate-600 tracking-[0.2em]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white transition-colors"
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 px-2">
-                    <input type="checkbox" id="remember" className="w-5 h-5 rounded-lg border-white/10 bg-white/5 text-[#D36A47] focus:ring-[#D36A47]/20 accent-[#D36A47]" />
-                    <label htmlFor="remember" className="text-[11px] font-black text-slate-500 uppercase tracking-widest cursor-pointer select-none">Beni Hatırla</label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full group mt-4 relative overflow-hidden px-8 py-5 bg-[#D36A47] text-white rounded-[24px] font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-[#D36A47]/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-4"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        Sisteme Giriş Yap
-                        <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
-                      </>
-                    )}
-                    <div className="absolute inset-0 bg-white/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
-                  </button>
-                </form>
-
-                <div className="pt-6 text-center">
-                  <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
-                    © 2026 MPANDO CORE ENGINE <br />
-
+        {/* Bottom Stats */}
+        <div className="flex items-center gap-6 animate-fade-in" style={{ animationDelay: '0.8s', animationFillMode: 'both' }}>
+          {[
+            { icon: <Briefcase size={16} />, value: stats.projects, label: 'Aktif Proje', suffix: '' },
+            { icon: <Users size={16} />, value: stats.users, label: 'Kullanıcı', suffix: '' },
+            { icon: <Building2 size={16} />, value: stats.customers, label: 'Müşteri', suffix: '' },
+          ].map((stat, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <div className="w-px h-10 bg-white/10" />}
+              <div className="group">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="text-indigo-400/70">{stat.icon}</div>
+                  <p className="text-2xl font-extrabold text-white tracking-tight">
+                    {stats.loadingStats ? (
+                      <span className="inline-block w-10 h-6 bg-white/10 rounded animate-pulse" />
+                    ) : stat.value !== null ? (
+                      <>{stat.value}{stat.suffix}</>
+                    ) : '—'}
                   </p>
                 </div>
+                <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">{stat.label}</p>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* RIGHT PANEL - Login Form */}
+      <div className="w-full lg:w-[45%] relative z-10 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-[420px]">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-10 animate-fade-in">
+            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
+              <img className="w-7 h-7 object-contain" src="/logo.png" alt="logo" />
+            </div>
+            <span className="text-white text-xl font-bold tracking-tight">Mpando</span>
+          </div>
+
+          {/* Form Card */}
+          <div className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-3xl p-8 lg:p-10 shadow-2xl shadow-black/20 animate-scale-in">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Tekrar Hoş Geldiniz
+              </h2>
+              <p className="text-slate-400 text-sm">
+                Devam etmek için hesabınıza giriş yapın
+              </p>
+            </div>
+
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-5 flex items-center gap-2.5 bg-red-500/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-xl text-sm animate-fade-in">
+                <div className="w-2 h-2 bg-red-400 rounded-full flex-shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">
+                  E-posta Adresi
+                </label>
+                <input
+                  type="email"
+                  placeholder="ornek@mail.com"
+                  className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Şifre
+                  </label>
+                  <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+                    Şifremi Unuttum
+                  </a>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm pr-11"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember */}
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/30 cursor-pointer accent-indigo-500"
+                />
+                <label htmlFor="remember" className="text-sm text-slate-400 cursor-pointer select-none">
+                  Beni hatırla
+                </label>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-semibold py-3.5 rounded-xl hover:from-indigo-500 hover:to-indigo-400 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Giriş Yapılıyor...
+                  </>
+                ) : (
+                  <>
+                    Giriş Yap
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/[0.06]" />
               </div>
             </div>
+
+            <p className="text-center text-xs text-slate-500">
+              Hesabınız yok mu?{' '}
+              <a href="#" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+                İletişime Geçin
+              </a>
+            </p>
           </div>
+
+          {/* Footer */}
+          <p className="text-center text-xs text-slate-600 mt-6">
+            © 2024 Mpando. Tüm hakları saklıdır.
+          </p>
         </div>
       </div>
     </div>
