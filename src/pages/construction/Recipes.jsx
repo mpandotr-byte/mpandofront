@@ -16,14 +16,15 @@ import {
     Hammer,
     Box,
     Layout,
-    BarChart3
+    BarChart3,
+    CheckCircle2
 } from 'lucide-react';
 import RecipeModal from '../../modals/recipes/RecipeModal';
 import RecipeConsole from './RecipeConsole';
 import QuantitySummary from './QuantitySummary';
 
 function Recipes() {
-    const [activeTab, setActiveTab] = useState('library'); // 'library', 'console', or 'summary'
+    const [activeTab, setActiveTab] = useState('library'); // 'library', 'console', 'summary', or 'progress'
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [recipes, setRecipes] = useState([]);
     const [materials, setMaterials] = useState([]);
@@ -164,6 +165,12 @@ function Recipes() {
                         >
                             <BarChart3 size={16} /> METRAJ ÖZETİ
                         </button>
+                        <button
+                            onClick={() => setActiveTab('progress')}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'progress' ? 'bg-[#D36A47] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <CheckCircle2 size={16} /> İMALAT ONAY (DÜŞÜM)
+                        </button>
                     </div>
 
                     {activeTab === 'library' && (
@@ -219,6 +226,21 @@ function Recipes() {
                     {activeTab === 'summary' && (
                         <div className="animate-fade-in">
                             <QuantitySummary isSubPage={true} />
+                        </div>
+                    )}
+
+                    {activeTab === 'progress' && (
+                        <div className="animate-fade-in bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm min-h-[500px] flex flex-col items-center justify-center text-center">
+                            <div className="w-20 h-20 rounded-[32px] bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
+                                <CheckCircle2 size={40} />
+                            </div>
+                            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Saha İmalat Onay Sistemi</h2>
+                            <p className="max-w-md text-slate-400 text-sm font-medium mt-4 leading-relaxed italic">
+                                Bu ekrandan biten oda, kat veya bloğu onaylayarak; <br />atandığı reçeteye göre malzemelerin stoktan <br />otomatik düşmesini sağlayabilirsiniz.
+                            </p>
+                            <button className="mt-10 px-10 py-5 bg-[#0A1128] text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all">
+                                ONAY LİSTESİNİ GÖRÜNTÜLE
+                            </button>
                         </div>
                     )}
                 </div>

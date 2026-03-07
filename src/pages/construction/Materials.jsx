@@ -50,7 +50,7 @@ function Materials() {
         try {
             const [materialsData, suppliersData] = await Promise.all([
                 api.get('/materials/catalog'),
-                api.get('/companies?type=SUPPLIER')
+                api.get('/suppliers')
             ]);
             setMaterials(materialsData || []);
             setSuppliers(suppliersData || []);

@@ -100,190 +100,153 @@ export default function Dashboard() {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const [projects, sales, finance, purchaseReqs, materials, suppliers, activitiesData] = await Promise.all([
+        const results = await Promise.allSettled([
           api.get('/projects'),
           api.get('/sales'),
           api.get('/finance/transactions'),
           api.get('/inventory/purchase-requests'),
-          api.get('/materials/catalog'),
-          api.get('/companies?type=SUPPLIER'),
-          api.get('/activities')
+          api.get('/materials'),
+          api.get('/suppliers'),
+          api.get('/activities'),
+          api.get('/customers')
         ]);
 
-        // 1. Process Construction Data (Sync with Projects.jsx logic)
+        const [
+          projectsRes,
+          salesRes,
+          financeRes,
+          purchaseReqsRes,
+          materialsRes,
+          suppliersRes,
+          activitiesRes,
+          customersRes
+        ] = results;
+
+        const projects = projectsRes.status === 'fulfilled' ? projectsRes.value : [];
+        const sales = salesRes.status === 'fulfilled' ? salesRes.value : [];
+        const finance = financeRes.status === 'fulfilled' ? financeRes.value : [];
+        const purchaseReqs = purchaseReqsRes.status === 'fulfilled' ? purchaseReqsRes.value : [];
+        const materials = materialsRes.status === 'fulfilled' ? materialsRes.value : [];
+        const suppliers = suppliersRes.status === 'fulfilled' ? suppliersRes.value : [];
+        const activitiesData = activitiesRes.status === 'fulfilled' ? activitiesRes.value : [];
+        const customers = customersRes.status === 'fulfilled' ? customersRes.value : [];
+
+        // 1. Process Construction Data
         const mappedProjects = (projects || []).map(p => {
           let mappedStatus = 'Devam Ediyor';
           const rawStatus = String(p.status || '').toUpperCase();
 
-          if (rawStatus === 'IN_PROGRESS' || p.status === 'Devam Ediyor') {
-            mappedStatus = 'Devam Ediyor';
-          } else if (rawStatus === 'PLANNING' || p.status === 'Planlanıyor') {
-            mappedStatus = 'Planlanıyor';
-          } else if (rawStatus === 'COMPLETED' || p.status === 'Tamamlandı') {
-            mappedStatus = 'Tamamlandı';
-          } else if (rawStatus === 'DELAYED' || p.status === 'Gecikmede') {
-            mappedStatus = 'Gecikmede';
-          } else if (rawStatus === 'FINISHING' || p.status === 'Bitiyor') {
-            mappedStatus = 'Bitiyor';
-          }
+          if (rawStatus === 'IN_PROGRESS' || p.status === 'Devam Ediyor') mappedStatus = 'Devam Ediyor';
+          else if (rawStatus === 'PLANNING' || p.status === 'Planlanıyor') mappedStatus = 'Planlanıyor';
+          else if (rawStatus === 'COMPLETED' || p.status === 'Tamamlandı') mappedStatus = 'Tamamlandı';
+          else if (rawStatus === 'DELAYED' || p.status === 'Gecikmede') mappedStatus = 'Gecikmede';
+          else if (rawStatus === 'FINISHING' || p.status === 'Bitiyor') mappedStatus = 'Bitiyor';
 
           return {
             id: p.id,
             name: p.name || p.project_name,
             status: mappedStatus,
-            progress: mappedStatus === 'Tamamlandı' ? 100
-              : (p.progress !== undefined && p.progress !== null
-                ? p.progress
-                : (mappedStatus === 'Planlanıyor' ? Math.floor(Math.random() * 20) + 5 : Math.floor(Math.random() * 50) + 30)),
-            color: mappedStatus === 'Tamamlandı' ? '#10b981' :
-              mappedStatus === 'Gecikmede' ? '#f43f5e' :
-                mappedStatus === 'Planlanıyor' ? '#8b5cf6' : '#D36A47'
+            progress: p.progress || (mappedStatus === 'Tamamlandı' ? 100 : Math.floor(Math.random() * 40) + 20),
+            color: mappedStatus === 'Tamamlandı' ? '#10b981' : mappedStatus === 'Gecikmede' ? '#f43f5e' : '#D36A47'
           };
         });
         setConstructionProgress(mappedProjects);
 
         // 2. Process Sales Data
-        const salesData = sales || [];
         const funnel = [
-          { name: 'Potansiyel', value: salesData.filter(s => s.sale_status === 'Beklemede').length, color: '#6366f1' },
-          { name: 'Sözleşme', value: salesData.filter(s => s.sale_status === 'Satıldı').length, color: '#D36A47' },
-          { name: 'Kaybedildi', value: salesData.filter(s => s.sale_status === 'İptal' || s.sale_status === 'Reddedildi').length, color: '#f43f5e' },
+          { name: 'Potansiyel', value: sales.filter(s => s.sale_status === 'Beklemede').length, color: '#6366f1' },
+          { name: 'Sözleşme', value: sales.filter(s => s.sale_status === 'Satıldı').length, color: '#D36A47' },
+          { name: 'Kaybedildi', value: sales.filter(s => s.sale_status === 'İptal').length, color: '#f43f5e' },
         ];
         setSalesFunnelData(funnel);
-        setRecentSales(salesData.slice(0, 5));
+        setRecentSales(sales.slice(0, 5));
 
         // 3. Process Finance Data
-        const transactions = finance || [];
         const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
         const monthly = monthNames.map(name => ({ name, income: 0, expense: 0 }));
-
-        let incomeSum = 0;
-        let expenseSum = 0;
-
+        let incomeSum = 0; let expenseSum = 0;
         const processedPayments = [];
 
-        transactions.forEach(t => {
+        (finance || []).forEach(t => {
           const date = new Date(t.transaction_date || t.created_at);
           if (isNaN(date.getTime())) return;
           const amount = Math.abs(Number(t.amount) || 0);
           const monthIdx = date.getMonth();
 
-          if ((t.payment_type || '').toUpperCase() === 'CASH' || t.amount > 0) {
+          if (t.type === 'INCOME' || t.amount > 0) {
             monthly[monthIdx].income += amount;
             incomeSum += amount;
-            if (processedPayments.length < 5) {
-              processedPayments.push({
-                id: t.id,
-                customer: t.customer_name || 'Müşteri',
-                amount: amount,
-                date: date.toLocaleDateString('tr-TR'),
-                type: t.payment_method || 'Nakit'
-              });
-            }
+            if (processedPayments.length < 5) processedPayments.push({ id: t.id, customer: t.description || 'Tahsilat', amount, date: date.toLocaleDateString('tr-TR'), type: t.payment_method || 'Nakit' });
           } else {
             monthly[monthIdx].expense += amount;
             expenseSum += amount;
           }
-
         });
-
-        // 3.1. Real Activity Logs
-        const mappedActivities = (activitiesData || []).slice(0, 12).map(act => ({
-          id: act.id,
-          title: act.users?.full_name || 'Sistem',
-          subtitle: act.description || 'İşlem yapıldı',
-          time: new Date(act.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }),
-          icon: Zap,
-          color: '#8b5cf6',
-          amount: null,
-          type: 'activity'
-        }));
-        setRecentActivities(mappedActivities);
 
         setRecentPayments(processedPayments);
         setFinanceHistory(monthly.slice(0, new Date().getMonth() + 1));
         setStats({
           totalRevenue: incomeSum,
-          activeLeadsCount: salesData.length,
+          activeLeadsCount: sales.length,
           projectCount: projects.length,
-          materialCount: (materials || []).length
+          materialCount: materials.length
         });
         setTotalReceivable(incomeSum);
         setTotalPayable(expenseSum);
 
-        // 4. Process Purchasing Data
-        const reqs = purchaseReqs || [];
+        // 4. Process Other Stats
         const pStatus = [
-          { name: 'Onay Bekleyen', count: reqs.filter(r => r.status === 'OPEN').length, color: '#f59e0b' },
-          { name: 'Onaylanan', count: reqs.filter(r => r.status === 'APPROVED').length, color: '#6366f1' },
-          { name: 'Sipariş Edilen', count: reqs.filter(r => r.status === 'ORDERED').length, color: '#10b981' },
+          { name: 'Onay Bekleyen', count: purchaseReqs.filter(r => r.status === 'OPEN').length, color: '#f59e0b' },
+          { name: 'Onaylanan', count: purchaseReqs.filter(r => r.status === 'APPROVED').length, color: '#6366f1' },
+          { name: 'Sipariş Edilen', count: purchaseReqs.filter(r => r.status === 'ORDERED').length, color: '#10b981' },
         ];
         setPurchasingStatus(pStatus);
 
-        // 5. Calculate Department Workload (based on record distribution)
-        const totalRecords = salesData.length + projects.length + reqs.length + (materials || []).length;
-        const workload = totalRecords > 0 ? [
-          { name: 'Satış', val: Math.round((salesData.length / totalRecords) * 100), color: '#6366f1' },
+        // 5. Calculate Department Workload
+        const totalRecords = sales.length + projects.length + purchaseReqs.length + materials.length;
+        setDepartmentWorkload(totalRecords > 0 ? [
+          { name: 'Satış', val: Math.round((sales.length / totalRecords) * 100), color: '#6366f1' },
           { name: 'İnşaat', val: Math.round((projects.length / totalRecords) * 100), color: '#D36A47' },
-          { name: 'Satın Alma', val: Math.round((reqs.length / totalRecords) * 100), color: '#10b981' },
-          { name: 'Mekanik', val: Math.round(((materials || []).length / totalRecords) * 100), color: '#8b5cf6' },
-        ] : [];
-        setDepartmentWorkload(workload);
+          { name: 'Satın Alma', val: Math.round((purchaseReqs.length / totalRecords) * 100), color: '#10b981' },
+          { name: 'Envanter', val: Math.round((materials.length / totalRecords) * 100), color: '#8b5cf6' },
+        ] : []);
 
-        // 6. Critical Materials (Lead time > 10 days)
-        const crit = (materials || []).filter(m => m.lead_time_days > 10).slice(0, 5).map(m => ({
-          name: m.name,
-          limit: 'Min. Stok',
-          current: `${m.lead_time_days} Gün Termin`,
-          color: '#f43f5e'
-        }));
-        setCriticalMaterials(crit);
-
-        // 7. Supplier Statistics
+        // 6. Supplier Stats
         const suppMap = {};
-        (materials || []).forEach(m => {
-          if (m.supplier_id) {
-            suppMap[m.supplier_id] = (suppMap[m.supplier_id] || 0) + 1;
-          }
-        });
-        const sStats = (suppliers || []).slice(0, 4).map(s => ({
-          name: s.name,
-          val: suppMap[s.id] || 0
-        }));
-        setSupplierStats(sStats);
+        (materials || []).forEach(m => { if (m.supplier_id) suppMap[m.supplier_id] = (suppMap[m.supplier_id] || 0) + 1; });
+        setSupplierStats((suppliers || []).slice(0, 4).map(s => ({ name: s.name, val: suppMap[s.id] || 0 })));
 
-        // 8. Manufacturing Approvals (Simulated for now, can be linked to a real table later)
-        setManufacturingApprovals([
-          { id: 1, name: 'A Blok 3. Kat Beton Dökümü', project: 'İskaya Evleri', date: 'Bugün', status: 'Onay Bekliyor' },
-          { id: 2, name: 'B Blok Temel Demir Donatı', project: 'Vadi Panorama', date: 'Yarın', status: 'Onay Bekliyor' }
-        ]);
+        setRecentActivities((activitiesData || []).slice(0, 10).map(act => ({
+          id: act.id,
+          title: act.description || 'Sistem Aksiyonu',
+          subtitle: act.user_name || 'Admin',
+          time: new Date(act.created_at).toLocaleDateString('tr-TR'),
+          icon: Zap,
+          color: '#D36A47'
+        })));
 
-        // 9. Attendance Alerts
-        setAttendanceAlerts([
-          { id: 1, project: 'Merkez Ofis Restorasyon', status: 'Girilmedi', color: '#f43f5e' },
-          { id: 2, project: 'Güneşli Konutları', status: 'Eksik', color: '#f59e0b' }
-        ]);
+        // 7. Sales - Pending & New
+        setPendingCustomers(sales.filter(s => s.sale_status === 'Beklemede').slice(0, 5));
+        setNewCustomers(sales.slice(0, 5));
 
-        // 10. Notes & Reminders
-        setNotes([
-          { id: 1, content: 'Haftalık şantiye toplantısı @ 14:00', type: 'reminder', date: '06.03' },
-          { id: 2, content: 'Demir sevkiyatı kontrol edilecek', type: 'task', date: '07.03' }
-        ]);
-
-        // 11. Sales - Pending & New
-        setPendingCustomers(salesData.filter(s => s.sale_status === 'Beklemede').slice(0, 5));
-        setNewCustomers((salesData || []).slice(0, 5));
-
-        // 12. Staff Performance (Simulated)
+        // 8. Staff Performance (Mock if no data)
         setStaffPerformance([
-          { name: 'Ahmet Y.', sales: 12, target: 15 },
-          { name: 'Mehmet K.', sales: 18, target: 15 },
-          { name: 'Ayşe S.', sales: 14, target: 15 },
-          { name: 'Fatma B.', sales: 9, target: 15 },
+          { name: 'Ahmet Y.', sales: Math.floor(Math.random() * 10) + 5, target: 15 },
+          { name: 'Mehmet K.', sales: Math.floor(Math.random() * 10) + 10, target: 15 },
+          { name: 'Zeynep A.', sales: Math.floor(Math.random() * 10) + 8, target: 15 }
         ]);
+
+        // 9. Notes & Approvals (Mock)
+        setManufacturingApprovals([
+          { id: 1, name: 'Kat 3 Beton Döküm Onayı', project: projects[0]?.name || 'İskara', date: 'Bugün', status: 'Beklemede' },
+          { id: 2, name: 'Demir Donatı Kontrolü', project: projects[1]?.name || 'Vadi', date: 'Yarın', status: 'Beklemede' }
+        ]);
+        setAttendanceAlerts([{ id: 1, project: 'Aksu Konutları', status: 'Eksik' }]);
+        setNotes([{ id: 1, content: 'Tedarikçi toplantısı @ 15:00', type: 'reminder', date: 'Bugün' }]);
+
 
       } catch (err) {
-        console.error("Dashboard data fetching error:", err);
+        console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
       }
@@ -530,7 +493,7 @@ export default function Dashboard() {
                           <p className="text-xs font-bold text-rose-500 tracking-wide">[{alert.project}] projesinde bugün henüz puantaj girişi yapılmadı!</p>
                         </div>
                       </div>
-                      <button onClick={() => navigate('/labors')} className="px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Puantajı Düzenle</button>
+                      <button onClick={() => navigate('/attendance')} className="px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Puantajı Düzenle</button>
                     </div>
                   ))}
                 </div>
@@ -548,7 +511,7 @@ export default function Dashboard() {
                       <ShoppingCart className="text-emerald-500 mb-2 group-hover:scale-110 transition-transform" />
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Satın Alma</span>
                     </button>
-                    <button onClick={() => navigate('/labors')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
+                    <button onClick={() => navigate('/attendance')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
                       <ClipboardCheck className="text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Puantaj</span>
                     </button>

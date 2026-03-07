@@ -16,9 +16,40 @@ import Labors from "./pages/construction/Labors";
 import Recipes from "./pages/construction/Recipes";
 import RecipeConsole from "./pages/construction/RecipeConsole";
 import Purchasing from "./pages/purchasing/Purchasing";
+import Suppliers from "./pages/purchasing/Suppliers";
+import SupplierDetails from "./pages/purchasing/SupplierDetails";
 import Stock from "./pages/construction/Stock";
 import Subcontractors from "./pages/construction/Subcontractors";
 import SubcontractorDetails from "./pages/construction/SubcontractorDetails";
+import Employees from "./pages/hr/Employees";
+import EmployeeDetails from "./pages/hr/EmployeeDetails";
+import Attendance from "./pages/hr/Attendance";
+import EngineerConsole from "./pages/construction/EngineerConsole";
+import DailyReports from "./pages/construction/DailyReports";
+import SiteLogs from "./pages/construction/SiteLogs";
+import Planning from "./pages/construction/Planning";
+
+import AccountingDashboard from "./pages/accounting/AccountingDashboard";
+import IncomeManagement from "./pages/accounting/IncomeManagement";
+import ExpenseManagement from "./pages/accounting/ExpenseManagement";
+import SubcontractorPersonnel from "./pages/accounting/SubcontractorPersonnel";
+import CashFlowCentre from "./pages/accounting/CashFlowCentre";
+import Documents from "./pages/accounting/Documents";
+
+import SubDashboard from "./pages/subcontractor/SubDashboard";
+import SubBids from "./pages/subcontractor/SubBids";
+import SubJobs from "./pages/subcontractor/SubJobs";
+import SubStock from "./pages/subcontractor/SubStock";
+import SubAttendance from "./pages/subcontractor/SubAttendance";
+import SubPayments from "./pages/subcontractor/SubPayments";
+import SubAccounting from "./pages/subcontractor/SubAccounting";
+
+import SuppDashboard from "./pages/supplier/SuppDashboard";
+import SuppMaterials from "./pages/supplier/SuppMaterials";
+import SuppOrders from "./pages/supplier/SuppOrders";
+import SuppStock from "./pages/supplier/SuppStock";
+import SuppOffers from "./pages/supplier/SuppOffers";
+import SuppAccounting from "./pages/supplier/SuppAccounting";
 
 function App() {
   return (
@@ -137,6 +168,22 @@ function App() {
           }
         />
         <Route
+          path="/suppliers"
+          element={
+            <PrivateRoute>
+              <Suppliers />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/suppliers/:id"
+          element={
+            <PrivateRoute>
+              <SupplierDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/stock"
           element={
             <PrivateRoute>
@@ -157,6 +204,214 @@ function App() {
           element={
             <PrivateRoute>
               <SubcontractorDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/employees"
+          element={
+            <PrivateRoute>
+              <Employees />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/employees/:id"
+          element={
+            <PrivateRoute>
+              <EmployeeDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/attendance"
+          element={
+            <PrivateRoute>
+              <Attendance />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/engineer-console"
+          element={
+            <PrivateRoute>
+              <EngineerConsole />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/daily-reports"
+          element={
+            <PrivateRoute>
+              <DailyReports />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/site-logs"
+          element={
+            <PrivateRoute>
+              <SiteLogs />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/planning"
+          element={
+            <PrivateRoute>
+              <Planning />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/accounting"
+          element={
+            <PrivateRoute>
+              <AccountingDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/accounting/income"
+          element={
+            <PrivateRoute>
+              <IncomeManagement />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/accounting/expense"
+          element={
+            <PrivateRoute>
+              <ExpenseManagement />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/accounting/subcontractors"
+          element={
+            <PrivateRoute>
+              <SubcontractorPersonnel />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/accounting/cash-flow"
+          element={
+            <PrivateRoute>
+              <CashFlowCentre />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <PrivateRoute>
+              <Documents />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel"
+          element={
+            <PrivateRoute>
+              <SubDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel/bids"
+          element={
+            <PrivateRoute>
+              <SubBids />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel/jobs"
+          element={
+            <PrivateRoute>
+              <SubJobs />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel/stock"
+          element={
+            <PrivateRoute>
+              <SubStock />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel/attendance"
+          element={
+            <PrivateRoute>
+              <SubAttendance />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel/payments"
+          element={
+            <PrivateRoute>
+              <SubPayments />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sub-panel/accounting"
+          element={
+            <PrivateRoute>
+              <SubAccounting />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supp-panel"
+          element={
+            <PrivateRoute>
+              <SuppDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supp-panel/materials"
+          element={
+            <PrivateRoute>
+              <SuppMaterials />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supp-panel/orders"
+          element={
+            <PrivateRoute>
+              <SuppOrders />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supp-panel/stock"
+          element={
+            <PrivateRoute>
+              <SuppStock />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supp-panel/offers"
+          element={
+            <PrivateRoute>
+              <SuppOffers />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supp-panel/accounting"
+          element={
+            <PrivateRoute>
+              <SuppAccounting />
             </PrivateRoute>
           }
         />
