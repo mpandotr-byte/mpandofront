@@ -22,6 +22,7 @@ import {
     LayoutGrid,
     Plus,
     PlusCircle,
+    CheckCircle,
     Compass,
     FileText,
     User,
@@ -38,10 +39,17 @@ const getUnitStatusDetails = (status) => {
             return { label: 'Satıldı', classes: 'bg-rose-50 text-rose-700 border-rose-100' };
         case 'RESERVED':
         case 'REZERVE':
+        case 'REZERV':
             return { label: 'Rezerve', classes: 'bg-amber-50 text-amber-700 border-amber-100' };
+        case 'BARTER':
+            return { label: 'Barter', classes: 'bg-purple-50 text-purple-700 border-purple-100' };
+        case 'ARSA SAHIBI':
+        case 'ARSA SAHİBİ':
+            return { label: 'Arsa Sahibi', classes: 'bg-indigo-50 text-indigo-700 border-indigo-100' };
         case 'AVAILABLE':
         case 'SATILIK':
         case 'MÜSAİT':
+        case 'BOŞ':
         default:
             return { label: 'Satılık', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
     }
@@ -62,6 +70,16 @@ function BlockDetails() {
     const [activeFloorMenu, setActiveFloorMenu] = useState(null);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [typeFilter, setTypeFilter] = useState('ALL');
+    const [viewMode, setViewMode] = useState('CONSTRUCTION'); // 'CONSTRUCTION' or 'SALES'
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedUnits, setSelectedUnits] = useState([]);
+    const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
+    const [bulkPriceData, setBulkPriceData] = useState({
+        type: 'PERCENTAGE', // 'PERCENTAGE' or 'AMOUNT'
+        action: 'INCREASE', // 'INCREASE' or 'DECREASE'
+        value: '',
+        field: 'price' // 'price' or 'campaign_price'
+    });
 
     const [isAddFloorModalOpen, setIsAddFloorModalOpen] = useState(false);
     const [editingFloor, setEditingFloor] = useState(null);
@@ -147,6 +165,83 @@ function BlockDetails() {
             console.error("Blok detayları alınırken hata:", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBulkPriceUpdate = async () => {
+        if (!bulkPriceData.value || Number(bulkPriceData.value) <= 0) {
+            alert("Lütfen geçerli bir değer giriniz.");
+            return;
+        }
+
+        if (selectedUnits.length === 0) {
+            alert("Lütfen işlem yapılacak üniteleri seçiniz.");
+            return;
+        }
+
+        try {
+            const updates = selectedUnits.map(unitId => {
+                const unit = block.units.find(u => u.id === unitId);
+                if (!unit) return null;
+
+                let currentPrice = Number(unit[bulkPriceData.field]) || 0;
+                let newValue = currentPrice;
+
+                if (bulkPriceData.type === 'PERCENTAGE') {
+                    const factor = Number(bulkPriceData.value) / 100;
+                    if (bulkPriceData.action === 'INCREASE') {
+                        newValue = currentPrice * (1 + factor);
+                    } else {
+                        newValue = currentPrice * (1 - factor);
+                    }
+                } else {
+                    const amount = Number(bulkPriceData.value);
+                    if (bulkPriceData.action === 'INCREASE') {
+                        newValue = currentPrice + amount;
+                    } else {
+                        newValue = currentPrice - amount;
+                    }
+                }
+
+                return api.put(`/projects/units/${unitId}`, {
+                    ...unit,
+                    [bulkPriceData.field]: Math.round(newValue)
+                });
+            }).filter(Boolean);
+
+            await Promise.all(updates);
+            alert("Seçili ünitelerin fiyatları başarıyla güncellendi.");
+            setIsBulkPriceModalOpen(false);
+            setSelectedUnits([]);
+            await fetchBlockDetails();
+        } catch (err) {
+            console.error("Toplu fiyat güncelleme hatası:", err);
+            alert("Fiyatlar güncellenirken bir hata oluştu.");
+        }
+    };
+
+    const handleSinglePriceUpdate = async (unitId, field, value) => {
+        try {
+            const unit = block.units.find(u => u.id === unitId);
+            await api.put(`/projects/units/${unitId}`, {
+                ...unit,
+                [field]: Number(value)
+            });
+        } catch (err) {
+            console.error("Fiyat güncelleme hatası:", err);
+        }
+    };
+
+    const toggleUnitSelection = (id) => {
+        setSelectedUnits(prev => prev.includes(id) ? prev.filter(u => u !== id) : [...prev, id]);
+    };
+
+    const handleSelectAllUnits = () => {
+        const allFilteredUnitIds = filteredFloors.flatMap(f => f.units).map(u => u.id);
+        if (selectedUnits.length === allFilteredUnitIds.length) {
+            setSelectedUnits([]);
+        } else {
+            setSelectedUnits(allFilteredUnitIds);
         }
     };
 
@@ -372,8 +467,10 @@ function BlockDetails() {
 
                     const matchesStatus = currentFilter === 'ALL' ||
                         (currentFilter === 'SOLD' && (status === 'SOLD' || status === 'SATILDI')) ||
-                        (currentFilter === 'AVAILABLE' && (status === 'AVAILABLE' || status === 'SATILIK' || status === 'MÜSAİT')) ||
-                        (currentFilter === 'RESERVED' && (status === 'RESERVED' || status === 'REZERVE'));
+                        (currentFilter === 'AVAILABLE' && (status === 'AVAILABLE' || status === 'SATILIK' || status === 'MÜSAİT' || status === 'BOŞ')) ||
+                        (currentFilter === 'RESERVED' && (status === 'RESERVED' || status === 'REZERVE' || status === 'REZERV')) ||
+                        (currentFilter === 'BARTER' && status === 'BARTER') ||
+                        (currentFilter === 'OWNER' && (status === 'ARSA SAHIBI' || status === 'ARSA SAHİBİ'));
 
                     const matchesType = typeFilter === 'ALL' || unit.unit_type === typeFilter;
 
@@ -486,9 +583,31 @@ function BlockDetails() {
                                     </h2>
 
                                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                        {/* View Mode Toggle */}
+                                        <div className="flex p-1 bg-slate-100/80 rounded-xl mr-auto md:mr-0">
+                                            <button
+                                                onClick={() => setViewMode('CONSTRUCTION')}
+                                                className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${viewMode === 'CONSTRUCTION'
+                                                    ? 'bg-[#0A1128] text-white shadow-sm'
+                                                    : 'text-slate-400 hover:text-slate-600'
+                                                    }`}
+                                            >
+                                                İNŞAAT
+                                            </button>
+                                            <button
+                                                onClick={() => setViewMode('SALES')}
+                                                className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${viewMode === 'SALES'
+                                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                                    : 'text-slate-400 hover:text-slate-600'
+                                                    }`}
+                                            >
+                                                SATIŞ / FİYAT
+                                            </button>
+                                        </div>
+
                                         {/* Status Filter Pills */}
                                         <div className="flex p-1 bg-slate-100/80 rounded-xl">
-                                            {['ALL', 'AVAILABLE', 'SOLD', 'RESERVED'].map((status) => (
+                                            {['ALL', 'AVAILABLE', 'SOLD', 'RESERVED', 'BARTER', 'OWNER'].map((status) => (
                                                 <button
                                                     key={status}
                                                     onClick={() => setStatusFilter(status)}
@@ -499,7 +618,9 @@ function BlockDetails() {
                                                 >
                                                     {status === 'ALL' ? 'HEPSİ' :
                                                         status === 'AVAILABLE' ? 'SATILIK' :
-                                                            status === 'SOLD' ? 'SATILDI' : 'REZERVE'}
+                                                            status === 'SOLD' ? 'SATILDI' :
+                                                                status === 'RESERVED' ? 'REZERVE' :
+                                                                    status === 'BARTER' ? 'BARTER' : 'ARSA SAHİBİ'}
                                                 </button>
                                             ))}
                                         </div>
@@ -521,6 +642,20 @@ function BlockDetails() {
                                                 <ChevronDown size={12} className="absolute right-3 text-slate-400 pointer-events-none" />
                                             </div>
                                         </div>
+
+                                        {/* Sales Search */}
+                                        {viewMode === 'SALES' && (
+                                            <div className="relative">
+                                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Daire no veya tip ara..."
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="pl-9 pr-4 py-2 bg-slate-100/50 border border-transparent rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-[#D36A47] outline-none transition-all w-40 md:w-48"
+                                                />
+                                            </div>
+                                        )}
 
                                         <button
                                             onClick={() => {
@@ -544,7 +679,7 @@ function BlockDetails() {
                                     </div>
                                 </div>
 
-                                {selectedFloors.length > 0 && (
+                                {viewMode === 'CONSTRUCTION' && selectedFloors.length > 0 && (
                                     <div className="mb-6 flex items-center justify-between bg-[#0A1128]/5 border border-[#0A1128]/10 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2">
                                         <div className="flex items-center gap-3">
                                             <span className="bg-[#0A1128] text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedFloors.length}</span>
@@ -567,265 +702,402 @@ function BlockDetails() {
                                     </div>
                                 )}
 
-                                <div className="space-y-8">
-                                    {filteredFloors.map((floor, index) => {
-                                        const isExpanded = !!expandedFloors[floor.id];
-                                        const isMenuOpen = activeFloorMenu === floor.id;
-                                        const isLastItems = index >= filteredFloors.length - 2 && filteredFloors.length > 3;
+                                {viewMode === 'SALES' && selectedUnits.length > 0 && (
+                                    <div className="mb-6 flex items-center justify-between bg-emerald-50 border border-emerald-100 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="bg-emerald-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedUnits.length}</span>
+                                            <span className="text-sm font-bold text-emerald-800">Ünite Seçildi</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={handleSelectAllUnits}
+                                                className="px-4 py-2 bg-white border border-slate-200 text-emerald-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
+                                            >
+                                                {selectedUnits.length === filteredFloors.flatMap(f => f.units).length ? 'Seçimi Kaldır' : 'Tümünü Seç'}
+                                            </button>
+                                            <button
+                                                onClick={() => setIsBulkPriceModalOpen(true)}
+                                                className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-200"
+                                            >
+                                                <Banknote size={14} /> Toplu Fiyat Güncelle
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
-                                        return (
-                                            <div key={floor.id} className={`relative pl-2 sm:pl-8 before:absolute before:inset-y-0 before:left-0 sm:before:left-0 before:w-1 sm:before:w-1 before:bg-slate-100 before:rounded-full ${isMenuOpen ? 'z-50' : 'z-10'}`}>
-                                                <div
-                                                    className="font-bold text-slate-800 flex items-center justify-between mb-4 sticky top-[64px] md:top-0 bg-white/95 backdrop-blur-sm px-2 py-3 cursor-pointer hover:bg-slate-50 transition-all rounded-xl border border-transparent hover:border-slate-100 group shadow-sm sm:shadow-none"
-                                                >
-                                                    <div className="flex items-center gap-3 flex-1" onClick={() => toggleFloor(floor.id)}>
-                                                        <div
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="mr-2 flex items-center"
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={selectedFloors.includes(floor.id)}
-                                                                onChange={() => handleSelectFloor(floor.id)}
-                                                                className="w-5 h-5 rounded-lg border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47] bg-white"
-                                                            />
-                                                        </div>
-                                                        <div className="w-8 h-8 rounded-full bg-[#0A1128] text-white flex items-center justify-center sm:absolute sm:-left-[1.65rem] border-4 border-white shadow-md text-xs font-black">
-                                                            {floor.floor_number}
-                                                        </div>
-                                                        <span className="text-sm font-black ml-0 sm:ml-2 uppercase tracking-tight">Kat {floor.floor_number}</span>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">
-                                                                {(floor.units || []).length} Ünite
-                                                            </span>
-                                                            {floor.gross_area_m2 > 0 && (
-                                                                <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-                                                                    {floor.gross_area_m2} m² Brüt
-                                                                </span>
-                                                            )}
-                                                            {(floor.column_count > 0 || floor.beam_count > 0) && (
-                                                                <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-medium">
-                                                                    {floor.column_count || 0}K / {floor.beam_count || 0}Ki
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                {viewMode === 'CONSTRUCTION' ? (
+                                    <div className="space-y-8">
+                                        {filteredFloors.map((floor, index) => {
+                                            const isExpanded = !!expandedFloors[floor.id];
+                                            const isMenuOpen = activeFloorMenu === floor.id;
+                                            const isLastItems = index >= filteredFloors.length - 2 && filteredFloors.length > 3;
 
-                                                    <div className="flex items-center gap-2">
-                                                        {/* Kat İşlem Dropdown */}
-                                                        <div className="relative floor-menu-container">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setActiveFloorMenu(isMenuOpen ? null : floor.id);
-                                                                }}
-                                                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                                            return (
+                                                <div key={floor.id} className={`relative pl-2 sm:pl-8 before:absolute before:inset-y-0 before:left-0 sm:before:left-0 before:w-1 sm:before:w-1 before:bg-slate-100 before:rounded-full ${isMenuOpen ? 'z-50' : 'z-10'}`}>
+                                                    <div
+                                                        className="font-bold text-slate-800 flex items-center justify-between mb-4 sticky top-[64px] md:top-0 bg-white/95 backdrop-blur-sm px-2 py-3 cursor-pointer hover:bg-slate-50 transition-all rounded-xl border border-transparent hover:border-slate-100 group shadow-sm sm:shadow-none"
+                                                    >
+                                                        <div className="flex items-center gap-3 flex-1" onClick={() => toggleFloor(floor.id)}>
+                                                            <div
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                className="mr-2 flex items-center"
                                                             >
-                                                                <MoreVertical size={18} />
-                                                            </button>
-
-                                                            {isMenuOpen && (
-                                                                <div className={`absolute right-0 ${isLastItems ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} w-44 bg-white border border-slate-200 rounded-xl shadow-2xl z-[999] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-100`}>
-                                                                    <div className="px-3 py-1.5 border-b border-slate-50 mb-1">
-                                                                        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Kat İşlemleri</span>
-                                                                    </div>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setSelectedFloorForUnit(floor.id);
-                                                                            setIsAddUnitModalOpen(true);
-                                                                            setTimeout(() => setActiveFloorMenu(null), 100);
-                                                                        }}
-                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                                                    >
-                                                                        <div className="w-6 h-6 rounded-lg bg-blue-100/50 flex items-center justify-center text-blue-600">
-                                                                            <Plus size={14} />
-                                                                        </div>
-                                                                        Yeni Ünite Ekle
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            console.log("Düzenle tıklandı, kat:", floor);
-                                                                            setEditingFloor(floor);
-                                                                            setIsAddFloorModalOpen(true);
-                                                                            setTimeout(() => setActiveFloorMenu(null), 100);
-                                                                        }}
-                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                                                    >
-                                                                        <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-center">
-                                                                            <Edit2 size={14} />
-                                                                        </div>
-                                                                        Katı Düzenle
-                                                                    </button>
-                                                                    <div className="h-px bg-slate-100 my-1"></div>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            console.log("Silme tıklandı, kat ID:", floor.id);
-                                                                            handleDeleteFloor(floor.id);
-                                                                            // Menüyü biraz gecikmeli kapatarak işlemin tetiklenmesini garanti ediyoruz
-                                                                            setTimeout(() => setActiveFloorMenu(null), 100);
-                                                                        }}
-                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                                                                    >
-                                                                        <div className="w-6 h-6 rounded-lg bg-red-100/50 flex items-center justify-center text-red-600">
-                                                                            <Trash2 size={14} />
-                                                                        </div>
-                                                                        Katı Sil
-                                                                    </button>
-                                                                </div>
-                                                            )}
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedFloors.includes(floor.id)}
+                                                                    onChange={() => handleSelectFloor(floor.id)}
+                                                                    className="w-5 h-5 rounded-lg border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47] bg-white"
+                                                                />
+                                                            </div>
+                                                            <div className="w-8 h-8 rounded-full bg-[#0A1128] text-white flex items-center justify-center sm:absolute sm:-left-[1.65rem] border-4 border-white shadow-md text-xs font-black">
+                                                                {floor.floor_number}
+                                                            </div>
+                                                            <span className="text-sm font-black ml-0 sm:ml-2 uppercase tracking-tight">Kat {floor.floor_number}</span>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">
+                                                                    {(floor.units || []).length} Ünite
+                                                                </span>
+                                                                {floor.gross_area_m2 > 0 && (
+                                                                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
+                                                                        {floor.gross_area_m2} m² Brüt
+                                                                    </span>
+                                                                )}
+                                                                {(floor.column_count > 0 || floor.beam_count > 0) && (
+                                                                    <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-medium">
+                                                                        {floor.column_count || 0}K / {floor.beam_count || 0}Ki
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
 
-                                                        <div className="text-slate-300 w-px h-4 bg-slate-200 mx-1"></div>
+                                                        <div className="flex items-center gap-2">
+                                                            {/* Kat İşlem Dropdown */}
+                                                            <div className="relative floor-menu-container">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setActiveFloorMenu(isMenuOpen ? null : floor.id);
+                                                                    }}
+                                                                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                                                                >
+                                                                    <MoreVertical size={18} />
+                                                                </button>
 
-                                                        <div className="text-slate-400" onClick={() => toggleFloor(floor.id)}>
-                                                            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                                                {isMenuOpen && (
+                                                                    <div className={`absolute right-0 ${isLastItems ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} w-44 bg-white border border-slate-200 rounded-xl shadow-2xl z-[999] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-100`}>
+                                                                        <div className="px-3 py-1.5 border-b border-slate-50 mb-1">
+                                                                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Kat İşlemleri</span>
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setSelectedFloorForUnit(floor.id);
+                                                                                setIsAddUnitModalOpen(true);
+                                                                                setTimeout(() => setActiveFloorMenu(null), 100);
+                                                                            }}
+                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                                                        >
+                                                                            <div className="w-6 h-6 rounded-lg bg-blue-100/50 flex items-center justify-center text-blue-600">
+                                                                                <Plus size={14} />
+                                                                            </div>
+                                                                            Yeni Ünite Ekle
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                console.log("Düzenle tıklandı, kat:", floor);
+                                                                                setEditingFloor(floor);
+                                                                                setIsAddFloorModalOpen(true);
+                                                                                setTimeout(() => setActiveFloorMenu(null), 100);
+                                                                            }}
+                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                                                                        >
+                                                                            <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-center">
+                                                                                <Edit2 size={14} />
+                                                                            </div>
+                                                                            Katı Düzenle
+                                                                        </button>
+                                                                        <div className="h-px bg-slate-100 my-1"></div>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                console.log("Silme tıklandı, kat ID:", floor.id);
+                                                                                handleDeleteFloor(floor.id);
+                                                                                // Menüyü biraz gecikmeli kapatarak işlemin tetiklenmesini garanti ediyoruz
+                                                                                setTimeout(() => setActiveFloorMenu(null), 100);
+                                                                            }}
+                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                                                                        >
+                                                                            <div className="w-6 h-6 rounded-lg bg-red-100/50 flex items-center justify-center text-red-600">
+                                                                                <Trash2 size={14} />
+                                                                            </div>
+                                                                            Katı Sil
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="text-slate-300 w-px h-4 bg-slate-200 mx-1"></div>
+
+                                                            <div className="text-slate-400" onClick={() => toggleFloor(floor.id)}>
+                                                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                {isExpanded && (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-6 animate-in fade-in slide-in-from-top-2 duration-200 px-1 sm:px-0">
-                                                        {(floor.units || []).sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })).map(unit => {
-                                                            const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
-                                                            const isSold = unit.sales_status === 'SOLD' || unit.sales_status === 'SATILDI';
+                                                    {isExpanded && (
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-6 animate-in fade-in slide-in-from-top-2 duration-200 px-1 sm:px-0">
+                                                            {(floor.units || []).sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })).map(unit => {
+                                                                const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
+                                                                const isSold = unit.sales_status === 'SOLD' || unit.sales_status === 'SATILDI';
 
-                                                            return (
-                                                                <div
-                                                                    key={unit.id}
-                                                                    onClick={() => toggleUnit(unit)}
-                                                                    className="group bg-white rounded-2xl border border-slate-200 p-4 hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#D36A47]/30 transition-all cursor-pointer relative overflow-hidden"
-                                                                >
-                                                                    {/* Status Accent */}
-                                                                    <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full blur-3xl opacity-10 transition-colors ${statusDetails.classes.split(' ')[0]}`} />
+                                                                return (
+                                                                    <div
+                                                                        key={unit.id}
+                                                                        onClick={() => toggleUnit(unit)}
+                                                                        className="group bg-white rounded-2xl border border-slate-200 p-4 hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#D36A47]/30 transition-all cursor-pointer relative overflow-hidden"
+                                                                    >
+                                                                        {/* Status Accent */}
+                                                                        <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full blur-3xl opacity-10 transition-colors ${statusDetails.classes.split(' ')[0]}`} />
 
-                                                                    <div className="relative flex flex-col h-full">
-                                                                        <div className="flex items-start justify-between mb-4">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D36A47] group-hover:bg-[#D36A47] group-hover:text-white transition-all shadow-inner">
-                                                                                    <Home size={24} />
+                                                                        <div className="relative flex flex-col h-full">
+                                                                            <div className="flex items-start justify-between mb-4">
+                                                                                <div className="flex items-center gap-3">
+                                                                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D36A47] group-hover:bg-[#D36A47] group-hover:text-white transition-all shadow-inner">
+                                                                                        <Home size={24} />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <h4 className="text-lg font-black text-slate-800 tracking-tight">
+                                                                                            {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
+                                                                                        </h4>
+                                                                                        <span className="text-[10px] font-bold text-slate-400 border border-slate-100 px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                                                                                            {unit.unit_type}
+                                                                                        </span>
+                                                                                    </div>
                                                                                 </div>
-                                                                                <div>
-                                                                                    <h4 className="text-lg font-black text-slate-800 tracking-tight">
-                                                                                        {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
-                                                                                    </h4>
-                                                                                    <span className="text-[10px] font-bold text-slate-400 border border-slate-100 px-2 py-0.5 rounded-lg uppercase tracking-wider">
-                                                                                        {unit.unit_type}
-                                                                                    </span>
+
+                                                                                <div className="relative unit-actions-container" onClick={e => e.stopPropagation()}>
+                                                                                    <button
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            setActiveUnitMenu(activeUnitMenu === unit.id ? null : unit.id);
+                                                                                        }}
+                                                                                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                                                                                    >
+                                                                                        <MoreVertical size={18} />
+                                                                                    </button>
+
+                                                                                    {activeUnitMenu === unit.id && (
+                                                                                        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                                                                            <button
+                                                                                                onClick={(e) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    setEditingRoom(null);
+                                                                                                    setSelectedUnitForRoom(unit.id);
+                                                                                                    setSelectedFloorForUnit(floor.id);
+                                                                                                    setIsAddRoomModalOpen(true);
+                                                                                                    setActiveUnitMenu(null);
+                                                                                                }}
+                                                                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                                                                                            >
+                                                                                                <PlusCircle size={14} /> Oda Ekle
+                                                                                            </button>
+                                                                                            <button
+                                                                                                onClick={(e) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    setEditingUnit(unit);
+                                                                                                    setSelectedFloorForUnit(floor.id);
+                                                                                                    setIsAddUnitModalOpen(true);
+                                                                                                    setActiveUnitMenu(null);
+                                                                                                }}
+                                                                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                                                                                            >
+                                                                                                <Edit2 size={14} /> Düzenle
+                                                                                            </button>
+                                                                                            <div className="h-px bg-slate-50 my-1 mx-2" />
+                                                                                            <button
+                                                                                                onClick={(e) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    handleDeleteUnit(unit.id);
+                                                                                                    setActiveUnitMenu(null);
+                                                                                                }}
+                                                                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                                                                                            >
+                                                                                                <Trash2 size={14} /> Sil
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
 
-                                                                            <div className="relative unit-actions-container" onClick={e => e.stopPropagation()}>
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        setActiveUnitMenu(activeUnitMenu === unit.id ? null : unit.id);
-                                                                                    }}
-                                                                                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                                                                                >
-                                                                                    <MoreVertical size={18} />
-                                                                                </button>
+                                                                            <div className="grid grid-cols-2 gap-2 mb-4">
+                                                                                <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
+                                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Alan</p>
+                                                                                    <p className="text-xs font-black text-slate-700">
+                                                                                        {(unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0).toFixed(1)} m²
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
+                                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cephe</p>
+                                                                                    <p className="text-xs font-black text-slate-700 truncate">{unit.facade || '-'}</p>
+                                                                                </div>
+                                                                            </div>
 
-                                                                                {activeUnitMenu === unit.id && (
-                                                                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                                                                                        <button
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                setEditingRoom(null);
-                                                                                                setSelectedUnitForRoom(unit.id);
-                                                                                                setSelectedFloorForUnit(floor.id);
-                                                                                                setIsAddRoomModalOpen(true);
-                                                                                                setActiveUnitMenu(null);
-                                                                                            }}
-                                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                                                                        >
-                                                                                            <PlusCircle size={14} /> Oda Ekle
-                                                                                        </button>
-                                                                                        <button
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                setEditingUnit(unit);
-                                                                                                setSelectedFloorForUnit(floor.id);
-                                                                                                setIsAddUnitModalOpen(true);
-                                                                                                setActiveUnitMenu(null);
-                                                                                            }}
-                                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                                                                        >
-                                                                                            <Edit2 size={14} /> Düzenle
-                                                                                        </button>
-                                                                                        <div className="h-px bg-slate-50 my-1 mx-2" />
-                                                                                        <button
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                handleDeleteUnit(unit.id);
-                                                                                                setActiveUnitMenu(null);
-                                                                                            }}
-                                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                                                                                        >
-                                                                                            <Trash2 size={14} /> Sil
-                                                                                        </button>
-                                                                                    </div>
+                                                                            <div className="mt-auto flex items-center justify-between">
+                                                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
+                                                                                    {statusDetails.label}
+                                                                                </span>
+                                                                                {unit.price && (
+                                                                                    <span className="text-xs font-black text-emerald-600">
+                                                                                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.price)}
+                                                                                    </span>
                                                                                 )}
                                                                             </div>
-                                                                        </div>
 
-                                                                        <div className="grid grid-cols-2 gap-2 mb-4">
-                                                                            <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
-                                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Alan</p>
-                                                                                <p className="text-xs font-black text-slate-700">
-                                                                                    {(unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0).toFixed(1)} m²
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
-                                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cephe</p>
-                                                                                <p className="text-xs font-black text-slate-700 truncate">{unit.facade || '-'}</p>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div className="mt-auto flex items-center justify-between">
-                                                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
-                                                                                {statusDetails.label}
-                                                                            </span>
-                                                                            {unit.price && (
-                                                                                <span className="text-xs font-black text-emerald-600">
-                                                                                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.price)}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-
-                                                                        {isSold && (() => {
-                                                                            const sale = sales.find(s => String(s.unit_id) === String(unit.id));
-                                                                            return sale ? (
-                                                                                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
-                                                                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-black ring-2 ring-white">
-                                                                                        {sale.customers?.full_name?.charAt(0).toUpperCase()}
+                                                                            {(() => {
+                                                                                const sale = sales.find(s => String(s.unit_id) === String(unit.id));
+                                                                                return sale ? (
+                                                                                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+                                                                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-black ring-2 ring-white">
+                                                                                            {sale.customers?.full_name?.charAt(0).toUpperCase() || '?'}
+                                                                                        </div>
+                                                                                        <div className="flex flex-col min-w-0">
+                                                                                            <span className="text-[11px] font-bold text-slate-600 truncate">{sale.customers?.full_name || 'İsimsiz Müşteri'}</span>
+                                                                                            <span className="text-[9px] text-slate-400 font-medium truncate">{sale.sale_status || 'Kayıtlı'}</span>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <span className="text-[11px] font-bold text-slate-600 truncate">{sale.customers?.full_name}</span>
-                                                                                </div>
-                                                                            ) : null;
-                                                                        })()}
+                                                                                ) : null;
+                                                                            })()}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )
-                                    })}
-                                    {filteredFloors.length === 0 && (
-                                        <div className="bg-slate-50 border border-slate-100 border-dashed rounded-xl p-8 text-center text-slate-500">
-                                            {(statusFilter !== 'ALL' || typeFilter !== 'ALL') ? "Filtreye uygun daire bulunamadı." : "Bu blokta henüz kat ve daire tanımlanmamış."}
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="bg-slate-50 border-b border-slate-100">
+                                                        <th className="px-6 py-4">
+                                                            <button
+                                                                onClick={handleSelectAllUnits}
+                                                                className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedUnits.length === filteredFloors.flatMap(f => f.units).length ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300'}`}
+                                                            >
+                                                                {selectedUnits.length > 0 && <CheckCircle size={12} />}
+                                                            </button>
+                                                        </th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Daire No</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tip</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Durum</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Müşteri</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Liste Fiyatı</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Kampanyalı Fiyat</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">İndirim %</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-50">
+                                                    {filteredFloors.flatMap(f => f.units).filter(u =>
+                                                        u.unit_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                        u.unit_type.toLowerCase().includes(searchQuery.toLowerCase())
+                                                    ).map(unit => {
+                                                        const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
+                                                        return (
+                                                            <tr key={unit.id} className="hover:bg-slate-50/50 transition-colors group">
+                                                                <td className="px-6 py-4">
+                                                                    <button
+                                                                        onClick={() => toggleUnitSelection(unit.id)}
+                                                                        className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedUnits.includes(unit.id) ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300'}`}
+                                                                    >
+                                                                        {selectedUnits.includes(unit.id) && <CheckCircle size={12} />}
+                                                                    </button>
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    <span className="text-sm font-black text-slate-800">{unit.unit_number}</span>
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-lg">{unit.unit_type}</span>
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
+                                                                        {statusDetails.label}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    {(() => {
+                                                                        const sale = sales.find(s => String(s.unit_id) === String(unit.id));
+                                                                        return sale ? (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[8px] font-black">
+                                                                                    {sale.customers?.full_name?.charAt(0).toUpperCase() || '?'}
+                                                                                </div>
+                                                                                <span className="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">
+                                                                                    {sale.customers?.full_name || 'İsimsiz'}
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="text-slate-300">-</span>
+                                                                        );
+                                                                    })()}
+                                                                </td>
+                                                                <td className="px-6 py-4 group-hover:bg-slate-50 transition-colors">
+                                                                    <div className="relative flex items-center group/input">
+                                                                        <span className="absolute left-3 text-slate-400 text-xs font-bold transition-colors group-focus-within/input:text-blue-500">₺</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            defaultValue={unit.price}
+                                                                            onBlur={(e) => handleSinglePriceUpdate(unit.id, 'price', e.target.value)}
+                                                                            className="w-40 pl-7 pr-4 py-2 bg-slate-100/50 border border-transparent rounded-xl text-sm font-black text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 group-hover:bg-slate-50 transition-colors">
+                                                                    <div className="relative flex items-center group/input">
+                                                                        <span className="absolute left-3 text-slate-400 text-xs font-bold transition-colors group-focus-within/input:text-emerald-500">₺</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            defaultValue={unit.campaign_price}
+                                                                            onBlur={(e) => handleSinglePriceUpdate(unit.id, 'campaign_price', e.target.value)}
+                                                                            className="w-40 pl-7 pr-4 py-2 bg-emerald-50/50 border border-transparent rounded-xl text-sm font-black text-emerald-700 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    {unit.price && unit.campaign_price ? (
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="px-2.5 py-1 bg-orange-100 text-orange-600 rounded-lg text-xs font-black ring-1 ring-orange-200 shadow-sm">
+                                                                                %{Math.round(((unit.price - unit.campaign_price) / unit.price) * 100)}
+                                                                            </div>
+                                                                            <span className="text-[10px] font-bold text-slate-400">indirim</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-slate-300">-</span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    )}
-                                    {(block.floors || []).length === 0 && (
-                                        <div className="bg-slate-50 border border-slate-100 border-dashed rounded-xl p-8 text-center text-slate-500">
-                                            Bu blokta henüz kat tanımlanmamış.
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
+
+                                {(filteredFloors.length === 0 || (block.floors || []).length === 0) && (
+                                    <div className="bg-slate-50 border border-slate-100 border-dashed rounded-xl p-8 text-center text-slate-500">
+                                        {(statusFilter !== 'ALL' || typeFilter !== 'ALL') ? "Filtreye uygun daire bulunamadı." : "Bu blokta henüz kat ve daire tanımlanmamış."}
+                                    </div>
+                                )}
+                                {(block.floors || []).length === 0 && (
+                                    <div className="bg-slate-50 border border-slate-100 border-dashed rounded-xl p-8 text-center text-slate-500">
+                                        Bu blokta henüz kat tanımlanmamış.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -888,6 +1160,15 @@ function BlockDetails() {
                     setIsUnitDetailsModalOpen(false);
                     setSelectedUnitForDetails(null);
                 }}
+            />
+
+            <BulkPriceModal
+                isOpen={isBulkPriceModalOpen}
+                onClose={() => setIsBulkPriceModalOpen(false)}
+                onUpdate={handleBulkPriceUpdate}
+                formData={bulkPriceData}
+                setFormData={setBulkPriceData}
+                selectedCount={selectedUnits.length}
             />
         </div>
     );
@@ -1021,6 +1302,165 @@ const UnitDetailsModal = ({ isOpen, unit, sales, onClose }) => {
                         className="px-8 py-3 bg-[#0A1128] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
                     >
                         Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const BulkPriceModal = ({ isOpen, onClose, onUpdate, formData, setFormData, selectedCount }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                        <Banknote size={24} />
+                    </div>
+                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <h3 className="text-xl font-black text-slate-900 mb-2">Toplu Fiyat Güncelleme</h3>
+                <p className="text-sm font-bold text-slate-500 mb-8">{selectedCount} ünite güncellenecek.</p>
+
+                <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-3 bg-slate-50 p-1 rounded-2xl border border-slate-100">
+                        <button
+                            onClick={() => setFormData(prev => ({ ...prev, field: 'price' }))}
+                            className={`py-2.5 rounded-xl text-xs font-black transition-all ${formData.field === 'price' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            LİSTE FİYATI
+                        </button>
+                        <button
+                            onClick={() => setFormData(prev => ({ ...prev, field: 'campaign_price' }))}
+                            className={`py-2.5 rounded-xl text-xs font-black transition-all ${formData.field === 'campaign_price' ? 'bg-white text-emerald-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            KAMPANYALI FİYAT
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tip</label>
+                            <select
+                                value={formData.type}
+                                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-emerald-500 transition-all"
+                            >
+                                <option value="PERCENTAGE">Yüzde (%)</option>
+                                <option value="AMOUNT">Miktar (₺)</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">İşlem</label>
+                            <select
+                                value={formData.action}
+                                onChange={(e) => setFormData(prev => ({ ...prev, action: e.target.value }))}
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-emerald-500 transition-all"
+                            >
+                                <option value="INCREASE">Artır (+)</option>
+                                <option value="DECREASE">Azalt (-)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Değer</label>
+                        <div className="relative flex items-center group">
+                            <input
+                                type="number"
+                                value={formData.value}
+                                onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
+                                placeholder="Örn: 10"
+                                className="w-full pl-6 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-800 outline-none group-focus-within:bg-white group-focus-within:border-emerald-500 group-focus-within:ring-4 group-focus-within:ring-emerald-500/10 transition-all"
+                            />
+                            <span className="absolute right-6 text-slate-400 font-black">
+                                {formData.type === 'PERCENTAGE' ? '%' : '₺'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={onUpdate}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-emerald-200 mt-4 active:scale-95"
+                    >
+                        GÜNCELLEMEYİ UYGULA
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                    >
+                        İPTAL
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const BulkFloorRecipeModal = ({ isOpen, onClose, onSave, recipes, formData, onChange, selectedCount }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden p-8 md:p-10 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600">
+                        <Layers size={28} />
+                    </div>
+                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="mb-8">
+                    <h3 className="text-2xl font-black text-slate-900 mb-2">Toplu Kat Reçete Atama</h3>
+                    <p className="text-sm font-bold text-slate-500">Seçili {selectedCount} kata aynı anda malzeme/işçilik reçeteleri atayabilirsiniz.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[50vh] overflow-y-auto custom-scrollbar pr-2 mb-8">
+                    {[
+                        { label: 'Beton Reçetesi', name: 'beton_recipe_id' },
+                        { label: 'Demir Reçetesi', name: 'demir_recipe_id' },
+                        { label: 'Koridor Zemin', name: 'hall_floor_recipe_id' },
+                        { label: 'Koridor Duvar', name: 'hall_wall_recipe_id' },
+                        { label: 'Koridor Tavan', name: 'hall_ceiling_recipe_id' },
+                        { label: 'Merdiven', name: 'stairs_recipe_id' },
+                        { label: 'Ekstra', name: 'extra_recipe_id' }
+                    ].map((field) => (
+                        <div key={field.name} className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{field.label}</label>
+                            <select
+                                name={field.name}
+                                value={formData[field.name]}
+                                onChange={onChange}
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-[#D36A47] transition-all appearance-none"
+                            >
+                                <option value="">Seçiniz...</option>
+                                {recipes.map(recipe => (
+                                    <option key={recipe.id} value={recipe.id}>{recipe.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                    >
+                        İPTAL
+                    </button>
+                    <button
+                        onClick={onSave}
+                        className="flex-1 bg-[#D36A47] hover:bg-[#B95839] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-200"
+                    >
+                        REÇETELERİ ATA
                     </button>
                 </div>
             </div>

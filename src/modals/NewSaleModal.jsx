@@ -15,8 +15,12 @@ import {
   Layers,
   Upload,
   FileCheck,
-  Eye
+  Eye,
+  Search,
+  PlusCircle,
+  ShieldCheck
 } from 'lucide-react';
+import NewCostumerModal from './customers/NewCostumerModal';
 
 export default function NewSaleModal({
   isOpen,
@@ -34,6 +38,9 @@ export default function NewSaleModal({
   const [selectedUnitId, setSelectedUnitId] = useState('');
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [contractFile, setContractFile] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [isApprovalSent, setIsApprovalSent] = useState(false);
 
   // Proje değiştiğinde detayları çek
   useEffect(() => {
@@ -67,7 +74,11 @@ export default function NewSaleModal({
         const allUnits = [];
         block.floors.forEach(floor => {
           if (floor.units) {
-            allUnits.push(...floor.units);
+            // Sadece boş olan daireleri ekle - AVAILABLE, BOŞ, MÜSAİT vs.
+            allUnits.push(...floor.units.filter(u => {
+              const status = String(u.sales_status || 'AVAILABLE').toUpperCase();
+              return status === 'AVAILABLE' || status === 'BOŞ' || status === 'MÜSAİT' || status === 'SATILIK';
+            }));
           }
         });
         setUnits(allUnits.sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })));
@@ -84,7 +95,7 @@ export default function NewSaleModal({
     setSelectedUnitId(unitId);
 
     if (!unitId) {
-      onChange({ unit_id: '', interested_product: '' });
+      onChange({ unit_id: '', interested_product: '', list_price: '', offered_price: '' });
       return;
     }
 
@@ -93,10 +104,28 @@ export default function NewSaleModal({
 
     if (unit && block) {
       const value = `${block.name}, No: ${unit.unit_number} (${unit.unit_type || ''})`;
-      // Her iki alanı da tek seferde güncelle (State tutarlılığı için)
-      onChange({ unit_id: unitId, interested_product: value });
+      // Birim seçildiğinde fiyatları da otomatik doldur
+      onChange({
+        unit_id: unitId,
+        interested_product: value,
+        list_price: unit.price || '',
+        offered_price: unit.campaign_price || unit.price || ''
+      });
     }
   };
+
+  const handleSendToApproval = () => {
+    // Gerçek uygulamada burada API çağrısı yapılır
+    setIsApprovalSent(true);
+    onChange({ approval_status: 'Onay Bekliyor' });
+    alert("Teklif yönetici onayına gönderildi.");
+  };
+
+  const filteredCustomers = customers.filter(c =>
+    c.full_name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.phone?.includes(customerSearch) ||
+    String(c.id).includes(customerSearch)
+  );
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -144,24 +173,47 @@ export default function NewSaleModal({
 
                 {/* Müşteri Seçimi */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Müşteri Seçimi <span className="text-red-500">*</span></label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <User size={16} />
-                    </div>
-                    <select
-                      name="musteri_id"
-                      value={formData.musteri_id || ''}
-                      onChange={onChange}
-                      required
-                      className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-slate-700">Müşteri Seçimi <span className="text-red-500">*</span></label>
+                    <button
+                      type="button"
+                      onClick={() => setIsNewCustomerModalOpen(true)}
+                      className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
                     >
-                      <option value="" disabled>Seçiniz</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>ID: ({c.id}) - {c.full_name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <PlusCircle size={12} /> Yeni Müşteri
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Search size={14} />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Müşteri ara (ad, tel, id)..."
+                        value={customerSearch}
+                        onChange={(e) => setCustomerSearch(e.target.value)}
+                        className="block w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <User size={16} />
+                      </div>
+                      <select
+                        name="musteri_id"
+                        value={formData.musteri_id || ''}
+                        onChange={onChange}
+                        required
+                        className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>Seçiniz</option>
+                        {filteredCustomers.map(c => (
+                          <option key={c.id} value={c.id}>ID: ({c.id}) - {c.full_name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
@@ -378,6 +430,9 @@ export default function NewSaleModal({
                     >
                       <option value="Beklemede">Beklemede</option>
                       <option value="Satıldı">Satıldı</option>
+                      <option value="Rezerv">Rezerv</option>
+                      <option value="Barter">Barter</option>
+                      <option value="Arsa Sahibi">Arsa Sahibi</option>
                       <option value="İptal">İptal</option>
                       <option value="Reddedildi">Reddedildi</option>
                     </select>
@@ -472,6 +527,24 @@ export default function NewSaleModal({
               ></textarea>
             </div>
 
+            {/* Bölüm 4: Yönetici Onayı */}
+            <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-orange-800 flex items-center gap-2">
+                  <ShieldCheck size={16} /> Yönetici Onayı
+                </h4>
+                <p className="text-[11px] text-orange-700 mt-1">Özel indirim veya kampanya dışı fiyatlar için onay gerekebilir.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSendToApproval}
+                disabled={isApprovalSent}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${isApprovalSent ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}`}
+              >
+                {isApprovalSent ? <><FileCheck size={14} /> Onaya Gönderildi</> : 'Onaya Gönder'}
+              </button>
+            </div>
+
           </form>
         </div>
 
@@ -493,6 +566,16 @@ export default function NewSaleModal({
             Satışı Ekle
           </button>
         </div>
+
+        {/* New Customer Modal Integration */}
+        <NewCostumerModal
+          isOpen={isNewCustomerModalOpen}
+          onClose={() => setIsNewCustomerModalOpen(false)}
+          onAdd={() => {
+            alert("Müşteri başarıyla eklendi. Listeyi yenilemek için sayfayı yenileyebilirsiniz.");
+            setIsNewCustomerModalOpen(false);
+          }}
+        />
       </div>
     </div>
   );

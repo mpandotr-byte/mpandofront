@@ -30,7 +30,10 @@ import {
 const getStatusClasses = (status) => {
   switch (status) {
     case 'Satıldı': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    case 'Beklemede': return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'Rezerv': return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'Barter': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'Arsa Sahibi': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'Beklemede': return 'bg-blue-50 text-blue-700 border-blue-200';
     case 'İptal':
     case 'Reddedildi': return 'bg-red-50 text-red-600 border-red-200';
     default: return 'bg-slate-50 text-slate-700 border-slate-200';
@@ -40,6 +43,9 @@ const getStatusClasses = (status) => {
 const getStatusIcon = (status) => {
   switch (status) {
     case 'Satıldı': return <CheckCircle2 size={13} />;
+    case 'Rezerv': return <Clock size={13} />;
+    case 'Barter': return <Banknote size={13} />;
+    case 'Arsa Sahibi': return <Building2 size={13} />;
     case 'Beklemede': return <Clock size={13} />;
     case 'İptal':
     case 'Reddedildi': return <XCircle size={13} />;
@@ -53,7 +59,7 @@ const initialNewSaleData = {
   source: 'Seçiniz', current_meeting_status: 'Yeni', discount_requested: 'Hayır', discount_amount: 0, approval_status: 'Beklemede', contract_file: null
 };
 
-const allStatusOptions = ['Hepsi', 'Satıldı', 'Beklemede', 'İptal', 'Reddedildi'];
+const allStatusOptions = ['Hepsi', 'Satıldı', 'Rezerv', 'Barter', 'Arsa Sahibi', 'Beklemede', 'İptal', 'Reddedildi'];
 
 function Sales() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

@@ -31,7 +31,8 @@ const navigationModules = {
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=sales" },
       { name: "Müşteriler", icon: icons.Personnel, href: "/customers" },
       { name: "Satış Kayıtları", icon: icons.Sales, href: "/sales" },
-      { name: "2. El İlanlar", icon: icons.Dashboard, href: "/second-hand-listings" },
+      { name: "Müşteri Teklifleri", icon: icons.MessageSquare, href: "/sales/offers" },
+      { name: "EMLAK", icon: icons.Dashboard, href: "/emlak" },
     ],
   },
   construction: {
@@ -42,25 +43,12 @@ const navigationModules = {
       { name: "Mühendis Paneli", icon: icons.Settings, href: "/engineer-console" },
       { name: "Projeler", icon: icons.Projects, href: "/projects" },
       { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
-      { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
-      { name: "Taşeron Yönetimi", icon: icons.Personnel, href: "/subcontractors" },
-      { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
       { name: "Stok Yönetimi", icon: icons.Materials, href: "/stock" },
-      { name: "Saha Raporları", icon: icons.Construction, href: "/daily-reports" },
-      { name: "İş Programı", icon: icons.Settings, href: "/planning" },
-      { name: "İşçi Havuzu", icon: icons.Personnel, href: "/employees" },
-      { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
-    ],
-  },
-  supply: {
-    title: "Satın Alma Bölümü",
-    icon: icons.Materials,
-    items: [
-      { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=purchasing" },
       { name: "Satın Alma", icon: icons.Sales, href: "/purchasing" },
       { name: "Tedarikçiler", icon: icons.Personnel, href: "/suppliers" },
-      { name: "Malzeme Kataloğu", icon: icons.Materials, href: "/materials" },
-      { name: "Saha Envanteri", icon: icons.Inventory, href: "/stock" },
+      { name: "Taşeron Yönetimi", icon: icons.Personnel, href: "/subcontractors" },
+      { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
+      { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
     ],
   },
   accounting: {
@@ -79,6 +67,7 @@ const navigationModules = {
     items: [
       { name: "Ana Sayfa", icon: icons.Dashboard, href: "/sub-panel" },
       { name: "İşçi Havuzu", icon: icons.Personnel, href: "/employees" },
+      { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
       { name: "Tekliflerim", icon: icons.Sales, href: "/sub-panel/bids" },
       { name: "İşlerim", icon: icons.Hammer, href: "/sub-panel/jobs" },
       { name: "Stok & Zimmet", icon: icons.Materials, href: "/sub-panel/stock" },
@@ -112,10 +101,17 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/employees') || path.startsWith('/attendance')) setActiveModule('construction');
-    else if (path.startsWith('/accounting') || path.startsWith('/documents')) setActiveModule('accounting');
-    else if (path.startsWith('/sub-panel')) setActiveModule('subcontractor');
-    else if (path.startsWith('/supp-panel')) setActiveModule('supplier');
+    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials')) {
+      setActiveModule('construction');
+    } else if (path.startsWith('/accounting') || path.startsWith('/documents')) {
+      setActiveModule('accounting');
+    } else if (path.startsWith('/sub-panel') || path.startsWith('/employees') || path.startsWith('/labors') || path.startsWith('/subcontractors')) {
+      setActiveModule('subcontractor');
+    } else if (path.startsWith('/supp-panel')) {
+      setActiveModule('supplier');
+    } else if (path.startsWith('/sales') || path.startsWith('/customers') || path.startsWith('/emlak')) {
+      setActiveModule('sales');
+    }
   }, [location.pathname]);
 
   const sidebarWidthClass = isSidebarCollapsed

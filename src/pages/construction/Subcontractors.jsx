@@ -98,13 +98,29 @@ const Subcontractors = () => {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="flex items-center gap-3 text-sm font-black text-white bg-[#D36A47] hover:bg-[#E37A57] shadow-xl shadow-[#D36A47]/20 px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 animate-slide-up"
-                            >
-                                <Plus size={20} />
-                                <span>YENİ TAŞERON EKLE</span>
-                            </button>
+                            <div className="flex flex-wrap gap-3 animate-slide-up">
+                                <button
+                                    onClick={() => navigate('/labors')}
+                                    className="flex items-center gap-3 text-xs font-black text-white/80 bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <Hammer size={18} />
+                                    <span>İŞÇİLİK KARTLARI</span>
+                                </button>
+                                <button
+                                    onClick={() => navigate('/employees')}
+                                    className="flex items-center gap-3 text-xs font-black text-white/80 bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <Users size={18} />
+                                    <span>İŞÇİ HAVUZU</span>
+                                </button>
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="flex items-center gap-3 text-sm font-black text-white bg-[#D36A47] hover:bg-[#E37A57] shadow-xl shadow-[#D36A47]/20 px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <Plus size={20} />
+                                    <span>YENİ TAŞERON EKLE</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 

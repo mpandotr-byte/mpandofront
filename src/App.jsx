@@ -8,6 +8,7 @@ import ProjectDetails from "./pages/construction/ProjectDetails";
 import BlockDetails from "./pages/construction/BlockDetails";
 import Customers from "./pages/sales/Customers";
 import Sales from "./pages/sales/Sales";
+import Offers from "./pages/sales/Offers";
 import SecondHandListings from "./pages/sales/SecondHandListings";
 import Messages from "./pages/system/Messages";
 import Notifications from "./pages/system/Notifications";
@@ -84,7 +85,8 @@ function App() {
         {/* --- SATIŞ VE MÜŞTERİ YÖNETİMİ --- */}
         <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
         <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
-        <Route path="/second-hand-listings" element={<PrivateRoute><SecondHandListings /></PrivateRoute>} />
+        <Route path="/sales/offers" element={<PrivateRoute><Offers /></PrivateRoute>} />
+        <Route path="/emlak" element={<PrivateRoute><SecondHandListings /></PrivateRoute>} />
 
         {/* --- SİSTEM VE İLETİŞİM --- */}
         <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />

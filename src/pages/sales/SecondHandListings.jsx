@@ -242,7 +242,7 @@ function SecondHandListings() {
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={() => setIsMobileMenuOpen(false)} />
       <main className="flex-1 overflow-y-auto h-screen pt-16 md:pt-0 relative">
-        <Navbar title="2. El İlanlar" toggleMobileMenu={toggleMobileMenu} />
+        <Navbar title="EMLAK İlanları" toggleMobileMenu={toggleMobileMenu} />
 
         <div className="px-4 sm:px-6 md:px-8 pb-12 pt-6 space-y-6">
 
@@ -285,7 +285,7 @@ function SecondHandListings() {
 
           {/* Header */}
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-slate-800">2. El İlan Listesi</h2>
+            <h2 className="text-lg font-bold text-slate-800">EMLAK İlan Listesi</h2>
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative" ref={filterDropdownRef}>
                 <button

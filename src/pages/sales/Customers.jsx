@@ -231,15 +231,31 @@ function Customers() {
       const filteredSales = (salesData || []).filter(s => String(s.customer_id) === String(customer.id) || String(s.musteri_id) === String(customer.id));
       setCustomerSales(filteredSales);
 
-      // Find units owned by this customer
-      const ownedUnits = (unitsData || []).filter(u => String(u.customer_id) === String(customer.id)).map(u => {
+      // Find units owned by this customer (via unit link or successful sale)
+      const ownedUnits = [];
+
+      // Method 1: Direct link on unit
+      const directlyOwned = (unitsData || []).filter(u => String(u.customer_id) === String(customer.id));
+      directlyOwned.forEach(u => ownedUnits.push(u));
+
+      // Method 2: Link via successful sale
+      filteredSales.forEach(sale => {
+        if (sale.sale_status === 'Satıldı' && sale.unit_id) {
+          const unit = (unitsData || []).find(u => String(u.id) === String(sale.unit_id));
+          if (unit && !ownedUnits.find(ou => String(ou.id) === String(unit.id))) {
+            ownedUnits.push(unit);
+          }
+        }
+      });
+
+      const mappedOwnedUnits = ownedUnits.map(u => {
         const project = projectsData.find(p => p.id === u.project_id);
         return {
           ...u,
           project_name: project?.name || 'Bilinmeyen Proje'
         };
       });
-      setCustomerUnits(ownedUnits);
+      setCustomerUnits(mappedOwnedUnits);
 
     } catch (err) {
       console.error("Detaylar yüklenemedi:", err);

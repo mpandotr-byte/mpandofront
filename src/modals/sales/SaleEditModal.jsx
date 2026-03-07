@@ -15,7 +15,9 @@ import {
   Layers,
   Upload,
   FileCheck,
-  Eye
+  Eye,
+  Search,
+  ShieldCheck
 } from 'lucide-react';
 
 const SaleEditModal = ({
@@ -34,6 +36,8 @@ const SaleEditModal = ({
   const [selectedUnitId, setSelectedUnitId] = useState('');
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [contractFile, setContractFile] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [isApprovalSent, setIsApprovalSent] = useState(saleData?.approval_status === 'Onay Bekliyor');
 
   // Proje değiştiğinde detayları çek
   useEffect(() => {
@@ -120,7 +124,7 @@ const SaleEditModal = ({
     setSelectedUnitId(unitId);
 
     if (!unitId) {
-      onChange({ unit_id: '', interested_product: '' });
+      onChange({ unit_id: '', interested_product: '', list_price: '', offered_price: '' });
       return;
     }
 
@@ -129,10 +133,27 @@ const SaleEditModal = ({
 
     if (unit && block) {
       const value = `${block.name}, No: ${unit.unit_number} (${unit.unit_type || ''})`;
-      // Her iki alanı da tek seferde güncelle
-      onChange({ unit_id: unitId, interested_product: value });
+      // Birim seçildiğinde fiyatları da otomatik doldur
+      onChange({
+        unit_id: unitId,
+        interested_product: value,
+        list_price: unit.list_price || '',
+        offered_price: unit.campaign_price || unit.list_price || ''
+      });
     }
   };
+
+  const handleSendToApproval = () => {
+    setIsApprovalSent(true);
+    onChange({ approval_status: 'Onay Bekliyor' });
+    alert("Teklif yönetici onayına gönderildi.");
+  };
+
+  const filteredCustomers = customers.filter(c =>
+    c.full_name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.phone?.includes(customerSearch) ||
+    String(c.id).includes(customerSearch)
+  );
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -184,23 +205,37 @@ const SaleEditModal = ({
                 {/* Müşteri Seçimi */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">Müşteri Seçimi <span className="text-red-500">*</span></label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <User size={16} />
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Search size={14} />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Müşteri ara..."
+                        value={customerSearch}
+                        onChange={(e) => setCustomerSearch(e.target.value)}
+                        className="block w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-100"
+                      />
                     </div>
-                    <select
-                      name="musteri_id"
-                      value={saleData.musteri_id || ''}
-                      onChange={onChange}
-                      required
-                      className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled>Seçiniz</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>ID: ({c.id}) - {c.full_name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <User size={16} />
+                      </div>
+                      <select
+                        name="musteri_id"
+                        value={saleData.musteri_id || ''}
+                        onChange={onChange}
+                        required
+                        className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm text-slate-700 appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>Seçiniz</option>
+                        {filteredCustomers.map(c => (
+                          <option key={c.id} value={c.id}>ID: ({c.id}) - {c.full_name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
@@ -417,6 +452,9 @@ const SaleEditModal = ({
                     >
                       <option value="Beklemede">Beklemede</option>
                       <option value="Satıldı">Satıldı</option>
+                      <option value="Rezerv">Rezerv</option>
+                      <option value="Barter">Barter</option>
+                      <option value="Arsa Sahibi">Arsa Sahibi</option>
                       <option value="İptal">İptal</option>
                       <option value="Reddedildi">Reddedildi</option>
                     </select>
@@ -509,6 +547,24 @@ const SaleEditModal = ({
                 placeholder="Satış veya görüşme ile ilgili eklemek istedikleriniz..."
                 className="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400 resize-none"
               ></textarea>
+            </div>
+
+            {/* Bölüm 4: Yönetici Onayı */}
+            <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-orange-800 flex items-center gap-2">
+                  <ShieldCheck size={16} /> Yönetici Onayı
+                </h4>
+                <p className="text-[11px] text-orange-700 mt-1">Özel indirim veya kampanya dışı fiyatlar için onay gerekebilir.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSendToApproval}
+                disabled={isApprovalSent}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${isApprovalSent ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}`}
+              >
+                {isApprovalSent ? <><FileCheck size={14} /> Onaya Gönderildi</> : 'Onaya Gönder'}
+              </button>
             </div>
 
           </form>
