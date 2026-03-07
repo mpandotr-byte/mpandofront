@@ -231,6 +231,7 @@ export default function Dashboard() {
         setSupplierStats((suppliers || []).slice(0, 4).map(s => ({ name: s.name, val: suppMap[s.id] || 0 })));
 
         setRecentActivities((activitiesData || []).slice(0, 10).map(act => ({
+          ...act,
           id: act.id,
           title: act.description || 'Sistem Aksiyonu',
           subtitle: act.user_name || 'Admin',
@@ -391,7 +392,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        {act.amount !== null && (
+                        {act.amount !== null && act.amount !== undefined && !isNaN(act.amount) && (
                           <p className={`text-[11px] font-black tracking-tighter ${act.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {act.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(act.amount))}
                           </p>
