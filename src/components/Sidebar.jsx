@@ -1,94 +1,26 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { X } from "lucide-react";
+import { X, ChevronRight, ChevronDown, LayoutGrid, Box, Users, Wallet, Hammer, Truck, HardHat, Construction, Settings, Search, HelpCircle, MessageSquare } from "lucide-react";
 
 const icons = {
-  Dashboard: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-  ),
-  Projects: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-    </svg>
-  ),
-  Personnel: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-    </svg>
-  ),
-  Sales: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  House: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10" />
-    </svg>
-  ),
-  SecondHandListings: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10.5L12 3l9 7.5M5 9.5V20a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V9.5" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 21a6 6 0 0010-3M19 14v4h-4" />
-    </svg>
-  ),
-  Help: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  Settings: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  ChevronDown: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-    </svg>
-  ),
-  Search: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-  ),
-  Close: (
-    <X className="w-6 h-6" />
-  ),
-  Messages: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
-  ),
-  Materials: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-    </svg>
-  ),
-  Hammer: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.77 3.77z" />
-    </svg>
-  ),
-  Construction: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-  ),
-  Accounting: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-    </svg>
-  ),
-  Purchasing: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-    </svg>
-  )
+  Dashboard: <LayoutGrid className="w-5 h-5" />,
+  Projects: <Box className="w-5 h-5" />,
+  Personnel: <Users className="w-5 h-5" />,
+  Sales: <Wallet className="w-5 h-5" />,
+  Materials: <Truck className="w-5 h-5" />,
+  Hammer: <Hammer className="w-5 h-5" />,
+  Construction: <Construction className="w-5 h-5" />,
+  Accounting: <Wallet className="w-5 h-5" />,
+  HR: <HardHat className="w-5 h-5" />,
+  Settings: <Settings className="w-5 h-5" />,
+  Help: <HelpCircle className="w-4 h-4" />,
+  Messages: <MessageSquare className="w-4 h-4" />,
+  Inventory: <Box className="w-5 h-5" />,
+  Documents: <Box className="w-5 h-5" />,
+  ChevronDown: <ChevronDown className="w-4 h-4" />,
+  Search: <Search className="w-4 h-4" />,
+  Close: <X className="w-6 h-6" />
 };
 
 const navigationModules = {
@@ -99,14 +31,7 @@ const navigationModules = {
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=sales" },
       { name: "Müşteriler", icon: icons.Personnel, href: "/customers" },
       { name: "Satış Kayıtları", icon: icons.Sales, href: "/sales" },
-      {
-        name: "Emlak",
-        icon: icons.House,
-        type: "dropdown",
-        children: [
-          { name: "2. El İlanlar", icon: icons.SecondHandListings, href: "/second-hand-listings" },
-        ],
-      },
+      { name: "2. El İlanlar", icon: icons.Dashboard, href: "/second-hand-listings" },
     ],
   },
   construction: {
@@ -114,26 +39,34 @@ const navigationModules = {
     icon: icons.Construction,
     items: [
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=construction" },
+      { name: "Mühendis Paneli", icon: icons.Settings, href: "/engineer-console" },
+      { name: "Projeler", icon: icons.Projects, href: "/projects" },
       { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
       { name: "İşçilik Kartları", icon: icons.Hammer, href: "/labors" },
       { name: "Taşeron Yönetimi", icon: icons.Personnel, href: "/subcontractors" },
       { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
       { name: "Stok Yönetimi", icon: icons.Materials, href: "/stock" },
+      { name: "Saha Raporları", icon: icons.Construction, href: "/daily-reports" },
+      { name: "İş Programı", icon: icons.Settings, href: "/planning" },
     ],
   },
-  projects: {
-    title: "Proje Yönetimi",
-    icon: icons.Projects,
-    items: [
-      { name: "Projeler", icon: icons.Projects, href: "/projects" },
-    ],
-  },
-  purchasing: {
+  supply: {
     title: "Satın Alma Bölümü",
-    icon: icons.Purchasing,
+    icon: icons.Materials,
     items: [
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=purchasing" },
-      { name: "Satın Alma Talepleri", icon: icons.Purchasing, href: "/purchasing" },
+      { name: "Satın Alma", icon: icons.Sales, href: "/purchasing" },
+      { name: "Tedarikçiler", icon: icons.Personnel, href: "/suppliers" },
+      { name: "Malzeme Kataloğu", icon: icons.Materials, href: "/materials" },
+      { name: "Saha Envanteri", icon: icons.Inventory, href: "/stock" },
+    ],
+  },
+  hr: {
+    title: "İK Bölümü",
+    icon: icons.HR,
+    items: [
+      { name: "İşçi Havuzu", icon: icons.Personnel, href: "/employees" },
+      { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
     ],
   },
   accounting: {
@@ -141,9 +74,36 @@ const navigationModules = {
     icon: icons.Accounting,
     items: [
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=accounting" },
-      { name: "Gelir/Gider", icon: icons.Sales, href: "/accounting" },
+      { name: "Finans Özeti", icon: icons.Dashboard, href: "/accounting" },
+      { name: "Gelir-Gider", icon: icons.Sales, href: "/accounting/income" },
+      { name: "Merkezi Arşiv", icon: icons.Dashboard, href: "/documents" },
     ],
   },
+  subcontractor: {
+    title: "Taşeron Paneli",
+    icon: icons.Hammer,
+    items: [
+      { name: "Ana Sayfa", icon: icons.Dashboard, href: "/sub-panel" },
+      { name: "Tekliflerim", icon: icons.Sales, href: "/sub-panel/bids" },
+      { name: "İşlerim", icon: icons.Hammer, href: "/sub-panel/jobs" },
+      { name: "Stok & Zimmet", icon: icons.Materials, href: "/sub-panel/stock" },
+      { name: "Puantaj", icon: icons.HR, href: "/sub-panel/attendance" },
+      { name: "Hakedişlerim", icon: icons.Accounting, href: "/sub-panel/payments" },
+      { name: "Muhasebe", icon: icons.Wallet, href: "/sub-panel/accounting" },
+    ],
+  },
+  supplier: {
+    title: "Tedarikçi Paneli",
+    icon: icons.Materials,
+    items: [
+      { name: "Ana Sayfa", icon: icons.Dashboard, href: "/supp-panel" },
+      { name: "Malzeme Kartlarım", icon: icons.Materials, href: "/supp-panel/materials" },
+      { name: "Siparişler", icon: icons.Sales, href: "/supp-panel/orders" },
+      { name: "Stok Takibi", icon: icons.Inventory, href: "/supp-panel/stock" },
+      { name: "Tekliflerim", icon: icons.Sales, href: "/supp-panel/offers" },
+      { name: "Muhasebe", icon: icons.Wallet, href: "/supp-panel/accounting" },
+    ],
+  }
 };
 
 export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
@@ -155,14 +115,15 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
   const { user } = useAuth();
   const unreadMessagesCount = 3; // Placeholder for now
 
-  // current path based module detection (initial load)
   React.useEffect(() => {
     const path = location.pathname;
-    if (path === '/projects' || path.startsWith('/projects/')) setActiveModule('projects');
-    else if (path === '/customers' || path === '/sales' || path === '/second-hand-listings') setActiveModule('sales');
-    else if (path === '/materials' || path === '/labors' || path === '/recipes' || path === '/subcontractors' || path.startsWith('/subcontractors/')) setActiveModule('construction');
-    else if (path === '/purchasing') setActiveModule('purchasing');
-    else if (path === '/accounting') setActiveModule('accounting');
+    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning')) setActiveModule('construction');
+    else if (path.startsWith('/customers') || path.startsWith('/sales') || path.startsWith('/second-hand')) setActiveModule('sales');
+    else if (path.startsWith('/materials') || path.startsWith('/stock') || path.startsWith('/purchasing') || path.startsWith('/suppliers')) setActiveModule('supply');
+    else if (path.startsWith('/employees') || path.startsWith('/attendance')) setActiveModule('hr');
+    else if (path.startsWith('/accounting') || path.startsWith('/documents')) setActiveModule('accounting');
+    else if (path.startsWith('/sub-panel')) setActiveModule('subcontractor');
+    else if (path.startsWith('/supp-panel')) setActiveModule('supplier');
   }, [location.pathname]);
 
   const sidebarWidthClass = isSidebarCollapsed
@@ -287,9 +248,8 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                       {module.icon}
                     </span>
                     {!isSidebarCollapsed && (
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-bold text-white leading-none mb-1">{module.title}</span>
-
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span className="text-[11px] font-black text-white leading-none mb-1 uppercase tracking-wide truncate w-full">{module.title}</span>
                       </div>
                     )}
                   </button>
