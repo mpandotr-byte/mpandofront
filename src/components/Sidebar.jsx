@@ -48,6 +48,8 @@ const navigationModules = {
       { name: "Stok Yönetimi", icon: icons.Materials, href: "/stock" },
       { name: "Saha Raporları", icon: icons.Construction, href: "/daily-reports" },
       { name: "İş Programı", icon: icons.Settings, href: "/planning" },
+      { name: "İşçi Havuzu", icon: icons.Personnel, href: "/employees" },
+      { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
     ],
   },
   supply: {
@@ -59,14 +61,6 @@ const navigationModules = {
       { name: "Tedarikçiler", icon: icons.Personnel, href: "/suppliers" },
       { name: "Malzeme Kataloğu", icon: icons.Materials, href: "/materials" },
       { name: "Saha Envanteri", icon: icons.Inventory, href: "/stock" },
-    ],
-  },
-  hr: {
-    title: "İK Bölümü",
-    icon: icons.HR,
-    items: [
-      { name: "İşçi Havuzu", icon: icons.Personnel, href: "/employees" },
-      { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
     ],
   },
   accounting: {
@@ -84,6 +78,7 @@ const navigationModules = {
     icon: icons.Hammer,
     items: [
       { name: "Ana Sayfa", icon: icons.Dashboard, href: "/sub-panel" },
+      { name: "İşçi Havuzu", icon: icons.Personnel, href: "/employees" },
       { name: "Tekliflerim", icon: icons.Sales, href: "/sub-panel/bids" },
       { name: "İşlerim", icon: icons.Hammer, href: "/sub-panel/jobs" },
       { name: "Stok & Zimmet", icon: icons.Materials, href: "/sub-panel/stock" },
@@ -117,10 +112,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning')) setActiveModule('construction');
-    else if (path.startsWith('/customers') || path.startsWith('/sales') || path.startsWith('/second-hand')) setActiveModule('sales');
-    else if (path.startsWith('/materials') || path.startsWith('/stock') || path.startsWith('/purchasing') || path.startsWith('/suppliers')) setActiveModule('supply');
-    else if (path.startsWith('/employees') || path.startsWith('/attendance')) setActiveModule('hr');
+    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/employees') || path.startsWith('/attendance')) setActiveModule('construction');
     else if (path.startsWith('/accounting') || path.startsWith('/documents')) setActiveModule('accounting');
     else if (path.startsWith('/sub-panel')) setActiveModule('subcontractor');
     else if (path.startsWith('/supp-panel')) setActiveModule('supplier');
