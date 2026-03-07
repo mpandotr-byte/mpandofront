@@ -19,6 +19,16 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * MUHASEBE VE FİNANS ANA MERKEZİ
+ * 
+ * Bu ekran şirketin nakit akışını, alacaklarını ve borçlarını özetler.
+ * Fonksiyonlar:
+ * - API'den gelen son işlemleri (Income/Expense) türüne göre ayırıp toplar.
+ * - Son 30 günlük net nakit durumunu hesaplar.
+ * - Çek ve senet portföyünü filtreleyerek gösterir.
+ */
+
 export default function AccountingDashboard() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [summary, setSummary] = useState({
@@ -31,6 +41,7 @@ export default function AccountingDashboard() {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // Sayfa yüklendiğinde finansal verileri çek ve özet istatistikleri hesapla
     useEffect(() => {
         const fetchFinanceData = async () => {
             setLoading(true);
@@ -38,10 +49,10 @@ export default function AccountingDashboard() {
                 const results = await Promise.allSettled([
                     api.get('/finance/transactions'),
                     api.get('/sales'),
-                    api.get('/purchasing') // or however debt is tracked
+                    api.get('/purchasing')
                 ]);
 
-                const [transRes, salesRes] = results;
+                const [transRes] = results;
                 const transactions = transRes.status === 'fulfilled' ? transRes.value : [];
 
                 let monthlyIn = 0;
@@ -58,11 +69,14 @@ export default function AccountingDashboard() {
                     const isWithinMonth = date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
                     const isWithin30Days = date >= thirtyDaysAgo;
 
+                    // INCOME (Giriş) ise toplam rakama ekle
                     if (t.type === 'INCOME' || t.amount > 0) {
                         if (isWithinMonth) monthlyIn += amount;
                         if (isWithin30Days) cash30 += amount;
                         if (t.payment_method === 'CHECK') checks += amount;
-                    } else {
+                    }
+                    // EXPENSE (Çıkış) ise toplam rakamdan düş
+                    else {
                         if (isWithinMonth) monthlyOut += amount;
                         if (isWithin30Days) cash30 -= amount;
                     }
@@ -73,11 +87,11 @@ export default function AccountingDashboard() {
                     monthlyPayment: monthlyOut,
                     netCash30Days: cash30,
                     totalChecksReceived: checks,
-                    totalDebt: (monthlyOut * 2.5) // Simulation of total debt for now
+                    totalDebt: (monthlyOut * 2.5) // Geçici olarak simüle edilen borç rakamı
                 });
 
             } catch (err) {
-                console.error("Accounting data error:", err);
+                console.error("Muhasebe verisi çekilirken hata:", err);
             } finally {
                 setLoading(false);
             }

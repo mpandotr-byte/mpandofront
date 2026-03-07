@@ -3,7 +3,15 @@ import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { X, ChevronRight, LayoutGrid, Box, Users, Wallet, Hammer, Truck, HardHat, Construction, Settings, Search, HelpCircle, MessageSquare } from "lucide-react";
 
-// Icons mapping for better management
+/**
+ * MPANDO Akıllı Navigasyon Sistemi (Sidebar)
+ * 
+ * Bu bileşen, kullanıcının departmanlar arası geçiş yapmasını sağlar. 
+ * Modüler yapısı sayesinde her departman (Satış, İnşaat, Muhasebe vb.) kendi alt menülerine sahiptir.
+ * Sidebar, hem geniş (masaüstü) hem de dar (mobil/collapsed) modları destekler.
+ */
+
+// İkon ve navigasyon verilerinin merkezi yönetimi
 const icons = {
   Dashboard: <LayoutGrid className="w-5 h-5" />,
   Projects: <Box className="w-5 h-5" />,
@@ -21,6 +29,7 @@ const icons = {
   Documents: <Box className="w-5 h-5" />
 };
 
+// Departman bazlı menü yapısı
 const navigationModules = {
   sales: {
     title: "Satış & Müşteri",
@@ -109,6 +118,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
   const { user } = useAuth();
   const unreadMessagesCount = 3;
 
+  // Mevcut URL'e göre aktif olan departmanı otomatik tespit et
   React.useEffect(() => {
     const path = location.pathname;
     // Auto-detect module from path
@@ -127,13 +137,15 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
   return (
     <>
+      {/* Mobil Cihazlar İçin Karartma Perdesi */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={closeMobileMenu} />
       )}
 
+      {/* Ana Sidebar Gövdesi */}
       <aside className={`fixed lg:relative inset-y-0 left-0 z-50 flex flex-col ${sidebarWidthClass} bg-[#0A1128] border-r border-white/5 transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
 
-        {/* Header */}
+        {/* Logo ve Başlık Alanı */}
         <div className={`p-6 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           <Link to="/dashboard" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-[#D36A47] rounded-xl flex items-center justify-center shadow-lg shadow-[#D36A47]/20 group-hover:scale-110 transition-transform">
@@ -146,6 +158,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
               </div>
             )}
           </Link>
+          {/* Sidebar Daraltma Butonu */}
           {!isSidebarCollapsed && (
             <button onClick={() => setIsSidebarCollapsed(true)} className="p-2 text-slate-500 hover:text-white rounded-lg lg:block hidden"><ChevronRight className="rotate-180" /></button>
           )}
@@ -154,9 +167,10 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
           )}
         </div>
 
-        {/* Module Area */}
+        {/* Departman ve Menü Listesi */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 scrollbar-hide">
           {!activeModule ? (
+            /* BAŞLANGIÇ EKRANI: Departman Kartları */
             <div className="space-y-4">
               <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest px-2">Ana Departmanlar</p>
               <div className="grid grid-cols-1 gap-2">
@@ -174,6 +188,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
               </div>
             </div>
           ) : (
+            /* DETAY EKRANI: Seçili Departmanın Alt Menüsü */
             <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
               <button onClick={() => setActiveModule(null)} className="flex items-center gap-2 text-[10px] font-black text-[#D36A47] uppercase tracking-widest hover:translate-x-1 transition-transform mb-4">
                 <ChevronRight className="rotate-180" size={14} /> Geri Dön
@@ -194,7 +209,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
           )}
         </div>
 
-        {/* Footer Area */}
+        {/* Sidebar Alt Alanı (Mesajlar ve Profil) */}
         <div className="p-4 bg-black/20 border-t border-white/5">
           <div className="space-y-2 mb-6">
             <Link to="/messages" className="flex items-center gap-4 p-3 rounded-xl text-slate-500 hover:text-white transition-all relative">
@@ -208,6 +223,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
             </Link>
           </div>
 
+          {/* Kullanıcı Bilgi Kartı */}
           {!isSidebarCollapsed && (
             <div className="p-4 bg-white/5 rounded-2xl border border-white/5 group hover:bg-white/10 transition-all cursor-pointer">
               <div className="flex items-center gap-3">

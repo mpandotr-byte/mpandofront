@@ -16,8 +16,20 @@ import {
   CreditCard, Bell, ClipboardCheck, AlertTriangle, MessageSquare, ListTodo, Star, UserPlus
 } from 'lucide-react';
 
-// --- SUB-COMPONENTS ---
+/**
+ * MPANDO Genel Komuta Merkezi (v3.0)
+ * 
+ * Uygulamanın en karmaşık ve veri yoğunluklu sayfasıdır. 
+ * Temel Özellikler:
+ * - Promise.allSettled ile hata toleranslı veri çekme.
+ * - Satış, İnşaat, Satın Alma ve Muhasebe kategorilerinde 4 farklı alt panel.
+ * - Recharts kütüphanesi ile dinamik grafikler.
+ * - Son aktiviteler ve kritik uyarıların merkezi takibi.
+ */
 
+// --- ALT BİLEŞENLER (BASKILI TASARIM ÜNİTELERİ) ---
+
+// Kategori Geçiş Butonları
 const TabButton = ({ active, label, icon: Icon, onClick, color }) => (
   <button
     onClick={onClick}
@@ -31,10 +43,12 @@ const TabButton = ({ active, label, icon: Icon, onClick, color }) => (
   </button>
 );
 
+// Modüler Kart Tasarımı
 const ModuleCard = ({ title, subtitle, icon: Icon, color, children, footerAction, className = "" }) => (
   <div className={`bg-white/70 backdrop-blur-xl border border-white rounded-[40px] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col h-full ring-1 ring-black/5 ${className}`}>
     <div className="flex justify-between items-start mb-8">
       <div className="flex items-center gap-4">
+        {/* İkon Kutusu */}
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg shadow-black/5" style={{ backgroundColor: `${color}15`, color: color }}>
           <Icon size={28} />
         </div>

@@ -51,12 +51,22 @@ import SuppStock from "./pages/supplier/SuppStock";
 import SuppOffers from "./pages/supplier/SuppOffers";
 import SuppAccounting from "./pages/supplier/SuppAccounting";
 
+/**
+ * MPANDO Ana Uygulama Yapılandırması (v2.6)
+ * 
+ * Bu dosya projenin ana giriş noktasıdır ve tüm sayfa yönlendirmelerini (Routing) yönetir. 
+ * Güvenlik için PrivateRoute bileşeni kullanılarak yetkisiz erişimler engellenmiştir.
+ * Tüm sayfalar mantıksal klasör yapısına göre (auth, accounting, construction, hr, purchasing, subcontractor, supplier) ayrılmıştır.
+ */
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* --- KİMLİK DOĞRULAMA (Login) --- */}
         <Route path="/" element={<Login />} />
 
+        {/* --- ANA KOMUTA MERKEZİ --- */}
         <Route
           path="/dashboard"
           element={
@@ -66,355 +76,63 @@ function App() {
           }
         />
 
-        <Route
-          path="/projects"
-          element={
-            <PrivateRoute>
-              <Projects />
-            </PrivateRoute>
-          }
-        />
+        {/* --- PROJE VE ŞANTİYE YÖNETİMİ --- */}
+        <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
+        <Route path="/projects/:id" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
+        <Route path="/projects/:projectId/blocks/:blockId" element={<PrivateRoute><BlockDetails /></PrivateRoute>} />
 
-        <Route
-          path="/projects/:id"
-          element={
-            <PrivateRoute>
-              <ProjectDetails />
-            </PrivateRoute>
-          }
-        />
+        {/* --- SATIŞ VE MÜŞTERİ YÖNETİMİ --- */}
+        <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
+        <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
+        <Route path="/second-hand-listings" element={<PrivateRoute><SecondHandListings /></PrivateRoute>} />
 
-        <Route
-          path="/projects/:projectId/blocks/:blockId"
-          element={
-            <PrivateRoute>
-              <BlockDetails />
-            </PrivateRoute>
-          }
-        />
+        {/* --- SİSTEM VE İLETİŞİM --- */}
+        <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
+        <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
 
-        <Route
-          path="/customers"
-          element={
-            <PrivateRoute>
-              <Customers />
-            </PrivateRoute>
-          }
-        />
+        {/* --- ÜRETİM, MALZEME VE TEKNİK --- */}
+        <Route path="/materials" element={<PrivateRoute><Materials /></PrivateRoute>} />
+        <Route path="/labors" element={<PrivateRoute><Labors /></PrivateRoute>} />
+        <Route path="/recipes" element={<PrivateRoute><Recipes /></PrivateRoute>} />
+        <Route path="/purchasing" element={<PrivateRoute><Purchasing /></PrivateRoute>} />
+        <Route path="/suppliers" element={<PrivateRoute><Suppliers /></PrivateRoute>} />
+        <Route path="/suppliers/:id" element={<PrivateRoute><SupplierDetails /></PrivateRoute>} />
+        <Route path="/stock" element={<PrivateRoute><Stock /></PrivateRoute>} />
+        <Route path="/subcontractors" element={<PrivateRoute><Subcontractors /></PrivateRoute>} />
+        <Route path="/subcontractors/:id" element={<PrivateRoute><SubcontractorDetails /></PrivateRoute>} />
+        <Route path="/engineer-console" element={<PrivateRoute><EngineerConsole /></PrivateRoute>} />
+        <Route path="/daily-reports" element={<PrivateRoute><DailyReports /></PrivateRoute>} />
+        <Route path="/site-logs" element={<PrivateRoute><SiteLogs /></PrivateRoute>} />
+        <Route path="/planning" element={<PrivateRoute><Planning /></PrivateRoute>} />
 
-        <Route
-          path="/sales"
-          element={
-            <PrivateRoute>
-              <Sales />
-            </PrivateRoute>
-          }
-        />
+        {/* --- İNSAN KAYNAKLARI (İK) VE PUANTAJ --- */}
+        <Route path="/employees" element={<PrivateRoute><Employees /></PrivateRoute>} />
+        <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />
 
-        <Route
-          path="/second-hand-listings"
-          element={
-            <PrivateRoute>
-              <SecondHandListings />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/messages"
-          element={
-            <PrivateRoute>
-              <Messages />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <PrivateRoute>
-              <Notifications />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/materials"
-          element={
-            <PrivateRoute>
-              <Materials />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/labors"
-          element={
-            <PrivateRoute>
-              <Labors />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/recipes"
-          element={
-            <PrivateRoute>
-              <Recipes />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/purchasing"
-          element={
-            <PrivateRoute>
-              <Purchasing />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/suppliers"
-          element={
-            <PrivateRoute>
-              <Suppliers />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/suppliers/:id"
-          element={
-            <PrivateRoute>
-              <SupplierDetails />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/stock"
-          element={
-            <PrivateRoute>
-              <Stock />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/subcontractors"
-          element={
-            <PrivateRoute>
-              <Subcontractors />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/subcontractors/:id"
-          element={
-            <PrivateRoute>
-              <SubcontractorDetails />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/employees"
-          element={
-            <PrivateRoute>
-              <Employees />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/employees/:id"
-          element={
-            <PrivateRoute>
-              <EmployeeDetails />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/attendance"
-          element={
-            <PrivateRoute>
-              <Attendance />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/engineer-console"
-          element={
-            <PrivateRoute>
-              <EngineerConsole />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/daily-reports"
-          element={
-            <PrivateRoute>
-              <DailyReports />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/site-logs"
-          element={
-            <PrivateRoute>
-              <SiteLogs />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/planning"
-          element={
-            <PrivateRoute>
-              <Planning />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/accounting"
-          element={
-            <PrivateRoute>
-              <AccountingDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/accounting/income"
-          element={
-            <PrivateRoute>
-              <IncomeManagement />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/accounting/expense"
-          element={
-            <PrivateRoute>
-              <ExpenseManagement />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/accounting/subcontractors"
-          element={
-            <PrivateRoute>
-              <SubcontractorPersonnel />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/accounting/cash-flow"
-          element={
-            <PrivateRoute>
-              <CashFlowCentre />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/documents"
-          element={
-            <PrivateRoute>
-              <Documents />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel"
-          element={
-            <PrivateRoute>
-              <SubDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel/bids"
-          element={
-            <PrivateRoute>
-              <SubBids />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel/jobs"
-          element={
-            <PrivateRoute>
-              <SubJobs />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel/stock"
-          element={
-            <PrivateRoute>
-              <SubStock />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel/attendance"
-          element={
-            <PrivateRoute>
-              <SubAttendance />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel/payments"
-          element={
-            <PrivateRoute>
-              <SubPayments />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sub-panel/accounting"
-          element={
-            <PrivateRoute>
-              <SubAccounting />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/supp-panel"
-          element={
-            <PrivateRoute>
-              <SuppDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/supp-panel/materials"
-          element={
-            <PrivateRoute>
-              <SuppMaterials />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/supp-panel/orders"
-          element={
-            <PrivateRoute>
-              <SuppOrders />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/supp-panel/stock"
-          element={
-            <PrivateRoute>
-              <SuppStock />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/supp-panel/offers"
-          element={
-            <PrivateRoute>
-              <SuppOffers />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/supp-panel/accounting"
-          element={
-            <PrivateRoute>
-              <SuppAccounting />
-            </PrivateRoute>
-          }
-        />
+        {/* --- MUHASEBE VE FİNANS KURGUSU --- */}
+        <Route path="/accounting" element={<PrivateRoute><AccountingDashboard /></PrivateRoute>} />
+        <Route path="/accounting/income" element={<PrivateRoute><IncomeManagement /></PrivateRoute>} />
+        <Route path="/accounting/expense" element={<PrivateRoute><ExpenseManagement /></PrivateRoute>} />
+        <Route path="/accounting/subcontractors" element={<PrivateRoute><SubcontractorPersonnel /></PrivateRoute>} />
+        <Route path="/accounting/cash-flow" element={<PrivateRoute><CashFlowCentre /></PrivateRoute>} />
+        <Route path="/documents" element={<PrivateRoute><Documents /></PrivateRoute>} />
+
+        {/* --- TAŞERON PANELİ (Harici Erişim) --- */}
+        <Route path="/sub-panel" element={<PrivateRoute><SubDashboard /></PrivateRoute>} />
+        <Route path="/sub-panel/bids" element={<PrivateRoute><SubBids /></PrivateRoute>} />
+        <Route path="/sub-panel/jobs" element={<PrivateRoute><SubJobs /></PrivateRoute>} />
+        <Route path="/sub-panel/stock" element={<PrivateRoute><SubStock /></PrivateRoute>} />
+        <Route path="/sub-panel/attendance" element={<PrivateRoute><SubAttendance /></PrivateRoute>} />
+        <Route path="/sub-panel/payments" element={<PrivateRoute><SubPayments /></PrivateRoute>} />
+        <Route path="/sub-panel/accounting" element={<PrivateRoute><SubAccounting /></PrivateRoute>} />
+
+        {/* --- TEDARİKÇİ PANELİ (Harici Erişim) --- */}
+        <Route path="/supp-panel" element={<PrivateRoute><SuppDashboard /></PrivateRoute>} />
+        <Route path="/supp-panel/materials" element={<PrivateRoute><SuppMaterials /></PrivateRoute>} />
+        <Route path="/supp-panel/orders" element={<PrivateRoute><SuppOrders /></PrivateRoute>} />
+        <Route path="/supp-panel/stock" element={<PrivateRoute><SuppStock /></PrivateRoute>} />
+        <Route path="/supp-panel/offers" element={<PrivateRoute><SuppOffers /></PrivateRoute>} />
+        <Route path="/supp-panel/accounting" element={<PrivateRoute><SuppAccounting /></PrivateRoute>} />
       </Routes>
     </BrowserRouter >
   );

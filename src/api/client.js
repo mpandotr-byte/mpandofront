@@ -1,7 +1,17 @@
 // src/api/client.js
 
+/**
+ * MPANDO API İletişim Katmanı
+ * 
+ * Bu modül, frontend ile backend arasındaki tüm HTTP trafiğini yönetir.
+ * Özellikler:
+ * - Otomatik JWT Token ekleme (LocalStorage üzerinden).
+ * - Hata yakalama ve kullanıcı dostu mesajlara dönüştürme.
+ * - FormData (dosya yükleme) ve JSON veri tiplerini otomatik tanıma.
+ */
+
 // =====================================
-// CONFIG
+// KONFİGÜRASYON (Environment variables üzerinden)
 // =====================================
 
 let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
