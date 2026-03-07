@@ -42,6 +42,7 @@ const navigationModules = {
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=construction" },
       { name: "Mühendis Paneli", icon: icons.Settings, href: "/engineer-console" },
       { name: "Projeler", icon: icons.Projects, href: "/projects" },
+      { name: "İnşaat Dosyalarım", icon: icons.Documents, href: "/construction/files" },
       { name: "Malzemeler", icon: icons.Materials, href: "/materials" },
       { name: "Stok Yönetimi", icon: icons.Materials, href: "/stock" },
       { name: "Satın Alma", icon: icons.Sales, href: "/purchasing" },
@@ -101,7 +102,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials')) {
+    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials') || path.startsWith('/construction/files')) {
       setActiveModule('construction');
     } else if (path.startsWith('/accounting') || path.startsWith('/documents')) {
       setActiveModule('accounting');

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Building2, Zap, Droplets, Flame, ArrowRight, Info, Plus } from 'lucide-react';
+import { X, Save, Building2, Zap, Droplets, Flame, ArrowRight, Info, Plus, Sparkles, FileSearch, Loader2, BrainCircuit, ChevronDown } from 'lucide-react';
 import { api } from '../../api/client';
 
 const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) => {
     const isEdit = !!blockData;
     const [recipes, setRecipes] = useState([]);
     const [loadingRecipes, setLoadingRecipes] = useState(false);
+    const [constructionFiles, setConstructionFiles] = useState([]);
+    const [selectedDwgId, setSelectedDwgId] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -14,14 +17,12 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
         foundation_area_m2: '',
         total_facade_m2: '',
         elevator_count: '',
-        // Tesisat Metrajları
         elec_points: '',
         waste_water_mt: '',
         fresh_water_mt: '',
         gas_line_mt: '',
         fire_system_mt: '',
         roof_area_m2: '',
-        // Reçete Atamaları
         elevator_recipe_id: '',
         foundation_recipe_id: '',
         facade_recipe_id: '',
@@ -31,20 +32,29 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
     });
 
     useEffect(() => {
-        const fetchRecipes = async () => {
+        const fetchInitialData = async () => {
+            if (!isOpen) return;
+
             setLoadingRecipes(true);
             try {
-                const data = await api.get('/recipes');
-                setRecipes(data || []);
+                // Paralel veri çekimi: Reçeteler ve Proje Dosyaları
+                const [recipeData, fileData] = await Promise.all([
+                    api.get('/recipes'),
+                    api.get(`/construction/files/${projectId}`)
+                ]);
+
+                setRecipes(recipeData || []);
+                // Sadece DWG dosyalarını filtrele
+                setConstructionFiles((fileData || []).filter(f => f.file_type?.toLowerCase() === 'dwg'));
             } catch (err) {
-                console.error("Recipe fetch error:", err);
+                console.error("Fetch initial data error:", err);
             } finally {
                 setLoadingRecipes(false);
             }
         };
 
         if (isOpen) {
-            fetchRecipes();
+            fetchInitialData();
             if (blockData) {
                 setFormData({
                     name: blockData.name ?? '',
@@ -88,8 +98,62 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                     basement_recipe_id: ''
                 });
             }
+            setSelectedDwgId('');
         }
-    }, [isOpen, blockData]);
+    }, [isOpen, blockData, projectId]);
+
+    const handleAIAnalysis = async () => {
+        if (!selectedDwgId) {
+            alert("Lütfen önce analiz edilecek bir DWG dosyası seçiniz.");
+            return;
+        }
+
+        setIsAnalyzing(true);
+        try {
+            const selectedFile = constructionFiles.find(f => f.id.toString() === selectedDwgId);
+
+            // AI artık sadece teknik metrajlara odaklanıyor
+            const response = await api.post('/ai/test-ai', {
+                prompt: `Sen profesyonel bir inşaat mühendisi ve mimarsın. Ekteki DWG dosyasındaki verileri analiz et. 
+                        Blok ismi: "${formData.name}" ve Kat Sayısı: ${formData.floor_count} olan bu yapı için;
+                        Sadece temel alanını (m2), dış cephe alanını (m2) ve çatı alanını (m2) hesapla. 
+                        Yanıtı sadece JSON formatında ver: { foundation_area, total_facade, roof_area }`,
+                context: {
+                    dwg_id: selectedDwgId,
+                    file_url: selectedFile?.file_url,
+                    analysis_type: "block_metrics_only",
+                    project_id: projectId,
+                    user_input: {
+                        name: formData.name,
+                        floor_count: formData.floor_count
+                    }
+                }
+            });
+
+            const result = response.ai_response || response;
+
+            if (result) {
+                setFormData(prev => ({
+                    ...prev,
+                    // name ve floor_count korunuyor, sadece metrajlar güncelleniyor
+                    foundation_area_m2: result.foundation_area || prev.foundation_area_m2,
+                    total_facade_m2: result.total_facade || prev.total_facade_m2,
+                    roof_area_m2: result.roof_area || prev.roof_area_m2
+                }));
+                alert("AI Analizi Başarılı: Teknik metrajlar otomatik olarak hesaplandı.");
+            }
+        } catch (error) {
+            console.error("AI Analysis Error:", error);
+            const errorMsg = error.message || "";
+            if (errorMsg.includes("API key not valid") || errorMsg.includes("403") || errorMsg.includes("400")) {
+                alert("AI Hatası: Backend sunucusundaki Gemini API Anahtarı (API Key) geçersiz veya süresi dolmuş. Lütfen backend (.env) ayarlarını kontrol edin.");
+            } else {
+                alert("AI Analizi sırasında bir hata oluştu: " + errorMsg);
+            }
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -136,6 +200,50 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                 </div>
 
                 <div className="p-8 overflow-y-auto custom-scrollbar">
+                    {/* ═════════════════ AI DWG ANALYZER SECTION ═════════════════ */}
+                    {!isEdit && (
+                        <div className="mb-10 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2rem] p-6 border border-blue-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-blue-500/10 transition-colors" />
+                            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-blue-600 border border-blue-100">
+                                        <BrainCircuit size={28} className={isAnalyzing ? 'animate-pulse' : ''} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-sm font-black text-blue-900 uppercase tracking-tight">AI DESTEKLİ BLOK ANALİZİ (BETA)</h3>
+                                        <p className="text-[10px] text-blue-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek teknik verileri AI ile doldurun</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-1 w-full max-w-md gap-3">
+                                    <div className="relative flex-1">
+                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400" size={16} />
+                                        <select
+                                            value={selectedDwgId}
+                                            onChange={(e) => setSelectedDwgId(e.target.value)}
+                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-blue-100 rounded-2xl text-[11px] font-black uppercase text-blue-900 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all appearance-none shadow-sm"
+                                        >
+                                            <option value="">Analiz İçin DWG Seçin</option>
+                                            {constructionFiles.map(file => (
+                                                <option key={file.id} value={file.id}>{file.file_name.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300 pointer-events-none" size={16} />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleAIAnalysis}
+                                        disabled={!selectedDwgId || isAnalyzing}
+                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 whitespace-nowrap"
+                                    >
+                                        {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                                        {isAnalyzing ? 'ANALİZ EDİLİYOR...' : 'ASİSTANI ÇALIŞTIR'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <form id="block-form" onSubmit={handleSubmit} className="space-y-10">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-3">
@@ -152,6 +260,10 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                                             <option value="Ticari">Ticari</option>
                                             <option value="Karma">Karma</option>
                                         </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider ml-1">Kat Sayısı</label>
+                                        <input type="number" name="floor_count" value={formData.floor_count} onChange={handleChange} placeholder="0" required className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-[1.25rem] focus:ring-4 focus:ring-[#D36A47]/10 focus:border-[#D36A47] outline-none transition-all text-sm font-bold" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[11px] font-black text-[#D36A47] uppercase tracking-wider ml-1 flex items-center gap-1.5">TEMEL ALANI <span className="bg-[#D36A47]/10 text-[9px] px-1.5 py-0.5 rounded text-[#D36A47]">AI STATİK</span></label>
@@ -259,3 +371,4 @@ const RecipeSelector = ({ label, name, value, recipes, onChange }) => (
 );
 
 export default BlockModal;
+

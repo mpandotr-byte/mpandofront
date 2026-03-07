@@ -561,3 +561,22 @@ CREATE TABLE announcements (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ
 );
+
+-- 15. CONSTRUCTION FILES (İnşaat Dosyalarım) - YENİ
+CREATE TABLE construction_files (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    company_id INTEGER REFERENCES companies(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(50), -- pdf, dwg, etc.
+    category VARCHAR(100), -- Mimari, Statik, Hakediş, vb.
+    notes TEXT,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_construction_files_project ON construction_files(project_id);
+CREATE INDEX idx_construction_files_company ON construction_files(company_id);
+

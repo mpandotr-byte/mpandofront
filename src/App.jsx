@@ -29,6 +29,7 @@ import EngineerConsole from "./pages/construction/EngineerConsole";
 import DailyReports from "./pages/construction/DailyReports";
 import SiteLogs from "./pages/construction/SiteLogs";
 import Planning from "./pages/construction/Planning";
+import ConstructionFiles from "./pages/construction/ConstructionFiles";
 
 import AccountingDashboard from "./pages/accounting/AccountingDashboard";
 import IncomeManagement from "./pages/accounting/IncomeManagement";
@@ -81,6 +82,7 @@ function App() {
         <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
         <Route path="/projects/:id" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
         <Route path="/projects/:projectId/blocks/:blockId" element={<PrivateRoute><BlockDetails /></PrivateRoute>} />
+        <Route path="/construction/files" element={<PrivateRoute><ConstructionFiles /></PrivateRoute>} />
 
         {/* --- SATIŞ VE MÜŞTERİ YÖNETİMİ --- */}
         <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
