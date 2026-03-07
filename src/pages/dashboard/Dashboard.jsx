@@ -392,9 +392,9 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        {act.amount !== null && act.amount !== undefined && !isNaN(act.amount) && (
+                        {act.amount && !isNaN(Number(act.amount)) && Number(act.amount) !== 0 && (
                           <p className={`text-[11px] font-black tracking-tighter ${act.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {act.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(act.amount))}
+                            {act.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(act.amount)))}
                           </p>
                         )}
                         <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{act.time}</span>
