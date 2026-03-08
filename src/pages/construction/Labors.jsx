@@ -19,8 +19,7 @@ import {
     Ruler
 } from 'lucide-react';
 import LaborModal from '../../modals/labors/LaborModal';
-import { seedStandardLibrary } from '../../utils/seeder';
-import { Sparkles } from 'lucide-react';
+
 
 const unitOptions = ['m²', 'mt', 'm³', 'Saat', 'Adet'];
 
@@ -36,8 +35,7 @@ function Labors() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedLabor, setSelectedLabor] = useState(null);
     const [selectedLabors, setSelectedLabors] = useState([]);
-    const [isSeeding, setIsSeeding] = useState(false);
-    const [seedStatus, setSeedStatus] = useState('');
+
 
     const { user } = useAuth();
 
@@ -129,20 +127,7 @@ function Labors() {
         }
     };
 
-    const handleSeedData = async () => {
-        if (!window.confirm("Yapay zeka tarafından hazırlanan standart kütüphane yüklenecek (Mevcut kayıtlar korunur). Emin misiniz?")) return;
-        setIsSeeding(true);
-        try {
-            await seedStandardLibrary(setSeedStatus);
-            await fetchData();
-            alert("Standart kütüphane başarıyla yüklendi.");
-        } catch (err) {
-            alert("Yükleme sırasında bir hata oluştu: " + err.message);
-        } finally {
-            setIsSeeding(false);
-            setSeedStatus('');
-        }
-    };
+
 
     const handleSave = async (formData) => {
         try {
@@ -266,14 +251,6 @@ function Labors() {
 
                             <div className="flex flex-col md:flex-row gap-3 animate-slide-up" style={{ animationDelay: '100ms' }}>
                                 <button
-                                    onClick={handleSeedData}
-                                    disabled={isSeeding}
-                                    className="flex items-center justify-center gap-2 text-sm font-black text-[#D36A47] bg-white hover:bg-slate-50 border-2 border-[#D36A47] px-6 py-4 rounded-2xl transition-all disabled:opacity-50"
-                                >
-                                    <Sparkles size={18} className={isSeeding ? "animate-spin" : ""} />
-                                    <span>{isSeeding ? seedStatus : 'AI STANDART KÜTÜPHANE YÜKLE'}</span>
-                                </button>
-                                <button
                                     onClick={openAddModal}
                                     className="flex items-center justify-center gap-2 text-sm font-black text-white bg-[#D36A47] hover:bg-[#E37A57] shadow-xl shadow-[#D36A47]/20 px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
                                 >
@@ -358,8 +335,8 @@ function Labors() {
                     categories={categories}
                     units={unitOptions}
                 />
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
 
