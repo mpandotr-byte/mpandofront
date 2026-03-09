@@ -29,6 +29,25 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null }) => {
 
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
+    const [availableCategories, setAvailableCategories] = useState([]);
+
+    const fetchCategories = async () => {
+        try {
+            const materials = await api.get('/materials/catalog');
+            const cats = [...new Set(materials.map(m => m.category).filter(Boolean))];
+            if (cats.length > 0) {
+                setAvailableCategories(prev => [...new Set([...prev, ...cats])]);
+            }
+        } catch (err) {
+            console.error("Categories fetch error:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchCategories();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (supplier) {
@@ -57,6 +76,17 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const toggleCategory = (cat) => {
+        const currentTags = formData.category_tags.split(',').map(t => t.trim()).filter(Boolean);
+        let newTags;
+        if (currentTags.includes(cat)) {
+            newTags = currentTags.filter(t => t !== cat);
+        } else {
+            newTags = [...currentTags, cat];
+        }
+        setFormData(prev => ({ ...prev, category_tags: newTags.join(', ') }));
     };
 
     const handleSubmit = async (e) => {
@@ -132,8 +162,8 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null }) => {
                 </div>
 
                 {/* Content */}
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-                    <div className="p-8 space-y-8 min-h-[400px]">
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto flex flex-col">
+                    <div className="p-8 space-y-8 flex-1">
                         {activeTab === 'general' && (
                             <div className="space-y-6 animate-slide-up">
                                 <div className="space-y-2">
@@ -154,38 +184,43 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null }) => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategoriler (Virgül ile ayırın)</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300">
-                                                <Tag size={18} />
-                                            </div>
-                                            <input
-                                                type="text"
-                                                name="category_tags"
-                                                value={formData.category_tags}
-                                                onChange={handleChange}
-                                                placeholder="Örn: Seramik, İnce Yapı"
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#D36A47] transition-all outline-none font-medium"
-                                            />
-                                        </div>
+                                <div className="space-y-4">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Tedarik Edilen Kategoriler</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableCategories.map(cat => {
+                                            const isSelected = formData.category_tags.split(',').map(t => t.trim()).includes(cat);
+                                            return (
+                                                <button
+                                                    key={cat}
+                                                    type="button"
+                                                    onClick={() => toggleCategory(cat)}
+                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${isSelected
+                                                        ? 'bg-[#D36A47] border-[#D36A47] text-white shadow-lg shadow-[#D36A47]/20 scale-105'
+                                                        : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'
+                                                        }`}
+                                                >
+                                                    {cat}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Vergi Dairesi</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300">
-                                                <Scale size={18} />
-                                            </div>
-                                            <input
-                                                type="text"
-                                                name="tax_office"
-                                                value={formData.tax_office}
-                                                onChange={handleChange}
-                                                placeholder="Örn: Kütahya Vergi Dairesi"
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#D36A47] transition-all outline-none font-medium"
-                                            />
+
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Vergi Dairesi</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300">
+                                            <Scale size={18} />
                                         </div>
+                                        <input
+                                            type="text"
+                                            name="tax_office"
+                                            value={formData.tax_office}
+                                            onChange={handleChange}
+                                            placeholder="Örn: Kütahya Vergi Dairesi"
+                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#D36A47] transition-all outline-none font-medium"
+                                        />
                                     </div>
                                 </div>
                             </div>

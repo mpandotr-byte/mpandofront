@@ -15,13 +15,19 @@ import { api } from '../../api/client';
 
 const SecondHandEditModal = ({ isOpen, onClose, data, onSave, agents = [] }) => {
   const [projects, setProjects] = useState([]);
-  const blocks = ['A Blok', 'B Blok', 'C Blok', 'Bağımsız', 'Diğer'];
+  const [blocks, setBlocks] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [sales, setSales] = useState([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  const defaultBlocks = ['A Blok', 'B Blok', 'C Blok', 'Bağımsız', 'Diğer'];
   const availableAgents = agents.length > 0 ? [...agents, 'Diğer'] : ['Ahmet Yılmaz', 'Zeynep Kaya', 'Mustafa Öztürk', 'Diğer'];
   const [formData, setFormData] = useState({
     projectName: '',
     customProjectName: '',
     blockInfo: '',
     customBlockInfo: '',
+    flat: '',
     ownerName: '',
     ownerPhone: '',
     buyerName: '',
@@ -45,61 +51,199 @@ const SecondHandEditModal = ({ isOpen, onClose, data, onSave, agents = [] }) => 
 
   useEffect(() => {
     if (isOpen) {
-      fetchProjects();
+      fetchInitialData();
     }
   }, [isOpen]);
 
-  const fetchProjects = async () => {
+  const fetchInitialData = async () => {
     try {
-      const resp = await api.get('/projects');
-      setProjects(resp || []);
+      setLoadingDetails(true);
+      const [projData, salesData] = await Promise.all([
+        api.get('/projects'),
+        api.get('/sales')
+      ]);
+      setProjects(projData || []);
+      setSales(salesData || []);
     } catch (err) {
-      console.error("Projeler çekilemedi:", err);
+      console.error("Başlangıç verileri çekilemedi:", err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const fetchProjectDetails = async (projectId) => {
+    try {
+      setLoadingDetails(true);
+      const data = await api.get(`/projects/${projectId}`);
+      setBlocks(data.blocks || []);
+      return data.blocks || [];
+    } catch (err) {
+      console.error("Bloklar çekilemedi:", err);
+      return [];
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const fetchBlockDetails = async (blockId) => {
+    try {
+      setLoadingDetails(true);
+      const data = await api.get(`/projects/blocks/${blockId}`);
+      const blockUnits = [];
+      (data.floors || []).forEach(f => {
+        (f.units || []).forEach(u => {
+          blockUnits.push({ ...u, floor_number: f.floor_number });
+        });
+      });
+      setUnits(blockUnits);
+      return blockUnits;
+    } catch (err) {
+      console.error("Üniteler çekilemedi:", err);
+      return [];
+    } finally {
+      setLoadingDetails(false);
     }
   };
 
   useEffect(() => {
-    if (data && projects.length >= 0) {
-      const projectNames = projects.map(p => p.name || p.project_name);
-      const isProjectInList = projectNames.includes(data.projectName);
-      const isBlockInList = blocks.includes(data.block);
-      const isAgentInList = availableAgents.includes(data.agentName);
-      const formattedStartDate = data.contractStartDate ? data.contractStartDate.split('T')[0] : '';
-      const formattedEndDate = data.contractEndDate ? data.contractEndDate.split('T')[0] : '';
+    const initializeForm = async () => {
+      if (data && projects.length > 0) {
+        const projectNames = projects.map(p => p.name || p.project_name);
+        const isProjectInList = projectNames.includes(data.projectName);
+        const isBlockInList = data.block && !defaultBlocks.includes(data.block); // Eğer özel bir bloksa Diğer gelmeli ama API'den çekeceğiz
+        const isAgentInList = availableAgents.includes(data.agentName);
+        const formattedStartDate = data.contractStartDate ? data.contractStartDate.split('T')[0] : '';
+        const formattedEndDate = data.contractEndDate ? data.contractEndDate.split('T')[0] : '';
 
-      setFormData({
-        projectName: isProjectInList ? data.projectName : 'Diğer',
-        customProjectName: !isProjectInList ? data.projectName || '' : '',
-        blockInfo: isBlockInList ? data.block : 'Diğer',
-        customBlockInfo: !isBlockInList ? data.block || '' : '',
+        // Fiyatın düzgün görünmesi için sayısal olmayan karakterleri temizle
+        const priceVal = data.price ? String(data.price).replace(/[^\d]/g, '') : '';
+        const depositVal = data.deposit ? String(data.deposit).replace(/[^\d]/g, '') : '';
+        const commissionVal = data.commission ? String(data.commission).replace(/[^\d]/g, '') : '';
 
-        ownerName: data.ownerName || '',
-        ownerPhone: data.ownerPhone || '',
-        buyerName: data.buyerName || '',
-        buyerPhone: data.buyerPhone || '',
-        agentName: isAgentInList ? data.agentName : 'Diğer',
-        customAgentName: !isAgentInList ? data.agentName || '' : '',
-        contractStartDate: formattedStartDate,
-        contractEndDate: formattedEndDate,
+        // Eğer proje kayıtlıysa bloklarını çek
+        let currentBlocks = [];
+        if (isProjectInList) {
+          const selectedProj = projects.find(p => (p.name || p.project_name) === data.projectName);
+          if (selectedProj) {
+            currentBlocks = await fetchProjectDetails(selectedProj.id);
 
-        type: data.type || '',
-        status: data.status || 'Aktif',
-        price: data.price || '',
-        deposit: data.deposit || '',
-        commission: data.commission || '',
-        notes: data.notes || '',
-        contract_no: data.contract_no || '',
-        dask_no: data.dask_no || '',
-        water_meter_no: data.water_meter_no || '',
-        electricity_meter_no: data.electricity_meter_no || '',
-        direction: data.direction || ''
-      });
-    }
-  }, [data, agents, projects, blocks, availableAgents]);
+            // Eğer blok da listedeyse ünitelerini çek
+            const selectedBlock = currentBlocks.find(b => b.name === data.block);
+            if (selectedBlock) {
+              await fetchBlockDetails(selectedBlock.id);
+            }
+          }
+        }
+
+        setFormData({
+          projectName: isProjectInList ? data.projectName : (data.projectName ? 'Diğer' : ''),
+          customProjectName: !isProjectInList ? data.projectName || '' : '',
+          blockInfo: data.block || '',
+          customBlockInfo: '',
+          flat: data.flat || '',
+
+          ownerName: data.ownerName || '',
+          ownerPhone: data.ownerPhone || '',
+          buyerName: data.buyerName || '',
+          buyerPhone: data.buyerPhone || '',
+          agentName: isAgentInList ? data.agentName : (data.agentName ? 'Diğer' : 'varsayılan kullanıcı'),
+          customAgentName: !isAgentInList ? data.agentName || '' : '',
+          contractStartDate: formattedStartDate,
+          contractEndDate: formattedEndDate,
+
+          type: data.type || '',
+          status: data.status || 'Aktif',
+          price: priceVal,
+          deposit: depositVal,
+          commission: commissionVal,
+          notes: data.notes || '',
+          contract_no: data.contract_no || '',
+          dask_no: data.dask_no || '',
+          water_meter_no: data.water_meter_no || '',
+          electricity_meter_no: data.electricity_meter_no || '',
+          direction: data.direction || ''
+        });
+      }
+    };
+
+    initializeForm();
+  }, [data, projects]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+
+      if (name === 'projectName') {
+        if (value === 'Diğer' || !value) {
+          setBlocks([]);
+          setUnits([]);
+          newData.blockInfo = '';
+          newData.flat = '';
+        } else {
+          const selectedProj = projects.find(p => (p.name || p.project_name) === value);
+          if (selectedProj) {
+            fetchProjectDetails(selectedProj.id);
+            newData.ownerName = selectedProj.owner_name || 'Şirket Envanteri';
+          }
+        }
+      }
+
+      if (name === 'blockInfo') {
+        if (value === 'Diğer' || value === 'Bağımsız' || !value) {
+          setUnits([]);
+          newData.flat = '';
+        } else {
+          const selectedBlock = blocks.find(b => b.name === value);
+          if (selectedBlock) {
+            fetchBlockDetails(selectedBlock.id);
+          }
+        }
+      }
+
+      if (name === 'flat') {
+        const selectedUnit = units.find(u => u.unit_number === value || String(u.id) === value);
+        if (selectedUnit) {
+          const sale = sales.find(s =>
+            String(s.unit_id) === String(selectedUnit.id) &&
+            (s.sale_status === 'Satıldı' || s.approval_status === 'Onaylandı')
+          );
+
+          newData.ownerName = sale?.customers?.full_name || 'Şirket Envanteri';
+          newData.ownerPhone = sale?.customers?.phone || '';
+
+          // Mülk Tipi'ni (Daire/Villa vb.) akıllıca seç
+          if (selectedUnit.unit_type) {
+            const uType = String(selectedUnit.unit_type).toLowerCase();
+            if (uType.includes('+') || uType.includes('oda') || uType.includes('daire')) {
+              newData.type = 'Daire';
+            } else if (uType.includes('dükkan') || uType.includes('shop')) {
+              newData.type = 'Dükkan';
+            } else if (uType.includes('villa')) {
+              newData.type = 'Villa';
+            } else if (uType.includes('ofis')) {
+              newData.type = 'Ofis';
+            }
+          }
+
+          // Yön / Cephe bilgisini eşleştir (Hubndaki "-" işaretlerini boşlukla değiştir)
+          if (selectedUnit.facade) {
+            const normalizedFacade = selectedUnit.facade.replace('-', ' ').trim();
+            const options = ["Kuzey", "Güney", "Doğu", "Batı", "Kuzey Doğu", "Kuzey Batı", "Güney Doğu", "Güney Batı"];
+            const foundOption = options.find(opt => opt.toLowerCase() === normalizedFacade.toLowerCase());
+            if (foundOption) {
+              newData.direction = foundOption;
+            } else {
+              newData.direction = selectedUnit.facade;
+            }
+          }
+
+          newData.price = selectedUnit.list_price || selectedUnit.price || prev.price || '';
+        }
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -118,6 +262,7 @@ const SecondHandEditModal = ({ isOpen, onClose, data, onSave, agents = [] }) => 
       ...data,
       projectName: finalProjectName,
       block: finalBlock,
+      flat: formData.flat,
       ownerName: formData.ownerName,
       ownerPhone: formData.ownerPhone,
       buyerName: formData.buyerName,
@@ -127,7 +272,7 @@ const SecondHandEditModal = ({ isOpen, onClose, data, onSave, agents = [] }) => 
       contractEndDate: formData.contractEndDate,
       type: formData.type,
       status: formData.status,
-      price: formData.price,
+      price: formData.price ? (Number(formData.price).toLocaleString('tr-TR') + '₺') : '', // Formatı korumak için
       deposit: formData.deposit,
       commission: formData.commission,
       notes: formData.notes,
@@ -186,17 +331,68 @@ const SecondHandEditModal = ({ isOpen, onClose, data, onSave, agents = [] }) => 
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Blok / Daire <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
+                    <span>Blok / Yapı <span className="text-red-500">*</span></span>
+                    {loadingDetails && <span className="text-[10px] text-blue-500 animate-pulse">Yükleniyor...</span>}
+                  </label>
                   <div className="relative">
-                    <select name="blockInfo" value={formData.blockInfo} onChange={handleChange} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none cursor-pointer" required>
+                    <select
+                      name="blockInfo"
+                      value={formData.blockInfo}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none cursor-pointer"
+                      required
+                      disabled={!formData.projectName || formData.projectName === 'Diğer'}
+                    >
                       <option value="">Seçiniz</option>
-                      {blocks.map(b => <option key={b} value={b}>{b}</option>)}
+                      {blocks.length > 0 ? (
+                        blocks.map(b => <option key={b.id} value={b.name}>{b.name}</option>)
+                      ) : (
+                        defaultBlocks.map(b => <option key={b} value={b}>{b}</option>)
+                      )}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                   </div>
                   {formData.blockInfo === 'Diğer' && (
-                    <input type="text" name="customBlockInfo" value={formData.customBlockInfo} onChange={handleChange} placeholder="Blok ve Daire No" className="w-full mt-2 px-3 py-2 border border-blue-300 bg-blue-50/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required />
+                    <input type="text" name="customBlockInfo" value={formData.customBlockInfo} onChange={handleChange} placeholder="Blok Adı Giriniz" className="w-full mt-2 px-3 py-2 border border-blue-300 bg-blue-50/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required />
                   )}
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
+                    <span>Daire / No <span className="text-red-500">*</span></span>
+                    {loadingDetails && <span className="text-[10px] text-blue-500 animate-pulse">Yükleniyor...</span>}
+                  </label>
+                  <div className="relative">
+                    {units.length > 0 ? (
+                      <>
+                        <select
+                          name="flat"
+                          value={formData.flat}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none cursor-pointer"
+                          required
+                        >
+                          <option value="">Seçiniz</option>
+                          {units.map(u => (
+                            <option key={u.id} value={u.unit_number}>
+                              {u.unit_number} ({u.unit_type || 'N/A'})
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                      </>
+                    ) : (
+                      <input
+                        type="text"
+                        name="flat"
+                        value={formData.flat}
+                        onChange={handleChange}
+                        placeholder="Örn: No 4"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        required
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -270,10 +466,11 @@ const SecondHandEditModal = ({ isOpen, onClose, data, onSave, agents = [] }) => 
                     placeholder='varsayılan kullanıcı'
                     type="text"
                     name="agentName"
-                    value={formData.agentName}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-100 cursor-not-allowed text-slate-600 outline-none"
-                    readOnly
-                    disabled
+                    value={formData.agentName === 'Diğer' ? formData.customAgentName : formData.agentName}
+                    onChange={formData.agentName === 'Diğer' ? (e) => setFormData(prev => ({ ...prev, customAgentName: e.target.value })) : undefined}
+                    className={`w-full px-3 py-2 border border-slate-300 rounded-lg outline-none ${formData.agentName !== 'Diğer' ? 'bg-slate-100 cursor-not-allowed text-slate-600' : 'bg-white focus:ring-2 focus:ring-blue-500'}`}
+                    readOnly={formData.agentName !== 'Diğer'}
+                    disabled={formData.agentName !== 'Diğer'}
                   />
                 </div>
                 <div className="space-y-1.5">

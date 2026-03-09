@@ -27,13 +27,20 @@ const NewSubcontractorModal = ({ isOpen, onClose, onAdd }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            // In MPANDO, subcontractors are stored in companies table
-            // We set the type as 'SUBCONTRACTOR' if the backend supports it, 
-            // or just save it as a company.
-            const response = await api.post('/companies', {
-                ...formData,
-                type: 'SUBCONTRACTOR' // assuming this type exists or is handled
-            });
+            // Backend maps subcontractors to companies table. We need to match its schema.
+            // tax_id -> tax_number
+            // contact_person -> authorized_person
+            // expertise -> category_tags
+            const { tax_id, contact_person, expertise, notes, ...rest } = formData;
+
+            const payload = {
+                ...rest,
+                tax_number: tax_id || null,
+                authorized_person: contact_person || null,
+                category_tags: expertise ? [expertise] : []
+            };
+
+            const response = await api.post('/subcontractors', payload);
             onAdd(response);
             onClose();
         } catch (err) {

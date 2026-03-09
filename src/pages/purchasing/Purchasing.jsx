@@ -73,13 +73,13 @@ export default function Purchasing() {
             const mappedData = (data || []).map(req => ({
                 id: req.id,
                 project: req.projects?.name || req.project_name || 'Bilinmeyen Proje',
-                item: req.materials?.name || req.material_name || 'Bilinmeyen Malzeme',
+                item: req.materials_catalog?.name || req.materials?.name || req.material_name || 'Bilinmeyen Malzeme',
                 material_id: req.material_id,
-                quantity: req.quantity,
-                unit: req.materials?.unit || 'm²',
+                quantity: req.required_quantity || req.quantity || 0,
+                unit: req.materials_catalog?.unit || req.materials?.unit || 'm²',
                 status: req.status === 'ORDERED' ? 'Malzeme Bekleniyor' : 'Teklif Toplanıyor',
                 date: req.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-                requester: req.requester || 'Sistem',
+                requester: req.requested_by_user?.full_name || req.requester || 'Sistem',
                 offers: req.offers || []
             }));
             setRequests(mappedData);
@@ -109,8 +109,8 @@ export default function Purchasing() {
     const fetchBlocks = async (projectId) => {
         if (!projectId) return;
         try {
-            const data = await api.get(`/projects/${projectId}/blocks`);
-            setBlocks(data || []);
+            const data = await api.get(`/projects/${projectId}`);
+            setBlocks(data.blocks || []);
         } catch (err) {
             console.error("Fetch blocks error:", err);
         }
@@ -121,13 +121,23 @@ export default function Purchasing() {
         try {
             const response = await api.get(`/projects/blocks/${blockId}`);
             const blockData = response.block || response.data || response;
-            setFloors(blockData.floors || []);
+            const floorsList = blockData.floors || [];
+            setFloors(floorsList);
+
+            // Başlangıçta o bloktaki tüm üniteleri göster
+            const allUnits = [];
+            floorsList.forEach(f => {
+                if (f.units) {
+                    f.units.forEach(u => {
+                        allUnits.push({ ...u, floor_number: f.floor_number });
+                    });
+                }
+            });
+            setUnits(allUnits);
         } catch (err) {
             console.error("Fetch floors error:", err);
-            setFloors([
-                { id: 1, floor_number: 1, name: '1. Kat', units: [{ id: 101, unit_number: 'D1' }, { id: 102, unit_number: 'D2' }] },
-                { id: 2, floor_number: 2, name: '2. Kat', units: [{ id: 201, unit_number: 'D3' }] }
-            ]);
+            setFloors([]);
+            setUnits([]);
         }
     };
 
@@ -143,23 +153,37 @@ export default function Purchasing() {
 
     const handleSelectionChange = (e) => {
         const { name, value } = e.target;
-        setSelection(prev => ({ ...prev, [name]: value }));
 
         if (name === 'projectId') {
-            fetchBlocks(value);
-            setSelection(prev => ({ ...prev, blockId: '', floorId: '', unitId: '' }));
+            setSelection(prev => ({ ...prev, projectId: value, blockId: '', floorId: '', unitId: '' }));
             setFloors([]);
             setUnits([]);
+            if (value) fetchBlocks(value);
         } else if (name === 'blockId') {
-            fetchFloors(value);
-            setSelection(prev => ({ ...prev, floorId: '', unitId: '' }));
+            setSelection(prev => ({ ...prev, blockId: value, floorId: '', unitId: '' }));
             setUnits([]);
+            if (value) fetchFloors(value);
         } else if (name === 'floorId') {
-            const selectedFloor = floors.find(f => String(f.id) === String(value));
-            setUnits(selectedFloor?.units || []);
-            setSelection(prev => ({ ...prev, unitId: '' }));
-        } else if (name === 'materialId') {
-            if (value) checkStock(value);
+            setSelection(prev => ({ ...prev, floorId: value, unitId: '' }));
+            if (value === '') {
+                const allUnits = [];
+                floors.forEach(f => {
+                    if (f.units) {
+                        f.units.forEach(u => {
+                            allUnits.push({ ...u, floor_number: f.floor_number });
+                        });
+                    }
+                });
+                setUnits(allUnits);
+            } else {
+                const selectedFloor = floors.find(f => String(f.id) === String(value));
+                setUnits(selectedFloor?.units || []);
+            }
+        } else {
+            setSelection(prev => ({ ...prev, [name]: value }));
+            if (name === 'materialId' && value) {
+                checkStock(value);
+            }
         }
     };
 
@@ -167,15 +191,30 @@ export default function Purchasing() {
         if (!selection.materialId) return;
         const selectedMat = materials.find(m => m.id === parseInt(selection.materialId));
 
-        // Mocked logic: (Gerçek sistemde backend'den analize göre gelecek)
-        const analysisInfo = "12 Adet Banyo + 4 Adet Mutfak";
-        const requirementInfo = "1 Banyo (15m2) + 1 Mutfak (10m2)";
-        const totalNeed = 220;
+        // Eğer belirli bir ünite seçildiyse onun m2 bilgisini kullan
+        let area = 0;
+        let info = "Tüm Blok / Kat Geneli";
+
+        if (selection.unitId) {
+            const unit = units.find(u => String(u.id) === String(selection.unitId));
+            area = unit?.gross_m2 || unit?.area_m2 || 85; // Fallback to 85 if not found
+            info = `No: ${unit?.unit_number || unit?.name} (${area} m2)`;
+        } else if (selection.floorId) {
+            const floor = floors.find(f => String(f.id) === String(selection.floorId));
+            area = (floor?.units || []).reduce((acc, u) => acc + (u.gross_m2 || u.area_m2 || 85), 0);
+            info = `${floor?.floor_number}. Kat Toplam (${area} m2)`;
+        } else {
+            area = units.reduce((acc, u) => acc + (u.gross_m2 || u.area_m2 || 85), 0);
+        }
+
+        // Basit bir katsayı hesabı (İleride reçetelerden gelecek)
+        const coefficient = 1.1; // %10 fire payı vb.
+        const totalNeed = Math.round(area * coefficient);
 
         setCalculationResult({
             item: selectedMat?.name || 'Seçili Malzeme',
-            analysisArea: analysisInfo,
-            requirement: requirementInfo,
+            analysisArea: info,
+            requirement: "Genel Saha Sarfiyat Hesabı",
             totalNeed: totalNeed,
             unit: selectedMat?.unit || 'm²',
             stockRecommendation: stockWarningInfo || 0

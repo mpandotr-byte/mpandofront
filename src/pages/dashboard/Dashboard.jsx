@@ -93,6 +93,7 @@ export default function Dashboard() {
   const [totalPayable, setTotalPayable] = useState(0);
   const [departmentWorkload, setDepartmentWorkload] = useState([]);
   const [supplierStats, setSupplierStats] = useState([]);
+  const [criticalMaterials, setCriticalMaterials] = useState([]);
 
   // New States for Construction & Sales
   const [notes, setNotes] = useState([]);
@@ -136,14 +137,19 @@ export default function Dashboard() {
           customersRes
         ] = results;
 
-        const projects = projectsRes.status === 'fulfilled' ? projectsRes.value : [];
-        const sales = salesRes.status === 'fulfilled' ? salesRes.value : [];
+        const rawProjects = projectsRes.status === 'fulfilled' ? projectsRes.value : [];
+        const rawSales = salesRes.status === 'fulfilled' ? salesRes.value : [];
         const finance = financeRes.status === 'fulfilled' ? financeRes.value : [];
         const purchaseReqs = purchaseReqsRes.status === 'fulfilled' ? purchaseReqsRes.value : [];
         const materials = materialsRes.status === 'fulfilled' ? materialsRes.value : [];
         const suppliers = suppliersRes.status === 'fulfilled' ? suppliersRes.value : [];
         const activitiesData = activitiesRes.status === 'fulfilled' ? activitiesRes.value : [];
-        const customers = customersRes.status === 'fulfilled' ? customersRes.value : [];
+        const rawCustomers = customersRes.status === 'fulfilled' ? customersRes.value : [];
+
+        // Şirket bazlı filtreleme
+        const projects = (rawProjects || []).filter(p => !user?.company_id || String(p.contractor_id) === String(user.company_id));
+        const sales = (rawSales || []).filter(s => !user?.company_id || String(s.company_id) === String(user.company_id));
+        const customers = (rawCustomers || []).filter(c => !user?.company_id || String(c.company_id) === String(user.company_id));
 
         // 1. Process Construction Data
         const mappedProjects = (projects || []).map(p => {
@@ -239,6 +245,10 @@ export default function Dashboard() {
           icon: Zap,
           color: '#D36A47'
         })));
+
+        // Critical Materials List
+        const critical = (materials || []).filter(m => m.is_critical).slice(0, 5);
+        setCriticalMaterials(critical);
 
         // 7. Sales - Pending & New
         setPendingCustomers(sales.filter(s => s.sale_status === 'Beklemede').slice(0, 5));
@@ -611,15 +621,16 @@ export default function Dashboard() {
 
                 <ModuleCard title="Kritik Malzemeler" subtitle="Termin Uyarıları" icon={Package} color="#D36A47">
                   <div className="mt-4 space-y-4">
-                    {recentActivities.slice(0, 5).map((act, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-white">
+                    {criticalMaterials.map((mat, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-100 hover:bg-white hover:shadow-lg transition-all group">
                         <div>
-                          <p className="text-[11px] font-black text-slate-900 uppercase truncate max-w-[120px]">{act.title}</p>
-                          <p className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest">{act.time}</p>
+                          <p className="text-[11px] font-black text-slate-900 uppercase truncate max-w-[150px]">{mat.name || mat.material_name}</p>
+                          <p className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">{mat.warehouse_quantity || mat.warehouse_qty} {mat.unit} MEVCUT</p>
                         </div>
-                        <button onClick={() => navigate('/purchasing')} className="text-[9px] font-black text-[#D36A47] uppercase tracking-widest hover:underline">Detay</button>
+                        <button onClick={() => navigate('/purchasing')} className="text-[9px] font-black text-[#D36A47] uppercase tracking-widest hover:underline">Tedarik Et</button>
                       </div>
                     ))}
+                    {criticalMaterials.length === 0 && <p className="text-center text-slate-300 py-10 uppercase text-[10px] font-black">Kritik Malzeme Yok</p>}
                   </div>
                 </ModuleCard>
               </div>

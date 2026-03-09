@@ -1112,6 +1112,7 @@ function BlockDetails() {
                 }}
                 onAdd={handleSaveFloor}
                 blockId={blockId}
+                projectId={projectId}
                 floorData={editingFloor}
                 maxFloors={block?.floor_count}
             />
@@ -1137,6 +1138,7 @@ function BlockDetails() {
                 }}
                 onAdd={handleSaveRoom}
                 unitId={selectedUnitForRoom}
+                projectId={projectId}
                 roomData={editingRoom}
             />
 

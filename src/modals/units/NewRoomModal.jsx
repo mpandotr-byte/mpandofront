@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Maximize, Ruler, DoorOpen, Layout, Info, Plus, ChevronRight, PenTool } from 'lucide-react';
+import { X, Save, Maximize, Ruler, DoorOpen, Layout, Info, Plus, ChevronRight, PenTool, FileSearch, Loader2, BrainCircuit, Sparkles, ChevronDown } from 'lucide-react';
 import { api } from '../../api/client';
 
-const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
+const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = null }) => {
     const isEdit = !!roomData;
     const [recipes, setRecipes] = useState([]);
+    const [constructionFiles, setConstructionFiles] = useState([]);
+    const [selectedDwgId, setSelectedDwgId] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -24,17 +27,22 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
     });
 
     useEffect(() => {
-        const fetchRecipes = async () => {
+        const fetchInitialData = async () => {
             try {
-                const data = await api.get('/recipes');
-                setRecipes(data || []);
+                const [recipeData, fileData] = await Promise.all([
+                    api.get('/recipes'),
+                    projectId ? api.get(`/construction/files/${projectId}`) : Promise.resolve([])
+                ]);
+                setRecipes(recipeData || []);
+                setConstructionFiles((fileData || []).filter(f => f.file_type?.toLowerCase() === 'dwg'));
             } catch (err) {
-                console.error("Recipe fetch error:", err);
+                console.error("Fetch initial data error:", err);
             }
         };
 
         if (isOpen) {
-            fetchRecipes();
+            fetchInitialData();
+            setSelectedDwgId('');
             if (roomData) {
                 setFormData({
                     name: roomData.name || '',
@@ -56,13 +64,60 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
                 setFormData(prev => ({ ...prev, name: '' }));
             }
         }
-    }, [isOpen, roomData]);
+    }, [isOpen, roomData, projectId]);
+
+    const handleAIAnalysis = async () => {
+        if (!selectedDwgId) {
+            alert("Lütfen önce analiz edilecek bir DWG dosyası seçiniz.");
+            return;
+        }
+
+        setIsAnalyzing(true);
+        try {
+            const selectedFile = constructionFiles.find(f => f.id.toString() === selectedDwgId);
+
+            const response = await api.post('/ai/rooms/analyze', {
+                dwg_id: selectedDwgId,
+                file_url: selectedFile?.file_url,
+                project_id: projectId,
+                unit_id: unitId,
+                room_name: formData.room_type,
+                room_type: formData.room_type,
+                analysis_type: "room_metrics"
+            });
+
+            const result = response.ai_response || response;
+
+            if (result) {
+                setFormData(prev => ({
+                    ...prev,
+                    area_m2: result.area_m2 ?? result.area ?? prev.area_m2,
+                    wall_area_m2: result.wall_area_m2 ?? result.wall_area ?? prev.wall_area_m2
+                }));
+                alert("AI Analizi Başarılı: Mahal metrajları otomatik olarak hesaplandı.");
+            }
+        } catch (error) {
+            console.error("AI Room Analysis Error:", error);
+            const errorMsg = error.message || "";
+            alert("AI Analizi sırasında bir hata oluştu: " + errorMsg);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     if (!isOpen) return null;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'room_type') {
+            setFormData(prev => ({
+                ...prev,
+                room_type: value,
+                name: value // Oda tipi seçilince ismi de aynı yap
+            }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = (e) => {
@@ -85,11 +140,55 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
                 </div>
 
                 <div className="p-10 overflow-y-auto custom-scrollbar">
+                    {/* ═════════════════ AI DWG ANALYZER SECTION ═════════════════ */}
+                    {!isEdit && (
+                        <div className="mb-10 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-[2rem] p-6 border border-violet-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-violet-500/10 transition-colors" />
+                            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-violet-600 border border-violet-100">
+                                        <BrainCircuit size={28} className={isAnalyzing ? 'animate-pulse' : ''} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-sm font-black text-violet-900 uppercase tracking-tight">AI DESTEKLİ MAHAL ANALİZİ (BETA)</h3>
+                                        <p className="text-[10px] text-violet-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek mahal metrajlarını AI ile doldurun</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-1 w-full max-w-md gap-3">
+                                    <div className="relative flex-1">
+                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400" size={16} />
+                                        <select
+                                            value={selectedDwgId}
+                                            onChange={(e) => setSelectedDwgId(e.target.value)}
+                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-violet-100 rounded-2xl text-[11px] font-black uppercase text-violet-900 outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-400 transition-all appearance-none shadow-sm"
+                                        >
+                                            <option value="">Analiz İçin DWG Seçin</option>
+                                            {constructionFiles.map(file => (
+                                                <option key={file.id} value={file.id}>{file.file_name.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-violet-300 pointer-events-none" size={16} />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleAIAnalysis}
+                                        disabled={!selectedDwgId || isAnalyzing}
+                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-600/20 active:scale-95 whitespace-nowrap"
+                                    >
+                                        {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                                        {isAnalyzing ? 'ANALİZ EDİLİYOR...' : 'ASİSTANI ÇALIŞTIR'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <form id="new-room-form" onSubmit={handleSubmit} className="space-y-12">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
                             <div className="md:col-span-2 lg:col-span-4 space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Oda İsmi</label>
-                                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Örn: Salon" required className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#D36A47]/10 outline-none font-bold text-sm" />
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Oda İsmi (Otomatik)</label>
+                                <input type="text" name="name" value={formData.name} readOnly placeholder="Tip seçiniz..." className="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm text-slate-500 cursor-not-allowed" />
                             </div>
                             <div className="md:col-span-2 lg:col-span-3 space-y-2">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mahal Tipi</label>
@@ -105,11 +204,19 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, roomData = null }) => {
                             <div className="lg:col-span-12"><hr className="border-white" /></div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
                                 <label className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] ml-1">ZEMİN ALANI <span className="text-[9px] bg-indigo-50 px-1.5 py-0.5 rounded uppercase">AI</span></label>
-                                <div className="relative"><input type="number" name="area_m2" value={formData.area_m2} onChange={handleChange} className="block w-full px-5 py-4 bg-indigo-50/20 border border-indigo-100 rounded-2xl font-black text-indigo-900 outline-none focus:ring-4 transition-all" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-indigo-300">m²</span></div>
+                                <div className="relative">
+                                    <input readOnly value={formData.area_m2} placeholder={isAnalyzing ? '' : "AI Dolduracak"} className={`block w-full px-5 py-4 bg-indigo-50/20 border border-indigo-100 rounded-2xl font-black text-indigo-900 outline-none transition-all cursor-default placeholder:text-slate-300 placeholder:italic ${isAnalyzing ? 'animate-pulse' : ''}`} />
+                                    {isAnalyzing && <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-100/0 via-indigo-200/60 to-indigo-100/0 animate-[shimmer_1.5s_infinite]" />}
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-indigo-300">m²</span>
+                                </div>
                             </div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
                                 <label className="text-[10px] font-black text-teal-600 uppercase tracking-[0.2em] ml-1">DUVAR YÜZEYİ <span className="text-[9px] bg-teal-50 px-1.5 py-0.5 rounded uppercase">NET AI</span></label>
-                                <div className="relative"><input type="number" name="wall_area_m2" value={formData.wall_area_m2} onChange={handleChange} className="block w-full px-5 py-4 bg-teal-50/20 border border-teal-100 rounded-2xl font-black text-teal-900 outline-none focus:ring-4 transition-all" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-teal-300">m²</span></div>
+                                <div className="relative">
+                                    <input readOnly value={formData.wall_area_m2} placeholder={isAnalyzing ? '' : "AI Dolduracak"} className={`block w-full px-5 py-4 bg-teal-50/20 border border-teal-100 rounded-2xl font-black text-teal-900 outline-none transition-all cursor-default placeholder:text-slate-300 placeholder:italic ${isAnalyzing ? 'animate-pulse' : ''}`} />
+                                    {isAnalyzing && <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-100/0 via-teal-200/60 to-teal-100/0 animate-[shimmer_1.5s_infinite]" />}
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-teal-300">m²</span>
+                                </div>
                             </div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">KAPI ADET</label>

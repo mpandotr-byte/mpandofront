@@ -40,8 +40,7 @@ export default function Stock() {
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
 
     // Filtering states for Harcananlar
-    const [searchMaterial, setSearchMaterial] = useState('');
-    const [searchSubcontractor, setSearchSubcontractor] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
     useEffect(() => {
@@ -69,11 +68,21 @@ export default function Stock() {
         }
     };
 
+    // Filtered summary data
+    const filteredSummary = useMemo(() => {
+        return stockSummary.filter(item => {
+            const name = item.name || item.material_name || '';
+            const code = item.code || '';
+            return name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                code.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+    }, [stockSummary, searchQuery]);
+
     // Filtered consumption data
     const filteredConsumption = useMemo(() => {
         return consumptionReport.filter(item => {
-            const matchesMaterial = item.material_name?.toLowerCase().includes(searchMaterial.toLowerCase());
-            const matchesSub = item.subcontractor_name?.toLowerCase().includes(searchSubcontractor.toLowerCase());
+            const matchesMaterial = (item.material_name || item.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSub = (item.subcontractor_name || '').toLowerCase().includes(searchQuery.toLowerCase());
 
             const itemDate = new Date(item.date);
             const matchesStart = !dateRange.start || itemDate >= new Date(dateRange.start);
@@ -81,7 +90,7 @@ export default function Stock() {
 
             return matchesMaterial && matchesSub && matchesStart && matchesEnd;
         });
-    }, [consumptionReport, searchMaterial, searchSubcontractor, dateRange]);
+    }, [consumptionReport, searchQuery, dateRange]);
 
     const handleExportExcel = () => {
         if (filteredConsumption.length === 0) {
@@ -90,7 +99,7 @@ export default function Stock() {
         }
 
         const exportData = filteredConsumption.map(item => ({
-            'Malzeme Adı': item.material_name,
+            'Malzeme Adı': item.material_name || item.name,
             'Miktar': item.quantity,
             'Birim': item.unit,
             'Lokasyon': item.location || 'Bina Geneli',
@@ -173,7 +182,7 @@ export default function Stock() {
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Taşeron Zimmeti</p>
                                         <h3 className="text-3xl font-black text-slate-900">
-                                            {stockSummary.filter(s => s.assigned_qty > 0).length} <span className="text-xs text-slate-400 font-bold ml-1">SAHADA</span>
+                                            {stockSummary.filter(s => (s.subcontractor_quantity || s.assigned_qty) > 0).length} <span className="text-xs text-slate-400 font-bold ml-1">SAHADA</span>
                                         </h3>
                                     </div>
                                     <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
@@ -201,12 +210,18 @@ export default function Stock() {
                                     </div>
                                     <div className="relative group">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#D36A47]" size={18} />
-                                        <input type="text" placeholder="Malzeme adı ara..." className="pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white outline-none ring-[#D36A47]/20 focus:ring-2 transition-all w-72" />
+                                        <input
+                                            type="text"
+                                            placeholder="Malzeme adı veya kod ara..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white outline-none ring-[#D36A47]/20 focus:ring-2 transition-all w-72"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {stockSummary.map((item, i) => (
+                                    {filteredSummary.map((item, i) => (
                                         <div key={i} className={`p-6 rounded-[32px] border transition-all ${item.is_critical ? 'bg-red-50/30 border-red-100 shadow-red-100/50' : 'bg-slate-50/50 border-slate-100'} hover:bg-white hover:shadow-2xl group`}>
                                             <div className="flex justify-between items-start mb-5">
                                                 <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-slate-400 group-hover:text-[#D36A47] shadow-sm transition-colors">
@@ -218,22 +233,23 @@ export default function Stock() {
                                                     </span>
                                                 )}
                                             </div>
-                                            <h4 className="text-[13px] font-black text-slate-800 uppercase mb-5 leading-tight">{item.material_name}</h4>
+                                            <h4 className="text-[13px] font-black text-slate-800 uppercase mb-1 leading-tight">{item.name || item.material_name}</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5">{item.code || 'KODSUZ'}</p>
 
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="bg-white/50 rounded-2xl p-4 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-all">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Depo Mevcut</p>
-                                                    <p className="text-lg font-black text-slate-900">{item.warehouse_qty} <span className="text-[10px] text-slate-400">{item.unit}</span></p>
+                                                    <p className="text-lg font-black text-slate-900">{(item.warehouse_quantity ?? item.warehouse_qty) ?? 0} <span className="text-[10px] text-slate-400">{item.unit}</span></p>
                                                 </div>
                                                 <div className="bg-white/50 rounded-2xl p-4 border border-slate-100 group-hover:bg-amber-50 group-hover:border-amber-100 transition-all">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Zimmetli</p>
-                                                    <p className="text-lg font-black text-amber-600">{item.assigned_qty} <span className="text-[10px] text-slate-300">{item.unit}</span></p>
+                                                    <p className="text-lg font-black text-amber-600">{(item.subcontractor_quantity ?? item.assigned_qty) ?? 0} <span className="text-[10px] text-slate-300">{item.unit}</span></p>
                                                 </div>
                                             </div>
 
                                             <div className="mt-5 pt-5 border-t border-slate-100 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                                                 <span>Alt Limit: {item.min_stock_level}</span>
-                                                <span className="text-indigo-600">Toplam: {item.total_qty}</span>
+                                                <span className="text-indigo-600">Toplam: {item.total_quantity || item.total_qty}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -331,19 +347,9 @@ export default function Stock() {
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                                     <input
                                         type="text"
-                                        placeholder="Malzeme Adı..."
-                                        value={searchMaterial}
-                                        onChange={(e) => setSearchMaterial(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold outline-none focus:ring-2 focus:ring-[#D36A47]/10"
-                                    />
-                                </div>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                                    <input
-                                        type="text"
-                                        placeholder="Taşeron Ara..."
-                                        value={searchSubcontractor}
-                                        onChange={(e) => setSearchSubcontractor(e.target.value)}
+                                        placeholder="Malzeme veya Taşeron Ara..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold outline-none focus:ring-2 focus:ring-[#D36A47]/10"
                                     />
                                 </div>

@@ -35,8 +35,9 @@ const Subcontractors = () => {
     const fetchSubcontractors = async () => {
         setLoading(true);
         try {
-            // In MPANDO companies table holds subcontractors
-            const data = await api.get('/companies');
+            // Fetch directly from the subcontractors table
+            const data = await api.get('/subcontractors');
+
             // Mock enrichment only for fields that might not be in the backend yet but are UI placeholders
             const enrichedData = (data || []).map(item => ({
                 ...item,

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Layers, Maximize, Grid3X3, Pi, Hash, Info } from 'lucide-react';
+import { X, Save, Layers, Maximize, Grid3X3, Pi, Hash, Info, FileSearch, Loader2, BrainCircuit, Sparkles, ChevronDown } from 'lucide-react';
 import { api } from '../../api/client';
 
-const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) => {
+const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData = null }) => {
     const isEdit = !!floorData;
     const [recipes, setRecipes] = useState([]);
+    const [constructionFiles, setConstructionFiles] = useState([]);
+    const [selectedDwgId, setSelectedDwgId] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const [formData, setFormData] = useState({
         floor_number: '',
@@ -37,17 +40,22 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
     });
 
     useEffect(() => {
-        const fetchRecipes = async () => {
+        const fetchInitialData = async () => {
             try {
-                const data = await api.get('/recipes');
-                setRecipes(data || []);
+                const [recipeData, fileData] = await Promise.all([
+                    api.get('/recipes'),
+                    projectId ? api.get(`/construction/files/${projectId}`) : Promise.resolve([])
+                ]);
+                setRecipes(recipeData || []);
+                setConstructionFiles((fileData || []).filter(f => f.file_type?.toLowerCase() === 'dwg'));
             } catch (err) {
-                console.error("Recipe fetch error:", err);
+                console.error("Fetch initial data error:", err);
             }
         };
 
         if (isOpen) {
-            fetchRecipes();
+            fetchInitialData();
+            setSelectedDwgId('');
             if (floorData) {
                 setFormData({
                     floor_number: floorData.floor_number ?? '',
@@ -80,7 +88,56 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
                 setFormData(prev => ({ ...prev, floor_number: '' }));
             }
         }
-    }, [isOpen, floorData]);
+    }, [isOpen, floorData, projectId]);
+
+    const handleAIAnalysis = async () => {
+        if (!selectedDwgId) {
+            alert("Lütfen önce analiz edilecek bir DWG dosyası seçiniz.");
+            return;
+        }
+
+        setIsAnalyzing(true);
+        try {
+            const selectedFile = constructionFiles.find(f => f.id.toString() === selectedDwgId);
+
+            const response = await api.post('/ai/floors/analyze', {
+                dwg_id: selectedDwgId,
+                file_url: selectedFile?.file_url,
+                project_id: projectId,
+                block_id: blockId,
+                floor_number: formData.floor_number,
+                analysis_type: "floor_metrics"
+            });
+
+            const result = response.ai_response || response;
+
+            if (result) {
+                setFormData(prev => ({
+                    ...prev,
+                    gross_area_m2: result.gross_area_m2 ?? result.gross_area ?? prev.gross_area_m2,
+                    wall_area_m2: result.wall_area_m2 ?? result.wall_area ?? prev.wall_area_m2,
+                    slab_area_m2: result.slab_area_m2 ?? result.slab_area ?? prev.slab_area_m2,
+                    column_count: result.column_count ?? prev.column_count,
+                    column_m3: result.column_m3 ?? prev.column_m3,
+                    beam_mt: result.beam_mt ?? prev.beam_mt,
+                    beam_m3: result.beam_m3 ?? prev.beam_m3,
+                    stairs_m3: result.stairs_m3 ?? prev.stairs_m3,
+                    stairs_mt: result.stairs_mt ?? prev.stairs_mt,
+                    stairs_coating_m2: result.stairs_coating_m2 ?? prev.stairs_coating_m2,
+                    common_area_m2: result.common_area_m2 ?? prev.common_area_m2,
+                    common_wall_area_m2: result.common_wall_area_m2 ?? prev.common_wall_area_m2,
+                    common_ceiling_area_m2: result.common_ceiling_area_m2 ?? prev.common_ceiling_area_m2,
+                }));
+                alert("AI Analizi Başarılı: Kat metrajları otomatik olarak hesaplandı.");
+            }
+        } catch (error) {
+            console.error("AI Floor Analysis Error:", error);
+            const errorMsg = error.message || "";
+            alert("AI Analizi sırasında bir hata oluştu: " + errorMsg);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -117,35 +174,151 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, floorData = null }) =>
                 </div>
 
                 <div className="p-8 overflow-y-auto custom-scrollbar">
-                    <form id="new-floor-form" onSubmit={handleSubmit} className="space-y-10">
-                        <div>
-                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-slate-200" /> KAT PARAMETRELERİ VE MİMARİ VERİLER</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                <FormInput label="Kat Numarası" name="floor_number" value={formData.floor_number} onChange={handleChange} required type="number" />
-                                <FormInput label="Kat Brüt Alanı (AI)" name="gross_area_m2" value={formData.gross_area_m2} onChange={handleChange} color="blue" unit="m²" />
-                                <FormInput label="Kat Holü Zemin (m2)" name="common_area_m2" value={formData.common_area_m2} onChange={handleChange} color="indigo" unit="m²" />
-                                <FormInput label="Kat Holü Duvar (m2)" name="common_wall_area_m2" value={formData.common_wall_area_m2} onChange={handleChange} color="indigo" unit="m²" />
-                                <FormInput label="Kat Holü Tavan (m2)" name="common_ceiling_area_m2" value={formData.common_ceiling_area_m2} onChange={handleChange} color="indigo" unit="m²" />
-                                <FormInput label="Tüm Kat Duvarları (AI)" name="wall_area_m2" value={formData.wall_area_m2} onChange={handleChange} color="teal" unit="m²" />
-                                <div className="space-y-1.5 font-bold md:col-span-2">
-                                    <label className="text-[10px] font-black text-rose-600 uppercase tracking-widest ml-1">KAT MERDİVEN [m3 / mt / m2]</label>
-                                    <div className="flex gap-2">
-                                        <input type="number" name="stairs_m3" value={formData.stairs_m3} onChange={handleChange} placeholder="TOPLAM m³" className="w-1/3 px-3 py-3 bg-rose-50/10 border border-rose-100 rounded-xl outline-none text-xs" />
-                                        <input type="number" name="stairs_mt" value={formData.stairs_mt} onChange={handleChange} placeholder="TOPLAM METRE" className="w-1/3 px-3 py-3 bg-rose-50/10 border border-rose-100 rounded-xl outline-none text-xs" />
-                                        <input type="number" name="stairs_coating_m2" value={formData.stairs_coating_m2} onChange={handleChange} placeholder="KAPLAMA m²" className="w-1/3 px-3 py-3 bg-rose-50/10 border border-rose-100 rounded-xl outline-none text-xs" />
+                    {/* ═════════════════ AI DWG ANALYZER SECTION ═════════════════ */}
+                    {!isEdit && (
+                        <div className="mb-10 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-[2rem] p-6 border border-violet-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-violet-500/10 transition-colors" />
+                            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-violet-600 border border-violet-100">
+                                        <BrainCircuit size={28} className={isAnalyzing ? 'animate-pulse' : ''} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-sm font-black text-violet-900 uppercase tracking-tight">AI DESTEKLİ KAT ANALİZİ (BETA)</h3>
+                                        <p className="text-[10px] text-violet-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek kat metrajlarını AI ile doldurun</p>
                                     </div>
                                 </div>
+
+                                <div className="flex flex-1 w-full max-w-md gap-3">
+                                    <div className="relative flex-1">
+                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400" size={16} />
+                                        <select
+                                            value={selectedDwgId}
+                                            onChange={(e) => setSelectedDwgId(e.target.value)}
+                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-violet-100 rounded-2xl text-[11px] font-black uppercase text-violet-900 outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-400 transition-all appearance-none shadow-sm"
+                                        >
+                                            <option value="">Analiz İçin DWG Seçin</option>
+                                            {constructionFiles.map(file => (
+                                                <option key={file.id} value={file.id}>{file.file_name.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-violet-300 pointer-events-none" size={16} />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleAIAnalysis}
+                                        disabled={!selectedDwgId || isAnalyzing}
+                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-600/20 active:scale-95 whitespace-nowrap"
+                                    >
+                                        {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                                        {isAnalyzing ? 'ANALİZ EDİLİYOR...' : 'ASİSTANI ÇALIŞTIR'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <form id="new-floor-form" onSubmit={handleSubmit} className="space-y-10">
+                        {/* ── Bölüm 1: Manuel Girişler ── */}
+                        <div>
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                                <span className="w-8 h-px bg-slate-200" /> KAT KİMLİĞİ VE YÜKSEKLİK
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <FormInput label="Kat Numarası" name="floor_number" value={formData.floor_number} onChange={handleChange} required type="number" placeholder="0" />
                                 <FormInput label="Kat Yüksekliği (m)" name="height_cm" value={formData.height_cm} onChange={handleChange} placeholder="3.00" />
+                                <FormInput label="Kat Holü Zemin (m²)" name="common_area_m2" value={formData.common_area_m2} onChange={handleChange} color="indigo" unit="m²" />
+                                <FormInput label="Kat Holü Duvar (m²)" name="common_wall_area_m2" value={formData.common_wall_area_m2} onChange={handleChange} color="indigo" unit="m²" />
+                                <FormInput label="Kat Holü Tavan (m²)" name="common_ceiling_area_m2" value={formData.common_ceiling_area_m2} onChange={handleChange} color="indigo" unit="m²" />
                             </div>
                         </div>
 
+                        {/* ── Bölüm 2: AI Metraj Alanları ── */}
                         <div>
-                            <h3 className="text-sm font-black text-[#D36A47] uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-[#D36A47]/20" /> AI STATİK VERİLERİ (STRÜKTÜREL)</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <StatikBox label="KOLONLAR" icon={<Grid3X3 size={16} />} color="orange" fields={[{ name: 'column_count', placeholder: 'ADET' }, { name: 'column_m3', placeholder: 'm³' }]} formData={formData} onChange={handleChange} />
-                                <StatikBox label="KİRİŞLER" icon={<Hash size={16} />} color="indigo" fields={[{ name: 'beam_mt', placeholder: 'METRE' }, { name: 'beam_m3', placeholder: 'm³' }]} formData={formData} onChange={handleChange} />
-                                <StatikBox label="DÖŞEME" icon={<Maximize size={16} />} color="blue" fields={[{ name: 'slab_area_m2', placeholder: 'NET BETON m²' }]} formData={formData} onChange={handleChange} />
-                                <StatikBox label="DONATI" icon={<Pi size={16} />} color="slate" fields={[{ name: 'reinforcement_type', placeholder: 'DEMİR TİPİ' }]} formData={formData} onChange={handleChange} />
+                            <h3 className="text-sm font-black text-violet-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-3">
+                                <span className="w-8 h-px bg-violet-200" />
+                                <BrainCircuit size={16} className={isAnalyzing ? 'animate-pulse' : ''} />
+                                AI MİMARİ METRAJLAR
+                                <span className="text-[9px] bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full font-black tracking-widest">OTOMATİK</span>
+                            </h3>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6 ml-1">
+                                Yukarıdan DWG seçip asistanı çalıştırın — bu alanlar otomatik dolacak
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <AIField label="Kat Brüt Alanı" value={formData.gross_area_m2} unit="m²" isAnalyzing={isAnalyzing} />
+                                <AIField label="Tüm Kat Duvarları" value={formData.wall_area_m2} unit="m²" isAnalyzing={isAnalyzing} />
+                                <AIField label="Döşeme (Net Beton)" value={formData.slab_area_m2} unit="m²" isAnalyzing={isAnalyzing} />
+                            </div>
+                        </div>
+
+                        {/* ── Bölüm 3: AI Strüktürel Veriler ── */}
+                        <div>
+                            <h3 className="text-sm font-black text-violet-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-3">
+                                <span className="w-8 h-px bg-violet-200" />
+                                <BrainCircuit size={16} className={isAnalyzing ? 'animate-pulse' : ''} />
+                                AI STATİK VERİLERİ (STRÜKTÜREL)
+                                <span className="text-[9px] bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full font-black tracking-widest">OTOMATİK</span>
+                            </h3>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6 ml-1">
+                                DWG analizinden kolon / kiriş / merdiven / donatı verileri çekilecek
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {/* KOLONLAR */}
+                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-violet-600">
+                                            <Grid3X3 size={16} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Kolonlar</span>
+                                        </div>
+                                        <AIBadge isAnalyzing={isAnalyzing} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <AIReadonlyInput value={formData.column_count} placeholder="ADET" isAnalyzing={isAnalyzing} />
+                                        <AIReadonlyInput value={formData.column_m3} placeholder="m³" isAnalyzing={isAnalyzing} />
+                                    </div>
+                                </div>
+                                {/* KİRİŞLER */}
+                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-violet-600">
+                                            <Hash size={16} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Kirişler</span>
+                                        </div>
+                                        <AIBadge isAnalyzing={isAnalyzing} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <AIReadonlyInput value={formData.beam_mt} placeholder="METRE" isAnalyzing={isAnalyzing} />
+                                        <AIReadonlyInput value={formData.beam_m3} placeholder="m³" isAnalyzing={isAnalyzing} />
+                                    </div>
+                                </div>
+                                {/* MERDİVEN */}
+                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-violet-600">
+                                            <Maximize size={16} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Merdiven</span>
+                                        </div>
+                                        <AIBadge isAnalyzing={isAnalyzing} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <AIReadonlyInput value={formData.stairs_m3} placeholder="TOPLAM m³" isAnalyzing={isAnalyzing} />
+                                        <AIReadonlyInput value={formData.stairs_mt} placeholder="TOPLAM METRE" isAnalyzing={isAnalyzing} />
+                                        <AIReadonlyInput value={formData.stairs_coating_m2} placeholder="KAPLAMA m²" isAnalyzing={isAnalyzing} />
+                                    </div>
+                                </div>
+                                {/* DONATI */}
+                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-violet-600">
+                                            <Pi size={16} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Donatı</span>
+                                        </div>
+                                        <AIBadge isAnalyzing={isAnalyzing} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <AIReadonlyInput value={formData.reinforcement_type} placeholder="DEMİR TİPİ" isAnalyzing={isAnalyzing} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -194,13 +367,47 @@ const FormInput = ({ label, name, value, onChange, color = "slate", unit, ...pro
     </div>
 );
 
-const StatikBox = ({ label, icon, color, fields, formData, onChange }) => (
-    <div className={`p-5 rounded-[2rem] border transition-all bg-${color}-50/10 border-${color}-100/50 space-y-4`}>
-        <div className={`flex items-center gap-2 text-${color}-600`}>{icon} <span className="text-[10px] font-black uppercase tracking-widest">{label}</span></div>
-        <div className="space-y-2">
-            {fields.map(f => <input key={f.name} type="text" name={f.name} value={formData[f.name]} onChange={onChange} placeholder={f.placeholder} className="w-full bg-white px-4 py-2.5 rounded-xl border border-slate-100 text-xs font-bold outline-none placeholder:text-slate-300" />)}
+/* AI readonly input — gösterim amaçlı, formData'dan değer alır */
+const AIReadonlyInput = ({ value, placeholder, isAnalyzing }) => (
+    <div className="relative">
+        <input
+            readOnly
+            value={value || ''}
+            placeholder={isAnalyzing ? '' : `— ${placeholder} —`}
+            className={`w-full bg-white/80 px-4 py-2.5 rounded-xl border border-violet-100 text-xs font-black outline-none text-violet-700 placeholder:text-slate-300 placeholder:font-normal cursor-default select-none transition-all ${isAnalyzing ? 'animate-pulse' : ''}`}
+        />
+        {isAnalyzing && (
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-100/0 via-violet-200/60 to-violet-100/0 animate-[shimmer_1.5s_infinite]" />
+        )}
+    </div>
+);
+
+/* AI değer kutucuğu — büyük tek değer gösterimi */
+const AIField = ({ label, value, unit, isAnalyzing }) => (
+    <div className={`relative p-5 rounded-[2rem] border transition-all overflow-hidden ${value ? 'bg-violet-50 border-violet-200' : 'bg-violet-50/20 border-violet-100/70'}`}>
+        {isAnalyzing && (
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-100/0 via-violet-100/80 to-violet-100/0 animate-pulse" />
+        )}
+        <div className="relative">
+            <p className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-2">{label}</p>
+            {value ? (
+                <p className="text-2xl font-black text-violet-700 tracking-tight">
+                    {value} <span className="text-sm font-bold text-violet-400">{unit}</span>
+                </p>
+            ) : (
+                <p className={`text-sm font-bold text-slate-300 italic ${isAnalyzing ? 'animate-pulse' : ''}`}>
+                    {isAnalyzing ? 'Hesaplanıyor...' : 'AI Dolduracak'}
+                </p>
+            )}
         </div>
     </div>
+);
+
+/* Küçük AI rozeti */
+const AIBadge = ({ isAnalyzing }) => (
+    <span className={`inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${isAnalyzing ? 'bg-violet-200 text-violet-700 border-violet-300 animate-pulse' : 'bg-violet-50 text-violet-400 border-violet-100'}`}>
+        {isAnalyzing ? '⟳ İŞLENİYOR' : '✦ AI'}
+    </span>
 );
 
 const RecipeSelector = ({ label, name, value, recipes, onChange }) => (
@@ -211,3 +418,4 @@ const RecipeSelector = ({ label, name, value, recipes, onChange }) => (
 );
 
 export default NewFloorModal;
+

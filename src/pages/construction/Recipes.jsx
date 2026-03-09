@@ -147,34 +147,36 @@ function Recipes() {
             <main className="flex-1 h-screen overflow-y-auto pt-16 md:pt-0 relative">
                 <Navbar title="Reçete & İmalat Analizi" toggleMobileMenu={toggleMobileMenu} />
 
-                <div className="px-4 sm:px-6 md:px-8 pb-8 pt-4 md:pt-6 space-y-6 h-[calc(100vh-80px)] overflow-hidden">
+                <div className="px-4 sm:px-6 md:px-8 pb-8 pt-4 md:pt-6 space-y-6 h-[calc(100vh-80px)] overflow-y-auto">
 
                     {/* Tab Navigation */}
-                    <div className="flex p-1 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm">
-                        <button
-                            onClick={() => setActiveTab('library')}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'library' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <FileText size={16} /> REÇETE KÜTÜPHANESİ
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('console')}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'console' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <Layout size={16} /> METRAJ ATAMA KONSOLU
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('summary')}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'summary' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <BarChart3 size={16} /> METRAJ ÖZETİ
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('progress')}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'progress' ? 'bg-[#D36A47] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <CheckCircle2 size={16} /> İMALAT ONAY (DÜŞÜM)
-                        </button>
+                    <div className="flex p-1 bg-white border border-slate-200 rounded-2xl w-full md:w-fit shadow-sm overflow-x-auto no-scrollbar">
+                        <div className="flex flex-nowrap min-w-max">
+                            <button
+                                onClick={() => setActiveTab('library')}
+                                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl text-[10px] md:text-xs font-black transition-all whitespace-nowrap ${activeTab === 'library' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <FileText size={16} /> REÇETE KÜTÜPHANESİ
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('console')}
+                                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl text-[10px] md:text-xs font-black transition-all whitespace-nowrap ${activeTab === 'console' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <Layout size={16} /> METRAJ ATAMA KONSOLU
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('summary')}
+                                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl text-[10px] md:text-xs font-black transition-all whitespace-nowrap ${activeTab === 'summary' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <BarChart3 size={16} /> METRAJ ÖZETİ
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('progress')}
+                                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl text-[10px] md:text-xs font-black transition-all whitespace-nowrap ${activeTab === 'progress' ? 'bg-[#D36A47] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <CheckCircle2 size={16} /> İMALAT ONAY
+                            </button>
+                        </div>
                     </div>
 
                     {activeTab === 'library' && (
@@ -202,7 +204,7 @@ function Recipes() {
                                     </div>
                                     <div className="flex flex-col md:flex-row gap-3 animate-slide-up" style={{ animationDelay: '100ms' }}>
 
-                                        <button onClick={() => { setSelectedRecipe(null); setIsModalOpen(true); }} className="flex items-center gap-3 text-sm font-black text-white bg-[#D36A47] hover:bg-[#E37A57] shadow-xl shadow-[#D36A47]/20 px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 uppercase tracking-wider">
+                                        <button onClick={() => { setSelectedRecipe(null); setIsModalOpen(true); }} className="w-full md:w-auto flex items-center justify-center gap-3 text-sm font-black text-white bg-[#D36A47] hover:bg-[#E37A57] shadow-xl shadow-[#D36A47]/20 px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 uppercase tracking-wider">
                                             <Plus size={20} /> YENİ ANALİZ OLUŞTUR
                                         </button>
                                     </div>

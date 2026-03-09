@@ -62,21 +62,35 @@ const JobOrderModal = ({
 
     useEffect(() => {
         if (formData.project_id) {
-            api.get(`/blocks?project_id=${formData.project_id}`).then(setBlocks).catch(() => setBlocks([]));
+            api.get(`/projects/${formData.project_id}`)
+                .then(data => setBlocks(data.blocks || []))
+                .catch(() => setBlocks([]));
+        } else {
+            setBlocks([]);
         }
     }, [formData.project_id]);
 
     useEffect(() => {
         if (formData.block_id) {
-            api.get(`/floors?block_id=${formData.block_id}`).then(setFloors).catch(() => setFloors([]));
+            api.get(`/projects/blocks/${formData.block_id}`)
+                .then(res => {
+                    const blockData = res.block || res.data || res;
+                    setFloors(blockData.floors || []);
+                })
+                .catch(() => setFloors([]));
+        } else {
+            setFloors([]);
         }
     }, [formData.block_id]);
 
     useEffect(() => {
-        if (formData.floor_id) {
-            api.get(`/projects/units?floor_id=${formData.floor_id}`).then(setUnits).catch(() => setUnits([]));
+        if (formData.floor_id && floors.length > 0) {
+            const floor = floors.find(f => f.id == formData.floor_id);
+            setUnits(floor?.units || []);
+        } else {
+            setUnits([]);
         }
-    }, [formData.floor_id]);
+    }, [formData.floor_id, floors]);
 
     useEffect(() => {
         const qty = parseFloat(formData.quantity) || 0;

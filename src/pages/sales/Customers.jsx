@@ -21,7 +21,8 @@ import {
   MapPin,
   X,
   ShoppingCart,
-  Search
+  Search,
+  Home
 } from 'lucide-react';
 
 const getCompanyNameById = (companyId, companies) => {
@@ -222,40 +223,40 @@ function Customers() {
     setSelectedCustomerForDetails(customer);
     setIsDetailsModalOpen(true);
     try {
-      const [salesData, unitsData, projectsData] = await Promise.all([
+      const [salesData, projectsData] = await Promise.all([
         api.get('/sales'),
-        api.get('/projects/units').catch(() => []),
         api.get('/projects').catch(() => [])
       ]);
 
       const filteredSales = (salesData || []).filter(s => String(s.customer_id) === String(customer.id) || String(s.musteri_id) === String(customer.id));
       setCustomerSales(filteredSales);
 
-      // Find units owned by this customer (via unit link or successful sale)
+      // Sahip olunan mülklerin tespiti (Başarılı satışlar üzerinden)
       const ownedUnits = [];
 
-      // Method 1: Direct link on unit
-      const directlyOwned = (unitsData || []).filter(u => String(u.customer_id) === String(customer.id));
-      directlyOwned.forEach(u => ownedUnits.push(u));
-
-      // Method 2: Link via successful sale
       filteredSales.forEach(sale => {
-        if (sale.sale_status === 'Satıldı' && sale.unit_id) {
-          const unit = (unitsData || []).find(u => String(u.id) === String(sale.unit_id));
-          if (unit && !ownedUnits.find(ou => String(ou.id) === String(unit.id))) {
-            ownedUnits.push(unit);
+        // Satış onaylanmışsa (Satıldı) mülk listesine ekle
+        if (sale.sale_status === 'Satıldı' || sale.status === 'Satıldı' || sale.approval_status === 'Onaylandı') {
+          const unit = sale.units || sale.unit;
+          const uId = sale.unit_id || sale.unite_id || (unit?.id);
+
+          if (uId && !ownedUnits.find(ou => String(ou.id) === String(uId))) {
+            const project = (projectsData || []).find(p => String(p.id) === String(sale.project_id || sale.proje_id || unit?.project_id || sale.projects?.id));
+
+            ownedUnits.push({
+              id: uId,
+              unit_number: unit?.unit_number || unit?.unite_no || sale.interested_product || `No: ${uId}`,
+              project_name: project?.name || sale.projects?.name || 'Bilinmeyen Proje',
+              unit_type: unit?.unit_type || unit?.type || '',
+              sales_status: sale.sale_status || sale.status || 'Satıldı',
+              sale_date: sale.sale_date,
+              contract_no: sale.contract_no || unit?.contract_no
+            });
           }
         }
       });
 
-      const mappedOwnedUnits = ownedUnits.map(u => {
-        const project = projectsData.find(p => p.id === u.project_id);
-        return {
-          ...u,
-          project_name: project?.name || 'Bilinmeyen Proje'
-        };
-      });
-      setCustomerUnits(mappedOwnedUnits);
+      setCustomerUnits(ownedUnits);
 
     } catch (err) {
       console.error("Detaylar yüklenemedi:", err);
@@ -516,12 +517,18 @@ function Customers() {
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <p className="font-bold text-slate-800 text-sm">{unit.project_name}</p>
-                              <p className="text-xs text-slate-500 font-medium">Birim: {unit.unit_number || 'Bilinmiyor'}</p>
+                              <p className="text-xs text-slate-500 font-medium">Birim: {unit.unit_number || 'Bilinmiyor'} {unit.unit_type ? `(${unit.unit_type})` : ''}</p>
                             </div>
                             <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-600">
                               TAPULU
                             </span>
                           </div>
+                          {(unit.contract_no || unit.sale_date) && (
+                            <div className="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                              <span>Sözleşme: {unit.contract_no || '-'}</span>
+                              <span>{unit.sale_date ? new Date(unit.sale_date).toLocaleDateString('tr-TR') : ''}</span>
+                            </div>
+                          )}
                         </div>
                       )) : (
                         <div className="text-center py-6 bg-white rounded-2xl border border-slate-100 border-dashed">

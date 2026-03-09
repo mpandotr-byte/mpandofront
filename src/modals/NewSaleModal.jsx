@@ -74,11 +74,8 @@ export default function NewSaleModal({
         const allUnits = [];
         block.floors.forEach(floor => {
           if (floor.units) {
-            // Sadece boş olan daireleri ekle - AVAILABLE, BOŞ, MÜSAİT vs.
-            allUnits.push(...floor.units.filter(u => {
-              const status = String(u.sales_status || 'AVAILABLE').toUpperCase();
-              return status === 'AVAILABLE' || status === 'BOŞ' || status === 'MÜSAİT' || status === 'SATILIK';
-            }));
+            // Sadece boş olan daireleri ekle veya hepsini göster ama filtreli kalsın derseniz:
+            allUnits.push(...floor.units);
           }
         });
         setUnits(allUnits.sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })));
@@ -104,12 +101,14 @@ export default function NewSaleModal({
 
     if (unit && block) {
       const value = `${block.name}, No: ${unit.unit_number} (${unit.unit_type || ''})`;
-      // Birim seçildiğinde fiyatları da otomatik doldur
+      // Birim seçildiğinde fiyatları ve cepheyi de otomatik doldur
       onChange({
         unit_id: unitId,
         interested_product: value,
-        list_price: unit.price || '',
-        offered_price: unit.campaign_price || unit.price || ''
+        list_price: unit.list_price || unit.price || '',
+        offered_price: unit.campaign_price || unit.list_price || unit.price || '',
+        direction: unit.facade || '',
+        unit_type: unit.unit_type || ''
       });
     }
   };
@@ -329,6 +328,42 @@ export default function NewSaleModal({
                   </div>
                 </div>
 
+                {/* Yön / Cephe */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Yön / Cephe</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Tag size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      name="direction"
+                      value={formData.direction || ''}
+                      onChange={onChange}
+                      placeholder="Örn: Güney-Doğu"
+                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Mülk Tipi */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Mülk Tipi</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Building2 size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      name="unit_type"
+                      value={formData.unit_type || ''}
+                      onChange={onChange}
+                      placeholder="Örn: Daire (2+1)"
+                      className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+
                 {/* Fiyatlandırma Bölümü */}
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                   {/* Liste Fiyatı */}
@@ -388,7 +423,6 @@ export default function NewSaleModal({
 
               </div>
             </div>
-
             <hr className="border-slate-100" />
 
             {/* Bölüm 2: Satış & Sözleşme Detayları */}
@@ -576,7 +610,7 @@ export default function NewSaleModal({
             setIsNewCustomerModalOpen(false);
           }}
         />
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

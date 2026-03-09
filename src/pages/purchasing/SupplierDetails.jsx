@@ -55,16 +55,27 @@ const SupplierDetails = () => {
         setLoading(true);
         try {
             // Fetch supplier info
-            const supplierData = await api.get(`/suppliers/${id}`);
+            const response = await api.get(`/suppliers/${id}`);
+
+            // Extract from nested identity object if present, otherwise handle array/direct object
+            let supplierData = response;
+            let assignedMaterialsData = [];
+
+            if (response && response.identity) {
+                supplierData = response.identity;
+                assignedMaterialsData = response.assigned_materials || [];
+            } else if (Array.isArray(response)) {
+                supplierData = response[0];
+            }
 
             setSupplier({
                 ...supplierData,
                 code: supplierData.code || `TED-${supplierData.name?.substring(0, 3).toUpperCase() || 'XXX'}-${id.toString().padStart(3, '0')}`,
-                category_tags: supplierData.category_tags || ['Seramik', 'İnce Yapı', 'İzolasyon'],
-                authorized_person: supplierData.authorized_person || 'Ali Yılmaz',
-                phone: supplierData.phone || '+90 532 000 00 00',
-                email: supplierData.email || 'info@sirket.com',
-                factory_address: supplierData.factory_address || (supplierData.address ? supplierData.address : 'Fabrika adresi girilmemiş.')
+                category_tags: supplierData.category_tags || [],
+                authorized_person: supplierData.authorized_person || '-',
+                phone: supplierData.phone || '-',
+                email: supplierData.email || '-',
+                factory_address: supplierData.factory_address || (supplierData.address ? supplierData.address : '-')
             });
 
             // Fetch all materials for the assignment dropdown
@@ -72,7 +83,7 @@ const SupplierDetails = () => {
             setMaterials(materialsData || []);
 
             // Set assigned materials from the supplier details result
-            setAssignedMaterials(supplierData.assigned_materials || []);
+            setAssignedMaterials(assignedMaterialsData);
 
         } catch (err) {
             console.error("Supplier details fetch error:", err);
