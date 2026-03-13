@@ -17,16 +17,13 @@ import {
     Edit2,
     Trash2,
     Filter,
-    Search,
     X,
     LayoutGrid,
     Plus,
     PlusCircle,
-    CheckCircle,
     Compass,
     FileText,
-    User,
-    Banknote
+    User
 } from 'lucide-react';
 import NewFloorModal from '../../modals/blocks/NewFloorModal';
 import NewUnitModal from '../../modals/units/NewUnitModal';
@@ -70,16 +67,6 @@ function BlockDetails() {
     const [activeFloorMenu, setActiveFloorMenu] = useState(null);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [typeFilter, setTypeFilter] = useState('ALL');
-    const [viewMode, setViewMode] = useState('CONSTRUCTION'); // 'CONSTRUCTION' or 'SALES'
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedUnits, setSelectedUnits] = useState([]);
-    const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
-    const [bulkPriceData, setBulkPriceData] = useState({
-        type: 'PERCENTAGE', // 'PERCENTAGE' or 'AMOUNT'
-        action: 'INCREASE', // 'INCREASE' or 'DECREASE'
-        value: '',
-        field: 'price' // 'price' or 'campaign_price'
-    });
 
     const [isAddFloorModalOpen, setIsAddFloorModalOpen] = useState(false);
     const [editingFloor, setEditingFloor] = useState(null);
@@ -165,83 +152,6 @@ function BlockDetails() {
             console.error("Blok detayları alınırken hata:", err);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleBulkPriceUpdate = async () => {
-        if (!bulkPriceData.value || Number(bulkPriceData.value) <= 0) {
-            alert("Lütfen geçerli bir değer giriniz.");
-            return;
-        }
-
-        if (selectedUnits.length === 0) {
-            alert("Lütfen işlem yapılacak üniteleri seçiniz.");
-            return;
-        }
-
-        try {
-            const updates = selectedUnits.map(unitId => {
-                const unit = block.units.find(u => u.id === unitId);
-                if (!unit) return null;
-
-                let currentPrice = Number(unit[bulkPriceData.field]) || 0;
-                let newValue = currentPrice;
-
-                if (bulkPriceData.type === 'PERCENTAGE') {
-                    const factor = Number(bulkPriceData.value) / 100;
-                    if (bulkPriceData.action === 'INCREASE') {
-                        newValue = currentPrice * (1 + factor);
-                    } else {
-                        newValue = currentPrice * (1 - factor);
-                    }
-                } else {
-                    const amount = Number(bulkPriceData.value);
-                    if (bulkPriceData.action === 'INCREASE') {
-                        newValue = currentPrice + amount;
-                    } else {
-                        newValue = currentPrice - amount;
-                    }
-                }
-
-                return api.put(`/projects/units/${unitId}`, {
-                    ...unit,
-                    [bulkPriceData.field]: Math.round(newValue)
-                });
-            }).filter(Boolean);
-
-            await Promise.all(updates);
-            alert("Seçili ünitelerin fiyatları başarıyla güncellendi.");
-            setIsBulkPriceModalOpen(false);
-            setSelectedUnits([]);
-            await fetchBlockDetails();
-        } catch (err) {
-            console.error("Toplu fiyat güncelleme hatası:", err);
-            alert("Fiyatlar güncellenirken bir hata oluştu.");
-        }
-    };
-
-    const handleSinglePriceUpdate = async (unitId, field, value) => {
-        try {
-            const unit = block.units.find(u => u.id === unitId);
-            await api.put(`/projects/units/${unitId}`, {
-                ...unit,
-                [field]: Number(value)
-            });
-        } catch (err) {
-            console.error("Fiyat güncelleme hatası:", err);
-        }
-    };
-
-    const toggleUnitSelection = (id) => {
-        setSelectedUnits(prev => prev.includes(id) ? prev.filter(u => u !== id) : [...prev, id]);
-    };
-
-    const handleSelectAllUnits = () => {
-        const allFilteredUnitIds = filteredFloors.flatMap(f => f.units).map(u => u.id);
-        if (selectedUnits.length === allFilteredUnitIds.length) {
-            setSelectedUnits([]);
-        } else {
-            setSelectedUnits(allFilteredUnitIds);
         }
     };
 
@@ -583,28 +493,6 @@ function BlockDetails() {
                                     </h2>
 
                                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                                        {/* View Mode Toggle */}
-                                        <div className="flex p-1 bg-slate-100/80 rounded-xl mr-auto md:mr-0">
-                                            <button
-                                                onClick={() => setViewMode('CONSTRUCTION')}
-                                                className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${viewMode === 'CONSTRUCTION'
-                                                    ? 'bg-[#0A1128] text-white shadow-sm'
-                                                    : 'text-slate-400 hover:text-slate-600'
-                                                    }`}
-                                            >
-                                                İNŞAAT
-                                            </button>
-                                            <button
-                                                onClick={() => setViewMode('SALES')}
-                                                className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${viewMode === 'SALES'
-                                                    ? 'bg-emerald-600 text-white shadow-sm'
-                                                    : 'text-slate-400 hover:text-slate-600'
-                                                    }`}
-                                            >
-                                                SATIŞ / FİYAT
-                                            </button>
-                                        </div>
-
                                         {/* Status Filter Pills */}
                                         <div className="flex p-1 bg-slate-100/80 rounded-xl">
                                             {['ALL', 'AVAILABLE', 'SOLD', 'RESERVED', 'BARTER', 'OWNER'].map((status) => (
@@ -643,20 +531,6 @@ function BlockDetails() {
                                             </div>
                                         </div>
 
-                                        {/* Sales Search */}
-                                        {viewMode === 'SALES' && (
-                                            <div className="relative">
-                                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Daire no veya tip ara..."
-                                                    value={searchQuery}
-                                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                                    className="pl-9 pr-4 py-2 bg-slate-100/50 border border-transparent rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-[#D36A47] outline-none transition-all w-40 md:w-48"
-                                                />
-                                            </div>
-                                        )}
-
                                         <button
                                             onClick={() => {
                                                 const currentFloorCount = (block.floors || []).length;
@@ -679,7 +553,7 @@ function BlockDetails() {
                                     </div>
                                 </div>
 
-                                {viewMode === 'CONSTRUCTION' && selectedFloors.length > 0 && (
+                                {selectedFloors.length > 0 && (
                                     <div className="mb-6 flex items-center justify-between bg-[#0A1128]/5 border border-[#0A1128]/10 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2">
                                         <div className="flex items-center gap-3">
                                             <span className="bg-[#0A1128] text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedFloors.length}</span>
@@ -702,30 +576,7 @@ function BlockDetails() {
                                     </div>
                                 )}
 
-                                {viewMode === 'SALES' && selectedUnits.length > 0 && (
-                                    <div className="mb-6 flex items-center justify-between bg-emerald-50 border border-emerald-100 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2">
-                                        <div className="flex items-center gap-3">
-                                            <span className="bg-emerald-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedUnits.length}</span>
-                                            <span className="text-sm font-bold text-emerald-800">Ünite Seçildi</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={handleSelectAllUnits}
-                                                className="px-4 py-2 bg-white border border-slate-200 text-emerald-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
-                                            >
-                                                {selectedUnits.length === filteredFloors.flatMap(f => f.units).length ? 'Seçimi Kaldır' : 'Tümünü Seç'}
-                                            </button>
-                                            <button
-                                                onClick={() => setIsBulkPriceModalOpen(true)}
-                                                className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-200"
-                                            >
-                                                <Banknote size={14} /> Toplu Fiyat Güncelle
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {viewMode === 'CONSTRUCTION' ? (
+                                {(
                                     <div className="space-y-8">
                                         {filteredFloors.map((floor, index) => {
                                             const isExpanded = !!expandedFloors[floor.id];
@@ -947,27 +798,10 @@ function BlockDetails() {
                                                                                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
                                                                                     {statusDetails.label}
                                                                                 </span>
-                                                                                {unit.price && (
-                                                                                    <span className="text-xs font-black text-emerald-600">
-                                                                                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.price)}
-                                                                                    </span>
-                                                                                )}
+                                                                                <span className="text-[10px] font-bold text-slate-400">
+                                                                                    {(unit.rooms || []).length} Oda
+                                                                                </span>
                                                                             </div>
-
-                                                                            {(() => {
-                                                                                const sale = sales.find(s => String(s.unit_id) === String(unit.id));
-                                                                                return sale ? (
-                                                                                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
-                                                                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-black ring-2 ring-white">
-                                                                                            {sale.customers?.full_name?.charAt(0).toUpperCase() || '?'}
-                                                                                        </div>
-                                                                                        <div className="flex flex-col min-w-0">
-                                                                                            <span className="text-[11px] font-bold text-slate-600 truncate">{sale.customers?.full_name || 'İsimsiz Müşteri'}</span>
-                                                                                            <span className="text-[9px] text-slate-400 font-medium truncate">{sale.sale_status || 'Kayıtlı'}</span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ) : null;
-                                                                            })()}
                                                                         </div>
                                                                     </div>
                                                                 );
@@ -977,114 +811,6 @@ function BlockDetails() {
                                                 </div>
                                             );
                                         })}
-                                    </div>
-                                ) : (
-                                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-left border-collapse">
-                                                <thead>
-                                                    <tr className="bg-slate-50 border-b border-slate-100">
-                                                        <th className="px-6 py-4">
-                                                            <button
-                                                                onClick={handleSelectAllUnits}
-                                                                className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedUnits.length === filteredFloors.flatMap(f => f.units).length ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300'}`}
-                                                            >
-                                                                {selectedUnits.length > 0 && <CheckCircle size={12} />}
-                                                            </button>
-                                                        </th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Daire No</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tip</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Durum</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Müşteri</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Liste Fiyatı</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Kampanyalı Fiyat</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">İndirim %</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-50">
-                                                    {filteredFloors.flatMap(f => f.units).filter(u =>
-                                                        u.unit_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                        u.unit_type.toLowerCase().includes(searchQuery.toLowerCase())
-                                                    ).map(unit => {
-                                                        const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
-                                                        return (
-                                                            <tr key={unit.id} className="hover:bg-slate-50/50 transition-colors group">
-                                                                <td className="px-6 py-4">
-                                                                    <button
-                                                                        onClick={() => toggleUnitSelection(unit.id)}
-                                                                        className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedUnits.includes(unit.id) ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300'}`}
-                                                                    >
-                                                                        {selectedUnits.includes(unit.id) && <CheckCircle size={12} />}
-                                                                    </button>
-                                                                </td>
-                                                                <td className="px-6 py-4">
-                                                                    <span className="text-sm font-black text-slate-800">{unit.unit_number}</span>
-                                                                </td>
-                                                                <td className="px-6 py-4">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-lg">{unit.unit_type}</span>
-                                                                </td>
-                                                                <td className="px-6 py-4">
-                                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
-                                                                        {statusDetails.label}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-6 py-4">
-                                                                    {(() => {
-                                                                        const sale = sales.find(s => String(s.unit_id) === String(unit.id));
-                                                                        return sale ? (
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[8px] font-black">
-                                                                                    {sale.customers?.full_name?.charAt(0).toUpperCase() || '?'}
-                                                                                </div>
-                                                                                <span className="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">
-                                                                                    {sale.customers?.full_name || 'İsimsiz'}
-                                                                                </span>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <span className="text-slate-300">-</span>
-                                                                        );
-                                                                    })()}
-                                                                </td>
-                                                                <td className="px-6 py-4 group-hover:bg-slate-50 transition-colors">
-                                                                    <div className="relative flex items-center group/input">
-                                                                        <span className="absolute left-3 text-slate-400 text-xs font-bold transition-colors group-focus-within/input:text-blue-500">₺</span>
-                                                                        <input
-                                                                            type="number"
-                                                                            defaultValue={unit.price}
-                                                                            onBlur={(e) => handleSinglePriceUpdate(unit.id, 'price', e.target.value)}
-                                                                            className="w-40 pl-7 pr-4 py-2 bg-slate-100/50 border border-transparent rounded-xl text-sm font-black text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
-                                                                        />
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-6 py-4 group-hover:bg-slate-50 transition-colors">
-                                                                    <div className="relative flex items-center group/input">
-                                                                        <span className="absolute left-3 text-slate-400 text-xs font-bold transition-colors group-focus-within/input:text-emerald-500">₺</span>
-                                                                        <input
-                                                                            type="number"
-                                                                            defaultValue={unit.campaign_price}
-                                                                            onBlur={(e) => handleSinglePriceUpdate(unit.id, 'campaign_price', e.target.value)}
-                                                                            className="w-40 pl-7 pr-4 py-2 bg-emerald-50/50 border border-transparent rounded-xl text-sm font-black text-emerald-700 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
-                                                                        />
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-6 py-4">
-                                                                    {unit.price && unit.campaign_price ? (
-                                                                        <div className="flex items-center gap-2">
-                                                                            <div className="px-2.5 py-1 bg-orange-100 text-orange-600 rounded-lg text-xs font-black ring-1 ring-orange-200 shadow-sm">
-                                                                                %{Math.round(((unit.price - unit.campaign_price) / unit.price) * 100)}
-                                                                            </div>
-                                                                            <span className="text-[10px] font-bold text-slate-400">indirim</span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span className="text-slate-300">-</span>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
                                     </div>
                                 )}
 
@@ -1164,14 +890,6 @@ function BlockDetails() {
                 }}
             />
 
-            <BulkPriceModal
-                isOpen={isBulkPriceModalOpen}
-                onClose={() => setIsBulkPriceModalOpen(false)}
-                onUpdate={handleBulkPriceUpdate}
-                formData={bulkPriceData}
-                setFormData={setBulkPriceData}
-                selectedCount={selectedUnits.length}
-            />
         </div>
     );
 }
@@ -1236,32 +954,8 @@ const UnitDetailsModal = ({ isOpen, unit, sales, onClose }) => {
                                         <span className="text-sm font-bold text-slate-500">Cephe</span>
                                         <span className="text-sm font-black text-slate-800">{unit.facade || '-'}</span>
                                     </div>
-                                    <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-bold text-slate-500">Liste Fiyatı</span>
-                                        <span className="text-sm font-black text-emerald-600">
-                                            {unit.price ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.price) : '-'}
-                                        </span>
-                                    </div>
                                 </div>
                             </div>
-
-                            {/* Owner Section if Sold */}
-                            {customer && (
-                                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <User size={16} className="text-blue-500" /> Mal Sahibi Bilgileri
-                                    </h3>
-                                    <div className="p-5 bg-blue-50/50 rounded-3xl border border-blue-100 flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-blue-600 shadow-sm font-black text-xl">
-                                            {customer.full_name?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <p className="text-base font-black text-slate-800">{customer.full_name}</p>
-                                            <p className="text-xs font-bold text-slate-500">{customer.phone || 'Telefon Yok'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         {/* Rooms Section */}
@@ -1304,99 +998,6 @@ const UnitDetailsModal = ({ isOpen, unit, sales, onClose }) => {
                         className="px-8 py-3 bg-[#0A1128] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
                     >
                         Kapat
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const BulkPriceModal = ({ isOpen, onClose, onUpdate, formData, setFormData, selectedCount }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-500">
-                <div className="flex items-center justify-between mb-8">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                        <Banknote size={24} />
-                    </div>
-                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <h3 className="text-xl font-black text-slate-900 mb-2">Toplu Fiyat Güncelleme</h3>
-                <p className="text-sm font-bold text-slate-500 mb-8">{selectedCount} ünite güncellenecek.</p>
-
-                <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-3 bg-slate-50 p-1 rounded-2xl border border-slate-100">
-                        <button
-                            onClick={() => setFormData(prev => ({ ...prev, field: 'price' }))}
-                            className={`py-2.5 rounded-xl text-xs font-black transition-all ${formData.field === 'price' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            LİSTE FİYATI
-                        </button>
-                        <button
-                            onClick={() => setFormData(prev => ({ ...prev, field: 'campaign_price' }))}
-                            className={`py-2.5 rounded-xl text-xs font-black transition-all ${formData.field === 'campaign_price' ? 'bg-white text-emerald-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            KAMPANYALI FİYAT
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tip</label>
-                            <select
-                                value={formData.type}
-                                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-emerald-500 transition-all"
-                            >
-                                <option value="PERCENTAGE">Yüzde (%)</option>
-                                <option value="AMOUNT">Miktar (₺)</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">İşlem</label>
-                            <select
-                                value={formData.action}
-                                onChange={(e) => setFormData(prev => ({ ...prev, action: e.target.value }))}
-                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-emerald-500 transition-all"
-                            >
-                                <option value="INCREASE">Artır (+)</option>
-                                <option value="DECREASE">Azalt (-)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Değer</label>
-                        <div className="relative flex items-center group">
-                            <input
-                                type="number"
-                                value={formData.value}
-                                onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
-                                placeholder="Örn: 10"
-                                className="w-full pl-6 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-800 outline-none group-focus-within:bg-white group-focus-within:border-emerald-500 group-focus-within:ring-4 group-focus-within:ring-emerald-500/10 transition-all"
-                            />
-                            <span className="absolute right-6 text-slate-400 font-black">
-                                {formData.type === 'PERCENTAGE' ? '%' : '₺'}
-                            </span>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={onUpdate}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-emerald-200 mt-4 active:scale-95"
-                    >
-                        GÜNCELLEMEYİ UYGULA
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
-                    >
-                        İPTAL
                     </button>
                 </div>
             </div>

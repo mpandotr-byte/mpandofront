@@ -53,8 +53,18 @@ import SuppStock from "./pages/supplier/SuppStock";
 import SuppOffers from "./pages/supplier/SuppOffers";
 import SuppAccounting from "./pages/supplier/SuppAccounting";
 
+import Tenders from "./pages/management/Tenders";
+import DwgManager from "./pages/management/DwgManager";
+import Announcements from "./pages/system/Announcements";
+import UserManagement from "./pages/system/UserManagement";
+import FinanceAdvanced from "./pages/accounting/FinanceAdvanced";
+import QuantitySummary from "./pages/construction/QuantitySummary";
+import SalesProjects from "./pages/sales/SalesProjects";
+import SalesProjectDetails from "./pages/sales/SalesProjectDetails";
+import SalesBlockDetails from "./pages/sales/SalesBlockDetails";
+
 /**
- * MPANDO Ana Uygulama Yapılandırması (v2.6)
+ * MPANDO Ana Uygulama Yapılandırması (v2.7)
  * 
  * Bu dosya projenin ana giriş noktasıdır ve tüm sayfa yönlendirmelerini (Routing) yönetir. 
  * Güvenlik için PrivateRoute bileşeni kullanılarak yetkisiz erişimler engellenmiştir.
@@ -83,21 +93,28 @@ function App() {
         <Route path="/projects/:id" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
         <Route path="/projects/:projectId/blocks/:blockId" element={<PrivateRoute><BlockDetails /></PrivateRoute>} />
         <Route path="/construction/files" element={<PrivateRoute><ConstructionFiles /></PrivateRoute>} />
+        <Route path="/quantity-summary" element={<PrivateRoute><QuantitySummary /></PrivateRoute>} />
 
         {/* --- SATIŞ VE MÜŞTERİ YÖNETİMİ --- */}
         <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
         <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
+        <Route path="/sales/projects" element={<PrivateRoute><SalesProjects /></PrivateRoute>} />
+        <Route path="/sales/projects/:id" element={<PrivateRoute><SalesProjectDetails /></PrivateRoute>} />
+        <Route path="/sales/projects/:projectId/blocks/:blockId" element={<PrivateRoute><SalesBlockDetails /></PrivateRoute>} />
         <Route path="/sales/offers" element={<PrivateRoute><Offers /></PrivateRoute>} />
         <Route path="/emlak" element={<PrivateRoute><SecondHandListings /></PrivateRoute>} />
 
         {/* --- SİSTEM VE İLETİŞİM --- */}
         <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
         <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
+        <Route path="/announcements" element={<PrivateRoute><Announcements /></PrivateRoute>} />
+        <Route path="/user-management" element={<PrivateRoute><UserManagement /></PrivateRoute>} />
 
         {/* --- ÜRETİM, MALZEME VE TEKNİK --- */}
         <Route path="/materials" element={<PrivateRoute><Materials /></PrivateRoute>} />
         <Route path="/labors" element={<PrivateRoute><Labors /></PrivateRoute>} />
         <Route path="/recipes" element={<PrivateRoute><Recipes /></PrivateRoute>} />
+        <Route path="/recipes/console" element={<PrivateRoute><RecipeConsole /></PrivateRoute>} />
         <Route path="/purchasing" element={<PrivateRoute><Purchasing /></PrivateRoute>} />
         <Route path="/suppliers" element={<PrivateRoute><Suppliers /></PrivateRoute>} />
         <Route path="/suppliers/:id" element={<PrivateRoute><SupplierDetails /></PrivateRoute>} />
@@ -108,9 +125,12 @@ function App() {
         <Route path="/daily-reports" element={<PrivateRoute><DailyReports /></PrivateRoute>} />
         <Route path="/site-logs" element={<PrivateRoute><SiteLogs /></PrivateRoute>} />
         <Route path="/planning" element={<PrivateRoute><Planning /></PrivateRoute>} />
+        <Route path="/tenders" element={<PrivateRoute><Tenders /></PrivateRoute>} />
+        <Route path="/dwg-manager" element={<PrivateRoute><DwgManager /></PrivateRoute>} />
 
         {/* --- İNSAN KAYNAKLARI (İK) VE PUANTAJ --- */}
         <Route path="/employees" element={<PrivateRoute><Employees /></PrivateRoute>} />
+        <Route path="/employees/:id" element={<PrivateRoute><EmployeeDetails /></PrivateRoute>} />
         <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />
 
         {/* --- MUHASEBE VE FİNANS KURGUSU --- */}
@@ -119,6 +139,7 @@ function App() {
         <Route path="/accounting/expense" element={<PrivateRoute><ExpenseManagement /></PrivateRoute>} />
         <Route path="/accounting/subcontractors" element={<PrivateRoute><SubcontractorPersonnel /></PrivateRoute>} />
         <Route path="/accounting/cash-flow" element={<PrivateRoute><CashFlowCentre /></PrivateRoute>} />
+        <Route path="/accounting/finance-advanced" element={<PrivateRoute><FinanceAdvanced /></PrivateRoute>} />
         <Route path="/documents" element={<PrivateRoute><Documents /></PrivateRoute>} />
 
         {/* --- TAŞERON PANELİ (Harici Erişim) --- */}

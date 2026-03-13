@@ -3,6 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
 import DataTable from '../../components/DataTable';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../api/client';
 import NewSecondHandModal from '../../modals/secondhand/NewSecondHandModal';
 import SecondHandEditModal from '../../modals/secondhand/SecondHandEditModal';
 import SecondHandDetailsModal from '../../modals/secondhand/SecondHandDetailsModal';
@@ -53,34 +54,13 @@ const getTypeIcon = (type) => {
   }
 };
 
-const initialListings = [
-  {
-    id: 1, projectName: 'Güneş Sitesi 3. Etap', location: 'Kadıköy, İstanbul',
-    agentName: 'Canan Yılmaz', block: 'C Blok', flat: 'No: 4',
-    ownerName: 'Ali Vural', ownerPhone: '+90 532 111 22 33',
-    status: 'Aktif', type: 'Daire', price: '5.250.000₺', createdAt: '01.03.2024',
-    notes: 'Krediye uygun, hemen taşınılabilir.'
-  },
-  {
-    id: 2, projectName: 'Deniz Manzaralı Müstakil', location: 'Bodrum, Muğla',
-    agentName: 'Burak Demir', block: '-', flat: 'No: 12',
-    ownerName: 'Ayşe Kaya', ownerPhone: '+90 555 444 55 66',
-    status: 'Pasif', type: 'Villa', price: '18.000.000₺', createdAt: '15.02.2024',
-    notes: 'Tadilat masrafı fiyattan düşülecek.'
-  },
-  {
-    id: 3, projectName: 'Merkezde Ticari İmarlı', location: 'Çankaya, Ankara',
-    agentName: 'Mehmet Öztürk', block: 'Ada 101', flat: 'Parsel 5',
-    ownerName: 'Şirket Envanteri', ownerPhone: '-',
-    status: 'Pasif', type: 'Arsa', price: '9.500.000₺', createdAt: '10.01.2024'
-  },
-];
 
 const allStatusOptions = ['Hepsi', 'Aktif', 'Pasif', 'Satıldı/Kiralandı'];
 
 function SecondHandListings() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [listings, setListings] = useState(initialListings);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedListings, setSelectedListings] = useState([]);
   const { user } = useAuth();
 
@@ -94,6 +74,22 @@ function SecondHandListings() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('Hepsi');
   const filterDropdownRef = useRef(null);
 
+  const fetchListings = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get('/emlak');
+      setListings(data || []);
+    } catch (err) {
+      console.error('Emlak verileri cekilemedi:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) fetchListings();
+  }, [user]);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
@@ -106,18 +102,33 @@ function SecondHandListings() {
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
-  const handleAddListing = (formData) => {
-    const newListing = { id: Date.now(), createdAt: new Date().toLocaleDateString('tr-TR'), ...formData };
-    setListings([newListing, ...listings]);
-    setIsAddModalOpen(false);
+  const handleAddListing = async (formData) => {
+    try {
+      if (formData instanceof FormData) {
+        await api.upload('/emlak', formData);
+      } else {
+        await api.post('/emlak', formData);
+      }
+      fetchListings();
+      setIsAddModalOpen(false);
+    } catch (err) {
+      console.error('Ilan eklenemedi:', err);
+    }
   };
 
-  const handleUpdateListing = (updatedData) => {
-    setListings((prev) => prev.map((item) => item.id === updatedData.id ? { ...item, ...updatedData } : item));
-    setIsEditModalOpen(false);
-    setSelectedListingForEdit(null);
-    if (selectedListingForDetails && selectedListingForDetails.id === updatedData.id) {
-      setSelectedListingForDetails(updatedData);
+  const handleUpdateListing = async (updatedData) => {
+    try {
+      const id = updatedData.id || (selectedListingForEdit && selectedListingForEdit.id);
+      if (updatedData instanceof FormData) {
+        await api.upload(`/emlak/${id}`, updatedData);
+      } else {
+        await api.put(`/emlak/${id}`, updatedData);
+      }
+      fetchListings();
+      setIsEditModalOpen(false);
+      setSelectedListingForEdit(null);
+    } catch (err) {
+      console.error('Ilan guncellenemedi:', err);
     }
   };
 
@@ -138,10 +149,15 @@ function SecondHandListings() {
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (window.confirm(`${selectedListings.length} ilanı silmek istediğinize emin misiniz?`)) {
-      setListings(prev => prev.filter(s => !selectedListings.includes(s.id)));
-      setSelectedListings([]);
+      try {
+        await Promise.all(selectedListings.map(id => api.delete(`/emlak/${id}`)));
+        fetchListings();
+        setSelectedListings([]);
+      } catch (err) {
+        console.error('Ilanlar silinemedi:', err);
+      }
     }
   };
 
@@ -346,7 +362,7 @@ function SecondHandListings() {
           <DataTable
             columns={tableColumns}
             data={filteredListings}
-            loading={false}
+            loading={loading}
             onRowClick={openDetailsModal}
             selectable={true}
             selectedRows={selectedListings}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { X, ChevronRight, ChevronDown, LayoutGrid, Box, Users, Wallet, Hammer, Truck, HardHat, Construction, Settings, Search, HelpCircle, MessageSquare } from "lucide-react";
+import { getAllowedModules, canManageUsers, ROLE_CONFIG } from "../config/roles";
 
 const icons = {
   Dashboard: <LayoutGrid className="w-5 h-5" />,
@@ -29,6 +30,7 @@ const navigationModules = {
     icon: icons.Sales,
     items: [
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=sales" },
+      { name: "Projeler", icon: icons.Projects, href: "/sales/projects" },
       { name: "Müşteriler", icon: icons.Personnel, href: "/customers" },
       { name: "Satış Kayıtları", icon: icons.Sales, href: "/sales" },
       { name: "Müşteri Teklifleri", icon: icons.MessageSquare, href: "/sales/offers" },
@@ -49,6 +51,9 @@ const navigationModules = {
       { name: "Tedarikçiler", icon: icons.Personnel, href: "/suppliers" },
       { name: "Taşeron Yönetimi", icon: icons.Personnel, href: "/subcontractors" },
       { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
+      { name: "Metraj Özeti", icon: icons.Dashboard, href: "/quantity-summary" },
+      { name: "İhaleler", icon: icons.Sales, href: "/tenders" },
+      { name: "DWG Yönetimi", icon: icons.Documents, href: "/dwg-manager" },
       { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
     ],
   },
@@ -59,6 +64,8 @@ const navigationModules = {
       { name: "Genel Bakış", icon: icons.Dashboard, href: "/dashboard?tab=accounting" },
       { name: "Finans Özeti", icon: icons.Dashboard, href: "/accounting" },
       { name: "Gelir-Gider", icon: icons.Sales, href: "/accounting/income" },
+      { name: "Nakit Akışı", icon: icons.Accounting, href: "/accounting/cash-flow" },
+      { name: "Gelişmiş Finans", icon: icons.Dashboard, href: "/accounting/finance-advanced" },
       { name: "Merkezi Arşiv", icon: icons.Dashboard, href: "/documents" },
     ],
   },
@@ -102,9 +109,9 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials') || path.startsWith('/construction/files')) {
+    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials') || path.startsWith('/construction/files') || path.startsWith('/tenders') || path.startsWith('/dwg-manager') || path.startsWith('/quantity-summary') || path.startsWith('/recipes')) {
       setActiveModule('construction');
-    } else if (path.startsWith('/accounting') || path.startsWith('/documents')) {
+    } else if (path.startsWith('/accounting') || path.startsWith('/documents') || path.startsWith('/finance')) {
       setActiveModule('accounting');
     } else if (path.startsWith('/sub-panel') || path.startsWith('/employees') || path.startsWith('/labors') || path.startsWith('/subcontractors')) {
       setActiveModule('subcontractor');
@@ -225,7 +232,10 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                     Bölüm Seçiniz
                   </p>
                 )}
-                {Object.entries(navigationModules).map(([key, module]) => (
+                {Object.entries(navigationModules).filter(([key]) => {
+                  const allowedModules = getAllowedModules(user?.role);
+                  return allowedModules.includes(key);
+                }).map(([key, module]) => (
                   <button
                     key={key}
                     onClick={() => setActiveModule(key)}
@@ -386,15 +396,30 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
             </li>
             <li>
               <Link
-                to="/help"
+                to="/announcements"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-white/[0.04] hover:text-slate-300 transition-all
-                  ${isSidebarCollapsed ? "justify-center" : ""}`}
+                  ${isSidebarCollapsed ? "justify-center" : ""}
+                  ${isActivePath("/announcements") ? "bg-[#D36A47]/10 text-white" : ""}`}
                 onClick={closeMobileMenu}
               >
-                <span>{icons.Help}</span>
-                {!isSidebarCollapsed && <span className="text-sm font-medium">Destek ve Yardım</span>}
+                <span className={isActivePath("/announcements") ? "text-[#D36A47]" : ""}>{icons.Help}</span>
+                {!isSidebarCollapsed && <span className="text-sm font-medium">Duyurular</span>}
               </Link>
             </li>
+            {canManageUsers(user?.role) && (
+            <li>
+              <Link
+                to="/user-management"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-white/[0.04] hover:text-slate-300 transition-all
+                  ${isSidebarCollapsed ? "justify-center" : ""}
+                  ${isActivePath("/user-management") ? "bg-[#D36A47]/10 text-white" : ""}`}
+                onClick={closeMobileMenu}
+              >
+                <span className={isActivePath("/user-management") ? "text-[#D36A47]" : ""}>{icons.Personnel}</span>
+                {!isSidebarCollapsed && <span className="text-sm font-medium">Kullanıcı Yönetimi</span>}
+              </Link>
+            </li>
+            )}
           </ul>
 
           {/* User Card */}
@@ -407,7 +432,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-black text-white truncate leading-tight uppercase tracking-tight">{user?.full_name || 'Mustafa KARATAŞ'}</p>
                   <p className="text-[10px] text-slate-500 truncate font-bold mt-0.5">
-                    {user?.company_name || 'İSKAR İnşaat'}-{user?.role || 'yönetici'}
+                    {user?.company_name || 'İSKAR İnşaat'} - {ROLE_CONFIG[user?.role]?.label || user?.role || 'yönetici'}
                   </p>
                 </div>
               </div>

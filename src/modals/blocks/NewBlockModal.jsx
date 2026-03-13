@@ -146,7 +146,7 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
             console.error("AI Analysis Error:", error);
             const errorMsg = error.message || "";
             if (errorMsg.includes("API key not valid") || errorMsg.includes("403") || errorMsg.includes("400")) {
-                alert("AI Hatası: Backend sunucusundaki Gemini API Anahtarı (API Key) geçersiz veya süresi dolmuş. Lütfen backend (.env) ayarlarını kontrol edin.");
+                alert("AI Hatası: Backend sunucusundaki Claude API Anahtarı (API Key) geçersiz veya süresi dolmuş. Lütfen backend (.env) ayarlarını kontrol edin.");
             } else {
                 alert("AI Analizi sırasında bir hata oluştu: " + errorMsg);
             }

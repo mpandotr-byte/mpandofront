@@ -194,11 +194,21 @@ function RecipeConsole({ isSubPage = false }) {
         setIsAssigning(true);
         try {
             const layersToAssign = Object.entries(assignmentData).filter(([_, recipeId]) => recipeId !== '');
-            for (const roomId of selectedRoomIds) {
+            if (selectedRoomIds.length > 1) {
+                // Bulk assign for multiple rooms
+                for (const [layer, recipeId] of layersToAssign) {
+                    await api.post('/recipes/bulk-assign', {
+                        recipe_id: parseInt(recipeId),
+                        room_ids: selectedRoomIds,
+                        layer: layer
+                    });
+                }
+            } else {
+                // Single room assign
                 for (const [layer, recipeId] of layersToAssign) {
                     await api.post('/recipes/assign', {
                         recipe_id: parseInt(recipeId),
-                        room_id: roomId,
+                        room_id: selectedRoomIds[0],
                         layer: layer
                     });
                 }

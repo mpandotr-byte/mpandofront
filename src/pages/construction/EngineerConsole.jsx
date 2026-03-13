@@ -32,18 +32,38 @@ export default function EngineerConsole() {
 
     useEffect(() => {
         fetchDashboardStats();
+        fetchDeliveries();
     }, []);
+
+    const [deliveries, setDeliveries] = useState([]);
 
     const fetchDashboardStats = async () => {
         try {
-            // Mocking some stats or fetching from summary endpoint
-            // const data = await api.get('/construction/dashboard-stats');
+            const results = await Promise.allSettled([
+                api.get('/inventory/status/summary'),
+                api.get('/users/active-count'),
+                api.get('/construction/work-schedules/all'),
+            ]);
+
+            const stockData = results[0].status === 'fulfilled' ? results[0].value : null;
+            const activeData = results[1].status === 'fulfilled' ? results[1].value : null;
+            const schedData = results[2].status === 'fulfilled' ? results[2].value : [];
+
             setStats({
-                criticalStock: 3,
-                pendingApprovals: 5,
-                todaySchedule: 4,
-                activeWorkers: 42
+                criticalStock: stockData?.critical_count || 0,
+                pendingApprovals: stockData?.pending_count || 0,
+                todaySchedule: Array.isArray(schedData) ? schedData.length : 0,
+                activeWorkers: activeData?.count || activeData?.active_count || 0
             });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const fetchDeliveries = async () => {
+        try {
+            const data = await api.get('/construction/delivery-appointments/all');
+            setDeliveries(Array.isArray(data) ? data.slice(0, 5) : []);
         } catch (error) {
             console.error(error);
         }
@@ -193,20 +213,19 @@ export default function EngineerConsole() {
                             </div>
 
                             <div className="space-y-4">
-                                {[
-                                    { id: 1, time: '10:30', material: 'Hazır Beton (C35)', supplier: 'Oyak Beton', status: 'Yolda' },
-                                    { id: 2, time: '14:00', material: 'Nervürlü Demir (Ø12)', supplier: 'İçdaş A.Ş.', status: 'Bekleniyor' }
-                                ].map(del => (
-                                    <div key={del.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-lg transition-all">
+                                {(deliveries.length > 0 ? deliveries : [
+                                    { id: 1, time: '--:--', material: 'Henuz randevu yok', supplier: '-', status: 'Bekleniyor' }
+                                ]).map((del, idx) => (
+                                    <div key={del.id || idx} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-lg transition-all">
                                         <div className="flex items-center gap-6">
-                                            <div className="text-lg font-black text-slate-800">{del.time}</div>
+                                            <div className="text-lg font-black text-slate-800">{del.expected_at ? new Date(del.expected_at).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : del.time || '--:--'}</div>
                                             <div className="flex flex-col">
-                                                <span className="text-[13px] font-bold text-slate-700">{del.material}</span>
-                                                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-tighter">{del.supplier}</span>
+                                                <span className="text-[13px] font-bold text-slate-700">{del.material_name || del.material || '-'}</span>
+                                                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-tighter">{del.supplier_name || del.supplier || '-'}</span>
                                             </div>
                                         </div>
-                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${del.status === 'Yolda' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                                            {del.status}
+                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${(del.status === 'Yolda' || del.status === 'DELIVERED') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                            {del.status || 'Bekleniyor'}
                                         </div>
                                     </div>
                                 ))}

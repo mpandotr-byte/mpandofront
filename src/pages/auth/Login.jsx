@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { api, setToken } from "../../api/client";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, Shield, BarChart3, Users, Zap, Briefcase, Building2, Package } from "lucide-react";
+import { getDefaultPath } from "../../config/roles";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -83,7 +84,8 @@ const Login = () => {
       } catch { }
 
       login(response);
-      navigate("/dashboard");
+      const targetPath = getDefaultPath(response.user?.role);
+      navigate(targetPath);
     } catch (err) {
       setError(err.message);
     } finally {

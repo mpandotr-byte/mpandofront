@@ -51,12 +51,54 @@ export default function Documents() {
         ]
     };
 
-    const mockFiles = [
-        { id: 1, name: 'Yapı Ruhsatı_2024.pdf', size: '2.4 MB', date: '12.02.2024', type: 'PDF' },
-        { id: 2, name: 'Mimari Proje_Onaylı.dwg', size: '14.8 MB', date: '08.01.2024', type: 'CAD' },
-        { id: 3, name: 'İmar Durumu Belgesi.png', size: '1.1 MB', date: '21.12.2023', type: 'IMG' },
-        { id: 4, name: 'Sözleşme_Taslağı_V2.docx', size: '840 KB', date: '05.03.2024', type: 'DOC' },
-    ];
+    const [files, setFiles] = useState([]);
+    const [projects, setProjects] = useState([]);
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const data = await api.get('/projects');
+                setProjects(Array.isArray(data) ? data : []);
+            } catch (err) { console.error(err); }
+        };
+        fetchProjects();
+    }, []);
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                let data = [];
+                if (activeSection === 'project' && selectedProject) {
+                    const proj = projects.find(p => p.name === selectedProject || p.id === selectedProject);
+                    if (proj) data = await api.get(`/documents/project/${proj.id}${selectedFolder ? `?category=${encodeURIComponent(selectedFolder.name)}` : ''}`);
+                } else if (activeSection === 'corporate') {
+                    data = await api.get('/documents/corporate');
+                } else if (activeSection === 'party' && selectedFolder) {
+                    data = await api.get(`/documents/party/${selectedFolder.id}`);
+                }
+                setFiles(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error(err);
+                setFiles([]);
+            }
+        };
+        fetchDocuments();
+    }, [activeSection, selectedProject, selectedFolder, projects]);
+
+    const handleUploadDocument = async (docData) => {
+        try {
+            await api.post('/documents', docData);
+            setSelectedFolder({...selectedFolder});
+        } catch (err) { console.error(err); }
+    };
+
+    const handleSearch = async (term) => {
+        if (term.length < 3) return;
+        try {
+            const data = await api.get(`/documents/search?query=${encodeURIComponent(term)}`);
+            setFiles(Array.isArray(data) ? data : []);
+        } catch (err) { console.error(err); }
+    };
 
     const renderFolderContent = () => {
         const folder = selectedFolder;
@@ -79,7 +121,7 @@ export default function Documents() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {mockFiles.map(file => (
+                    {(files.length > 0 ? files : []).map(file => (
                         <div key={file.id} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all group cursor-pointer text-left">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
@@ -89,8 +131,8 @@ export default function Documents() {
                                     {file.type}
                                 </div>
                             </div>
-                            <h3 className="text-sm font-black text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors truncate">{file.name}</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{file.size} • {file.date}</p>
+                            <h3 className="text-sm font-black text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors truncate">{file.title || file.name || 'Belge'}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{file.size || ''} {file.created_at ? new Date(file.created_at).toLocaleDateString('tr-TR') : file.date || ''}</p>
                             <div className="mt-6 flex items-center gap-2">
                                 <button className="flex-1 py-3 bg-slate-50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all scale-95 hover:scale-100 uppercase">Görüntüle</button>
                                 <button className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-xl transition-all scale-95 hover:scale-100"><Download size={16} /></button>
@@ -166,7 +208,7 @@ export default function Documents() {
                                 <div className="space-y-8 text-left">
                                     <div className="flex flex-wrap items-center gap-4 bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">PROJE SEÇİN:</span>
-                                        {['Aksu Lüks Konutları', 'Batı Vista Rezidans', 'Sancaktar Villaları'].map((p, i) => (
+                                        {(projects.length > 0 ? projects.map(p => p.name || p.project_name) : ['Proje bulunamadi']).map((p, i) => (
                                             <button
                                                 key={i}
                                                 onClick={() => setSelectedProject(p)}

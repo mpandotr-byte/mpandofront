@@ -28,11 +28,26 @@ function QuantitySummary({ isSubPage = false }) {
     const [projects, setProjects] = useState([]);
     const [blocks, setBlocks] = useState([]);
     const [assignments, setAssignments] = useState([]);
+    const [roomReport, setRoomReport] = useState(null);
+    const [roomReportLoading, setRoomReportLoading] = useState(false);
 
     // Filters
     const [selectedProjectId, setSelectedProjectId] = useState('');
     const [activeTab, setActiveTab] = useState('HISTORY'); // HISTORY or ANALYTICS
     const [searchTerm, setSearchTerm] = useState('');
+
+    const fetchRoomReport = async (roomId) => {
+        setRoomReportLoading(true);
+        try {
+            const data = await api.get(`/recipes/room-report/${roomId}`);
+            setRoomReport(data);
+        } catch (err) {
+            console.error('Oda raporu cekilemedi:', err);
+            setRoomReport(null);
+        } finally {
+            setRoomReportLoading(false);
+        }
+    };
 
     // Fetch Initial Projects
     useEffect(() => {
@@ -218,7 +233,7 @@ function QuantitySummary({ isSubPage = false }) {
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {filteredAssignments.map((record) => (
-                                        <tr key={record.id} className="hover:bg-slate-50/50 transition-colors group">
+                                        <tr key={record.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => record.room_id && fetchRoomReport(record.room_id)}>
                                             <td className="p-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-1.5 h-10 rounded-full ${record.layer === 'Zemin' ? 'bg-orange-500' : record.layer === 'Duvar' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
