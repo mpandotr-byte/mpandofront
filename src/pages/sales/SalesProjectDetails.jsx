@@ -11,7 +11,11 @@ import {
   CheckCircle,
   Clock,
   ArrowRight,
-  Banknote
+  Banknote,
+  Plus,
+  Pencil,
+  Trash2,
+  X
 } from 'lucide-react';
 
 const formatCurrency = (val) => {
@@ -51,6 +55,9 @@ function SalesProjectDetails() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAddBlockOpen, setIsAddBlockOpen] = useState(false);
+  const [editBlock, setEditBlock] = useState(null);
+  const [blockForm, setBlockForm] = useState({ name: '', floor_count: '', building_type: 'Konut' });
 
   useEffect(() => {
     fetchProject();
@@ -67,6 +74,50 @@ function SalesProjectDetails() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddBlock = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post(`/projects/${id}/blocks`, { ...blockForm, floor_count: Number(blockForm.floor_count) || 1 });
+      setIsAddBlockOpen(false);
+      setBlockForm({ name: '', floor_count: '', building_type: 'Konut' });
+      fetchProject();
+    } catch (err) {
+      console.error(err);
+      alert('Blok eklenemedi: ' + (err.message || ''));
+    }
+  };
+
+  const handleEditBlock = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/projects/blocks/${editBlock.id}`, blockForm);
+      setEditBlock(null);
+      setBlockForm({ name: '', floor_count: '', building_type: 'Konut' });
+      fetchProject();
+    } catch (err) {
+      console.error(err);
+      alert('Blok guncellenemedi: ' + (err.message || ''));
+    }
+  };
+
+  const handleDeleteBlock = async (blockId, blockName, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`"${blockName}" blogunu silmek istediginize emin misiniz?`)) return;
+    try {
+      await api.delete(`/projects/blocks/${blockId}`);
+      fetchProject();
+    } catch (err) {
+      console.error(err);
+      alert('Blok silinemedi: ' + (err.message || ''));
+    }
+  };
+
+  const openEditBlock = (block, e) => {
+    e.stopPropagation();
+    setBlockForm({ name: block.name || '', floor_count: String((block.floors || []).length || block.floor_count || ''), building_type: block.building_type || 'Konut' });
+    setEditBlock(block);
   };
 
   const blocks = project?.blocks || [];
@@ -92,12 +143,18 @@ function SalesProjectDetails() {
             {loading ? (
               <div className="h-8 w-48 bg-slate-200 rounded-lg animate-pulse" />
             ) : (
-              <>
-                <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
-                  {project?.name || project?.project_name || 'Proje'}
-                </h1>
-                <p className="text-sm text-slate-400 mt-1">{project?.location || project?.city || ''}</p>
-              </>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
+                    {project?.name || project?.project_name || 'Proje'}
+                  </h1>
+                  <p className="text-sm text-slate-400 mt-1">{project?.location || project?.city || project?.address || ''}</p>
+                </div>
+                <button onClick={() => { setBlockForm({ name: '', floor_count: '', building_type: 'Konut' }); setIsAddBlockOpen(true); }}
+                  className="flex items-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
+                  <Plus size={18} /> Yeni Blok
+                </button>
+              </div>
             )}
           </div>
 
@@ -159,7 +216,15 @@ function SalesProjectDetails() {
                           <p className="text-xs text-slate-400">{(block.floors || []).length} Kat</p>
                         </div>
                       </div>
-                      <ArrowRight size={18} className="text-slate-300 group-hover:text-emerald-600 transition-colors mt-1" />
+                      <div className="flex items-center gap-1">
+                        <button onClick={(e) => openEditBlock(block, e)} className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={(e) => handleDeleteBlock(block.id, block.name, e)} className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600 transition-all opacity-0 group-hover:opacity-100">
+                          <Trash2 size={14} />
+                        </button>
+                        <ArrowRight size={18} className="text-slate-300 group-hover:text-emerald-600 transition-colors" />
+                      </div>
                     </div>
 
                     {/* Stats */}
@@ -214,6 +279,46 @@ function SalesProjectDetails() {
           )}
         </main>
       </div>
+
+      {/* Add/Edit Block Modal */}
+      {(isAddBlockOpen || editBlock) && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-black text-slate-800">{editBlock ? 'Blok Duzenle' : 'Yeni Blok Ekle'}</h3>
+              <button onClick={() => { setIsAddBlockOpen(false); setEditBlock(null); }} className="p-1 hover:bg-slate-100 rounded-lg"><X size={18} className="text-slate-400" /></button>
+            </div>
+            <form onSubmit={editBlock ? handleEditBlock : handleAddBlock} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Blok Adi *</label>
+                <input value={blockForm.name} onChange={(e) => setBlockForm(p => ({ ...p, name: e.target.value }))} required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500" placeholder="Ornek: A Blok" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Kat Sayisi</label>
+                <input type="number" value={blockForm.floor_count} onChange={(e) => setBlockForm(p => ({ ...p, floor_count: e.target.value }))}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="Ornek: 10" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Yapi Tipi</label>
+                <select value={blockForm.building_type} onChange={(e) => setBlockForm(p => ({ ...p, building_type: e.target.value }))}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500">
+                  <option value="Konut">Konut</option>
+                  <option value="Ticari">Ticari</option>
+                  <option value="Karma">Karma</option>
+                  <option value="Ofis">Ofis</option>
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => { setIsAddBlockOpen(false); setEditBlock(null); }}
+                  className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200">Iptal</button>
+                <button type="submit"
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700">{editBlock ? 'Guncelle' : 'Olustur'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -14,7 +14,13 @@ import {
   ArrowRight,
   Filter,
   Banknote,
-  Users
+  Users,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  MapPin,
+  Calendar
 } from 'lucide-react';
 
 const formatCurrency = (val) => {
@@ -29,6 +35,9 @@ function SalesProjects() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editProject, setEditProject] = useState(null);
+  const [formData, setFormData] = useState({ name: '', description: '', address: '', start_date: '', end_date: '' });
 
   useEffect(() => {
     fetchProjects();
@@ -102,6 +111,55 @@ function SalesProjects() {
     }
   };
 
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/projects', formData);
+      setIsAddModalOpen(false);
+      setFormData({ name: '', description: '', address: '', start_date: '', end_date: '' });
+      fetchProjects();
+    } catch (err) {
+      console.error(err);
+      alert('Proje eklenemedi: ' + (err.message || ''));
+    }
+  };
+
+  const handleEditProject = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/projects/${editProject.id}`, formData);
+      setEditProject(null);
+      setFormData({ name: '', description: '', address: '', start_date: '', end_date: '' });
+      fetchProjects();
+    } catch (err) {
+      console.error(err);
+      alert('Proje guncellenemedi: ' + (err.message || ''));
+    }
+  };
+
+  const handleDeleteProject = async (id, name) => {
+    if (!window.confirm(`"${name}" projesini silmek istediginize emin misiniz?`)) return;
+    try {
+      await api.delete(`/projects/${id}`);
+      fetchProjects();
+    } catch (err) {
+      console.error(err);
+      alert('Proje silinemedi: ' + (err.message || ''));
+    }
+  };
+
+  const openEditModal = (project, e) => {
+    e.stopPropagation();
+    setFormData({
+      name: project.name || project.project_name || '',
+      description: project.description || '',
+      address: project.address || project.location || '',
+      start_date: project.start_date ? project.start_date.split('T')[0] : '',
+      end_date: project.end_date ? project.end_date.split('T')[0] : ''
+    });
+    setEditProject(project);
+  };
+
   const filtered = projects.filter(p =>
     (p.name || p.project_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.location || p.city || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -114,9 +172,15 @@ function SalesProjects() {
         <Navbar toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Satış Projeleri</h1>
-            <p className="text-sm text-slate-400 mt-1">Projelerin satış durumunu takip edin</p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Satis Projeleri</h1>
+              <p className="text-sm text-slate-400 mt-1">Projelerin satis durumunu takip edin</p>
+            </div>
+            <button onClick={() => { setFormData({ name: '', description: '', address: '', start_date: '', end_date: '' }); setIsAddModalOpen(true); }}
+              className="flex items-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
+              <Plus size={18} /> Yeni Proje
+            </button>
           </div>
 
           {/* Summary Cards */}
@@ -189,9 +253,17 @@ function SalesProjects() {
                       <h3 className="text-base font-black text-slate-800 group-hover:text-emerald-700 transition-colors">
                         {project.name || project.project_name}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{project.location || project.city || '-'}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{project.location || project.city || project.address || '-'}</p>
                     </div>
-                    <ArrowRight size={18} className="text-slate-300 group-hover:text-emerald-600 transition-colors mt-1" />
+                    <div className="flex items-center gap-1">
+                      <button onClick={(e) => openEditModal(project, e)} className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id, project.name || project.project_name); }} className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-600 transition-all opacity-0 group-hover:opacity-100">
+                        <Trash2 size={14} />
+                      </button>
+                      <ArrowRight size={18} className="text-slate-300 group-hover:text-emerald-600 transition-colors" />
+                    </div>
                   </div>
 
                   {/* Stats Grid */}
@@ -252,6 +324,53 @@ function SalesProjects() {
           )}
         </main>
       </div>
+
+      {/* Add/Edit Project Modal */}
+      {(isAddModalOpen || editProject) && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-black text-slate-800">{editProject ? 'Proje Duzenle' : 'Yeni Proje Ekle'}</h3>
+              <button onClick={() => { setIsAddModalOpen(false); setEditProject(null); }} className="p-1 hover:bg-slate-100 rounded-lg"><X size={18} className="text-slate-400" /></button>
+            </div>
+            <form onSubmit={editProject ? handleEditProject : handleAddProject} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Proje Adi *</label>
+                <input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500" placeholder="Ornek: Dolunay Yasam Merkezi" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aciklama</label>
+                <textarea value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} rows={2}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500 resize-none" placeholder="Proje aciklamasi" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Adres</label>
+                <input value={formData.address} onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="Proje adresi" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Baslangic Tarihi</label>
+                  <input type="date" value={formData.start_date} onChange={(e) => setFormData(p => ({ ...p, start_date: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Bitis Tarihi</label>
+                  <input type="date" value={formData.end_date} onChange={(e) => setFormData(p => ({ ...p, end_date: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => { setIsAddModalOpen(false); setEditProject(null); }}
+                  className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200">Iptal</button>
+                <button type="submit"
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700">{editProject ? 'Guncelle' : 'Olustur'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -22,7 +22,14 @@ import {
   List,
   X,
   Percent,
-  ChevronDown
+  ChevronDown,
+  Phone,
+  Mail,
+  CreditCard,
+  Pencil,
+  Trash2,
+  Save,
+  UserPlus
 } from 'lucide-react';
 
 const formatCurrency = (val) => {
@@ -71,6 +78,16 @@ function SalesBlockDetails() {
 
   const [selectedSaleForDetails, setSelectedSaleForDetails] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  // Daire detay modal
+  const [unitDetailModal, setUnitDetailModal] = useState(null);
+  const [unitEditMode, setUnitEditMode] = useState(false);
+  const [unitEditData, setUnitEditData] = useState({});
+  const [customerDetail, setCustomerDetail] = useState(null);
+
+  // Yeni daire ekle
+  const [isAddUnitOpen, setIsAddUnitOpen] = useState(false);
+  const [newUnitForm, setNewUnitForm] = useState({ floor_id: '', unit_number: '', unit_type: '', facade: '', brut_m2: '', net_m2: '', list_price: '', sales_status: 'AVAILABLE' });
 
   // Toplu islem
   const [selectedUnits, setSelectedUnits] = useState([]);
@@ -236,6 +253,86 @@ function SalesBlockDetails() {
     }
   };
 
+  const openUnitDetail = async (unit) => {
+    setUnitDetailModal(unit);
+    setUnitEditMode(false);
+    setUnitEditData({
+      unit_number: unit.unit_number || '',
+      unit_type: unit.unit_type || '',
+      facade: unit.facade || '',
+      brut_m2: unit.brut_m2 || '',
+      net_m2: unit.net_m2 || '',
+      list_price: unit.list_price || '',
+      campaign_price: unit.campaign_price || '',
+      sales_status: unit.sales_status || 'AVAILABLE'
+    });
+    // Musteri bilgisini cek
+    if (unit.customer_id) {
+      try {
+        const cust = await api.get(`/customers/${unit.customer_id}`);
+        setCustomerDetail(cust);
+      } catch { setCustomerDetail(null); }
+    } else {
+      const sale = sales.find(s => String(s.unit_id) === String(unit.id));
+      if (sale?.customer_id) {
+        try {
+          const cust = await api.get(`/customers/${sale.customer_id}`);
+          setCustomerDetail(cust);
+        } catch { setCustomerDetail(null); }
+      } else {
+        setCustomerDetail(null);
+      }
+    }
+  };
+
+  const handleUnitUpdate = async () => {
+    if (!unitDetailModal) return;
+    try {
+      await api.put(`/projects/units/${unitDetailModal.id}`, unitEditData);
+      setUnitEditMode(false);
+      fetchData();
+      // Modal verisini guncelle
+      setUnitDetailModal(prev => ({ ...prev, ...unitEditData }));
+    } catch (err) {
+      console.error(err);
+      alert('Daire guncellenemedi: ' + (err.message || ''));
+    }
+  };
+
+  const handleDeleteUnit = async (unitId) => {
+    if (!window.confirm('Bu daireyi silmek istediginize emin misiniz?')) return;
+    try {
+      await api.delete(`/projects/units/${unitId}`);
+      setUnitDetailModal(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert('Daire silinemedi: ' + (err.message || ''));
+    }
+  };
+
+  const handleAddUnit = async (e) => {
+    e.preventDefault();
+    if (!newUnitForm.floor_id) { alert('Lutfen bir kat seciniz.'); return; }
+    try {
+      await api.post(`/projects/floors/${newUnitForm.floor_id}/units`, {
+        unit_number: newUnitForm.unit_number,
+        unit_type: newUnitForm.unit_type,
+        facade: newUnitForm.facade,
+        brut_m2: newUnitForm.brut_m2 ? Number(newUnitForm.brut_m2) : null,
+        net_m2: newUnitForm.net_m2 ? Number(newUnitForm.net_m2) : null,
+        list_price: newUnitForm.list_price ? Number(newUnitForm.list_price) : null,
+        sales_status: newUnitForm.sales_status || 'AVAILABLE'
+      });
+      setIsAddUnitOpen(false);
+      setNewUnitForm({ floor_id: '', unit_number: '', unit_type: '', facade: '', brut_m2: '', net_m2: '', list_price: '', sales_status: 'AVAILABLE' });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert('Daire eklenemedi: ' + (err.message || ''));
+    }
+  };
+
   const statusFilters = [
     { key: 'ALL', label: 'Hepsi' },
     { key: 'AVAILABLE', label: 'Satilik' },
@@ -257,7 +354,8 @@ function SalesBlockDetails() {
     return (
       <div
         key={unit.id}
-        className={`bg-white rounded-2xl border p-4 hover:shadow-lg transition-all relative overflow-hidden ${isSelected ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200 hover:border-emerald-200'}`}
+        onClick={() => openUnitDetail(unit)}
+        className={`bg-white rounded-2xl border p-4 hover:shadow-lg transition-all relative overflow-hidden cursor-pointer ${isSelected ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200 hover:border-emerald-200'}`}
       >
         {/* Selection Checkbox */}
         <div className="absolute top-3 right-3 z-10">
@@ -366,7 +464,7 @@ function SalesBlockDetails() {
     const brutM2 = unit.brut_m2 || null;
 
     return (
-      <tr key={unit.id} className={`hover:bg-slate-50/50 transition-colors group ${isSelected ? 'bg-emerald-50/30' : ''}`}>
+      <tr key={unit.id} onClick={() => openUnitDetail(unit)} className={`hover:bg-slate-50/50 transition-colors group cursor-pointer ${isSelected ? 'bg-emerald-50/30' : ''}`}>
         <td className="px-3 py-2.5">
           <button
             onClick={() => toggleUnitSelection(unit.id)}
@@ -488,7 +586,11 @@ function SalesBlockDetails() {
                   </button>
                 </div>
 
-                <span className="text-[10px] font-bold text-slate-400 ml-auto">{filteredUnits.length} / {allUnits.length} daire</span>
+                <button onClick={() => setIsAddUnitOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-all ml-auto">
+                  <Plus size={12} /> Yeni Daire
+                </button>
+                <span className="text-[10px] font-bold text-slate-400">{filteredUnits.length} / {allUnits.length} daire</span>
               </div>
 
               {/* Bulk Actions Bar */}
@@ -563,6 +665,230 @@ function SalesBlockDetails() {
       {/* Sale Details Modal */}
       {isDetailsModalOpen && selectedSaleForDetails && (
         <SaleDetailsModal sale={selectedSaleForDetails} onClose={() => { setIsDetailsModalOpen(false); setSelectedSaleForDetails(null); }} />
+      )}
+
+      {/* Unit Detail Modal */}
+      {unitDetailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-lg font-black text-slate-800">Daire {unitDetailModal.unit_number}</h3>
+                <p className="text-xs text-slate-400">{block?.name} - {unitDetailModal.floorNumber}. Kat</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {!unitEditMode ? (
+                  <button onClick={() => setUnitEditMode(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100">
+                    <Pencil size={13} /> Duzenle
+                  </button>
+                ) : (
+                  <button onClick={handleUnitUpdate} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-100">
+                    <Save size={13} /> Kaydet
+                  </button>
+                )}
+                <button onClick={() => handleDeleteUnit(unitDetailModal.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100">
+                  <Trash2 size={13} /> Sil
+                </button>
+                <button onClick={() => { setUnitDetailModal(null); setCustomerDetail(null); }} className="p-1 hover:bg-slate-100 rounded-lg"><X size={18} className="text-slate-400" /></button>
+              </div>
+            </div>
+
+            {/* Unit Info */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+              {[
+                { label: 'Daire No', key: 'unit_number' },
+                { label: 'Tip', key: 'unit_type' },
+                { label: 'Cephe', key: 'facade' },
+                { label: 'Durum', key: 'sales_status' },
+                { label: 'Brut m2', key: 'brut_m2', type: 'number' },
+                { label: 'Net m2', key: 'net_m2', type: 'number' },
+                { label: 'Liste Fiyati', key: 'list_price', type: 'number' },
+                { label: 'Kampanya Fiyati', key: 'campaign_price', type: 'number' }
+              ].map(field => (
+                <div key={field.key} className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">{field.label}</p>
+                  {unitEditMode ? (
+                    field.key === 'sales_status' ? (
+                      <select value={unitEditData[field.key] || ''} onChange={(e) => setUnitEditData(p => ({ ...p, [field.key]: e.target.value }))}
+                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none">
+                        <option value="AVAILABLE">Satilik</option>
+                        <option value="SOLD">Satildi</option>
+                        <option value="RESERVED">Rezerve</option>
+                        <option value="BARTER">Barter</option>
+                        <option value="ARSA SAHİBİ">Arsa Sahibi</option>
+                      </select>
+                    ) : (
+                      <input type={field.type || 'text'} value={unitEditData[field.key] || ''} onChange={(e) => setUnitEditData(p => ({ ...p, [field.key]: e.target.value }))}
+                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none" />
+                    )
+                  ) : (
+                    <p className="text-sm font-black text-slate-800">
+                      {field.key === 'list_price' || field.key === 'campaign_price'
+                        ? formatCurrency(unitDetailModal[field.key])
+                        : field.key === 'sales_status'
+                        ? getUnitStatusDetails(unitDetailModal[field.key]).label
+                        : unitDetailModal[field.key] || '-'}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Musteri Karti */}
+            <div className="border-t border-slate-100 pt-5">
+              <h4 className="text-sm font-black text-slate-700 mb-3 flex items-center gap-2"><User size={16} className="text-blue-500" /> Musteri Bilgisi</h4>
+              {customerDetail ? (
+                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-lg font-black shrink-0">
+                      {customerDetail.full_name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <p className="text-base font-black text-slate-800">{customerDetail.full_name}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {customerDetail.phone && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600"><Phone size={12} className="text-slate-400" /> {customerDetail.phone}</div>
+                        )}
+                        {customerDetail.email && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600"><Mail size={12} className="text-slate-400" /> {customerDetail.email}</div>
+                        )}
+                        {customerDetail.identity_number && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600"><CreditCard size={12} className="text-slate-400" /> {customerDetail.identity_number}</div>
+                        )}
+                        {customerDetail.address && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600"><Home size={12} className="text-slate-400" /> {customerDetail.address}</div>
+                        )}
+                      </div>
+                      {/* Musterinin diger daireleri */}
+                      {customerDetail.units && customerDetail.units.length > 1 && (
+                        <div className="mt-3 pt-3 border-t border-blue-100">
+                          <p className="text-[9px] font-bold text-blue-500 uppercase mb-2">Diger Mulkleri</p>
+                          <div className="flex flex-wrap gap-2">
+                            {customerDetail.units.filter(u => u.id !== unitDetailModal.id).map(u => (
+                              <span key={u.id} className="text-[10px] font-bold bg-white px-2 py-1 rounded-lg border border-blue-100 text-blue-700">
+                                Daire {u.unit_number} {u.unit_type && `(${u.unit_type})`}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 rounded-xl p-4 text-center">
+                  <User size={24} className="mx-auto text-slate-300 mb-2" />
+                  <p className="text-xs font-bold text-slate-400">Bu daireye henuz musteri atanmamis</p>
+                </div>
+              )}
+            </div>
+
+            {/* Satis Bilgisi */}
+            {(() => {
+              const sale = sales.find(s => String(s.unit_id) === String(unitDetailModal.id));
+              if (!sale) return null;
+              return (
+                <div className="border-t border-slate-100 pt-5 mt-5">
+                  <h4 className="text-sm font-black text-slate-700 mb-3 flex items-center gap-2"><Banknote size={16} className="text-emerald-500" /> Satis Bilgisi</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="bg-emerald-50/50 rounded-xl p-3">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Teklif Fiyati</p>
+                      <p className="text-sm font-black text-slate-800">{formatCurrency(sale.offered_price)}</p>
+                    </div>
+                    <div className="bg-emerald-50/50 rounded-xl p-3">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Satis Durumu</p>
+                      <p className="text-sm font-black text-slate-800">{sale.sale_status || '-'}</p>
+                    </div>
+                    {sale.contract_no && (
+                      <div className="bg-emerald-50/50 rounded-xl p-3">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Sozlesme No</p>
+                        <p className="text-sm font-black text-slate-800">{sale.contract_no}</p>
+                      </div>
+                    )}
+                    {sale.sale_date && (
+                      <div className="bg-emerald-50/50 rounded-xl p-3">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Satis Tarihi</p>
+                        <p className="text-sm font-black text-slate-800">{new Date(sale.sale_date).toLocaleDateString('tr-TR')}</p>
+                      </div>
+                    )}
+                    {sale.notes && (
+                      <div className="bg-emerald-50/50 rounded-xl p-3 col-span-2">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Notlar</p>
+                        <p className="text-xs text-slate-600">{sale.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Add Unit Modal */}
+      {isAddUnitOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-black text-slate-800">Yeni Daire Ekle</h3>
+              <button onClick={() => setIsAddUnitOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg"><X size={18} className="text-slate-400" /></button>
+            </div>
+            <form onSubmit={handleAddUnit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Kat *</label>
+                <select value={newUnitForm.floor_id} onChange={(e) => setNewUnitForm(p => ({ ...p, floor_id: e.target.value }))} required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500">
+                  <option value="">Kat Seciniz</option>
+                  {(block?.floors || []).sort((a, b) => a.floor_number - b.floor_number).map(f => (
+                    <option key={f.id} value={f.id}>{f.floor_number}. Kat</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Daire No *</label>
+                  <input value={newUnitForm.unit_number} onChange={(e) => setNewUnitForm(p => ({ ...p, unit_number: e.target.value }))} required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="Ornek: 101" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tip</label>
+                  <input value={newUnitForm.unit_type} onChange={(e) => setNewUnitForm(p => ({ ...p, unit_type: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="2+1" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cephe</label>
+                  <input value={newUnitForm.facade} onChange={(e) => setNewUnitForm(p => ({ ...p, facade: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="Guney" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Liste Fiyati</label>
+                  <input type="number" value={newUnitForm.list_price} onChange={(e) => setNewUnitForm(p => ({ ...p, list_price: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="1500000" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Brut m2</label>
+                  <input type="number" step="0.1" value={newUnitForm.brut_m2} onChange={(e) => setNewUnitForm(p => ({ ...p, brut_m2: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="120" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Net m2</label>
+                  <input type="number" step="0.1" value={newUnitForm.net_m2} onChange={(e) => setNewUnitForm(p => ({ ...p, net_m2: e.target.value }))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500" placeholder="100" />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setIsAddUnitOpen(false)}
+                  className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200">Iptal</button>
+                <button type="submit"
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700">Daire Olustur</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Bulk Action Modal */}
