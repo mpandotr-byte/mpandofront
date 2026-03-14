@@ -20,7 +20,6 @@ import {
   Mail,
   MapPin,
   X,
-  ShoppingCart,
   Search,
   Home
 } from 'lucide-react';
@@ -242,13 +241,20 @@ function Customers() {
         customerDetailData.units.forEach(unit => {
           if (!addedUnitIds.has(String(unit.id))) {
             addedUnitIds.add(String(unit.id));
-            const blockInfo = unit.floors?.blocks || {};
+            const floorInfo = unit.floors || {};
+            const blockInfo = floorInfo.blocks || {};
+            const projectInfo = blockInfo.projects || {};
             ownedUnits.push({
               id: unit.id,
               unit_number: unit.unit_number || `No: ${unit.id}`,
-              project_name: blockInfo.name || 'Proje',
+              project_name: projectInfo.name || 'Proje',
               block_name: blockInfo.name || '',
+              floor_number: floorInfo.floor_number || '',
               unit_type: unit.unit_type || '',
+              facade: unit.facade || '',
+              brut_m2: unit.brut_m2,
+              net_m2: unit.net_m2,
+              manzara: unit.manzara || '',
               sales_status: unit.sales_status || 'Satıldı',
               sale_date: unit.updated_at,
               contract_no: unit.contract_no || '',
@@ -531,115 +537,92 @@ function Customers() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Purchase History */}
-                  <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <Home size={16} className="text-orange-500" /> Sahip Olduğu Mülkler
-                    </h3>
-                    <div className="space-y-3 mb-8">
-                      {customerUnits.length > 0 ? customerUnits.map((unit, idx) => {
-                        const statusLabel = String(unit.sales_status || '').toUpperCase();
-                        const isSold = ['SOLD', 'SATILDI'].includes(statusLabel);
-                        const isReserved = ['RESERVED', 'REZERVE', 'REZERV'].includes(statusLabel);
-                        const badgeClass = isSold ? 'bg-emerald-50 text-emerald-600' : isReserved ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600';
-                        const badgeText = isSold ? 'TAPULU' : isReserved ? 'REZERVE' : 'ATANMIŞ';
+                <div>
+                  {/* Sahip Olunan Gayrimenkuller */}
+                  <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Home size={16} className="text-orange-500" /> Sahip Olduğu Gayrimenkuller
+                    {customerUnits.length > 0 && (
+                      <span className="ml-auto text-xs font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">{customerUnits.length} Adet</span>
+                    )}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {customerUnits.length > 0 ? customerUnits.map((unit, idx) => {
+                      const statusLabel = String(unit.sales_status || '').toUpperCase();
+                      const isSold = ['SOLD', 'SATILDI'].includes(statusLabel);
+                      const isReserved = ['RESERVED', 'REZERVE', 'REZERV'].includes(statusLabel);
+                      const isBarter = statusLabel === 'BARTER';
+                      const isLandowner = statusLabel === 'LANDOWNER';
+                      const badgeClass = isSold ? 'bg-emerald-50 text-emerald-600' : isReserved ? 'bg-amber-50 text-amber-600' : isBarter ? 'bg-purple-50 text-purple-600' : isLandowner ? 'bg-sky-50 text-sky-600' : 'bg-blue-50 text-blue-600';
+                      const badgeText = isSold ? 'TAPULU' : isReserved ? 'REZERVE' : isBarter ? 'BARTER' : isLandowner ? 'ARSA SAHİBİ' : 'ATANMIŞ';
 
-                        return (
-                          <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <p className="font-bold text-slate-800 text-sm">{unit.project_name}</p>
-                                <p className="text-xs text-slate-500 font-medium">
-                                  Daire {unit.unit_number || 'Bilinmiyor'} {unit.unit_type ? `(${unit.unit_type})` : ''}
-                                  {unit.block_name ? ` • ${unit.block_name}` : ''}
-                                </p>
-                              </div>
-                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${badgeClass}`}>
-                                {badgeText}
-                              </span>
-                            </div>
-                            {(unit.list_price || unit.campaign_price) && (
-                              <div className="flex items-center gap-3 mt-2 mb-1">
-                                {unit.list_price && (
-                                  <span className="text-xs font-bold text-slate-600">
-                                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.list_price)}
-                                  </span>
-                                )}
-                                {unit.campaign_price && (
-                                  <span className="text-xs font-black text-emerald-600">
-                                    → {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.campaign_price)}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            {(unit.contract_no || unit.sale_date) && (
-                              <div className="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                                <span>Sözleşme: {unit.contract_no || '-'}</span>
-                                <span>{unit.sale_date ? new Date(unit.sale_date).toLocaleDateString('tr-TR') : ''}</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }) : (
-                        <div className="text-center py-6 bg-white rounded-2xl border border-slate-100 border-dashed">
-                          <p className="text-[10px] font-black text-slate-300 uppercase">Kayıt Bulunmuyor</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <ShoppingCart size={16} className="text-indigo-500" /> Satın Alma Geçmişi
-                    </h3>
-                    <div className="space-y-3">
-                      {customerSales.length > 0 ? customerSales.map((sale, idx) => (
+                      return (
                         <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                          <div className="flex justify-between items-start mb-2">
+                          {/* Proje & Blok Başlığı */}
+                          <div className="flex justify-between items-start mb-3">
                             <div>
-                              <p className="font-bold text-slate-800 text-sm">{sale.projects?.name || 'Proje'}</p>
-                              <p className="text-xs text-slate-500 font-medium">{sale.interested_product || 'Ünite Detayı'}</p>
+                              <p className="font-black text-slate-800 text-sm">{unit.project_name}</p>
+                              <p className="text-[11px] text-slate-400 font-bold">
+                                {unit.block_name ? `Blok ${unit.block_name}` : ''}{unit.floor_number ? ` • ${unit.floor_number}. Kat` : ''}
+                              </p>
                             </div>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${sale.sale_status === 'Satıldı' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                              {sale.sale_status}
+                            <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase ${badgeClass}`}>
+                              {badgeText}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
-                            <span className="text-xs font-bold text-slate-400">{new Date(sale.created_at).toLocaleDateString('tr-TR')}</span>
-                            <span className="text-sm font-black text-slate-800">{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.offered_price || 0)}</span>
-                          </div>
-                        </div>
-                      )) : (
-                        <div className="text-center py-6 bg-white rounded-2xl border border-slate-100 border-dashed">
-                          <p className="text-[10px] font-black text-slate-300 uppercase">Kayıt Bulunmuyor</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Activity & Performance */}
-                  <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <CheckCircle size={16} className="text-emerald-500" /> Müşteri Etkileşimi
-                    </h3>
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-600">Toplam Teklif</span>
-                        <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xs">{customerSales.length}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-600">Kazanılan Satış</span>
-                        <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs">{customerSales.filter(s => s.sale_status === 'Satıldı').length}</span>
-                      </div>
-                      <div className="pt-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Müşteri Puanı</p>
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 w-[85%]" />
+                          {/* Daire Bilgileri */}
+                          <div className="bg-slate-50 rounded-xl p-3 mb-3">
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                              <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Daire No</p>
+                                <p className="text-sm font-black text-slate-700">{unit.unit_number || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Tip</p>
+                                <p className="text-sm font-black text-slate-700">{unit.unit_type || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Cephe</p>
+                                <p className="text-sm font-black text-slate-700">{unit.facade || '-'}</p>
+                              </div>
+                            </div>
+                            {(unit.brut_m2 || unit.net_m2) && (
+                              <div className="grid grid-cols-2 gap-2 text-center mt-2 pt-2 border-t border-slate-200/50">
+                                <div>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase">Brüt m²</p>
+                                  <p className="text-sm font-black text-slate-700">{unit.brut_m2 || '-'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase">Net m²</p>
+                                  <p className="text-sm font-black text-slate-700">{unit.net_m2 || '-'}</p>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <span className="text-xs font-black text-slate-700">%85</span>
+
+                          {/* Fiyat Bilgileri */}
+                          {(unit.list_price || unit.campaign_price) && (
+                            <div className="flex items-center justify-between">
+                              {unit.list_price && (
+                                <span className="text-xs font-bold text-slate-500">
+                                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.list_price)}
+                                </span>
+                              )}
+                              {unit.campaign_price && (
+                                <span className="text-xs font-black text-emerald-600">
+                                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.campaign_price)}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
+                      );
+                    }) : (
+                      <div className="col-span-2 text-center py-8 bg-white rounded-2xl border border-slate-100 border-dashed">
+                        <Home size={32} className="mx-auto mb-2 text-slate-200" />
+                        <p className="text-[10px] font-black text-slate-300 uppercase">Gayrimenkul Kaydı Bulunmuyor</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
