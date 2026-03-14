@@ -22,6 +22,10 @@ import {
 } from 'lucide-react';
 import NewCostumerModal from './customers/NewCostumerModal';
 
+const initialCustomerData = {
+  full_name: '', identity_number: '', phone: '', email: '', address: ''
+};
+
 export default function NewSaleModal({
   isOpen,
   formData,
@@ -29,7 +33,8 @@ export default function NewSaleModal({
   onChange,
   onAdd,
   customers = [],
-  projects = []
+  projects = [],
+  onCustomerAdded
 }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [blocks, setBlocks] = useState([]);
@@ -41,6 +46,8 @@ export default function NewSaleModal({
   const [customerSearch, setCustomerSearch] = useState('');
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
   const [isApprovalSent, setIsApprovalSent] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState(initialCustomerData);
+  const [customerSaving, setCustomerSaving] = useState(false);
 
   // Proje değiştiğinde detayları çek
   useEffect(() => {
@@ -118,6 +125,45 @@ export default function NewSaleModal({
     setIsApprovalSent(true);
     onChange({ approval_status: 'Onay Bekliyor' });
     alert("Teklif yönetici onayına gönderildi.");
+  };
+
+  const handleNewCustomerChange = (e) => {
+    const { name, value } = e.target;
+    setNewCustomerData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddNewCustomer = async () => {
+    if (!newCustomerData.full_name || !newCustomerData.phone) {
+      alert('Müşteri adı ve telefon numarası zorunludur.');
+      return;
+    }
+    setCustomerSaving(true);
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const createData = {
+        ...newCustomerData,
+        company_id: user.company_id,
+        employee_id: user.id,
+        contractor_id: user.company_id,
+        is_deleted: false
+      };
+      const created = await api.post('/customers', createData);
+      setIsNewCustomerModalOpen(false);
+      setNewCustomerData(initialCustomerData);
+      // Yeni müşteriyi otomatik seç
+      if (created?.id) {
+        onChange({ musteri_id: String(created.id) });
+      }
+      // Üst bileşendeki müşteri listesini yenile
+      if (onCustomerAdded) {
+        onCustomerAdded(created);
+      }
+    } catch (err) {
+      console.error('Müşteri eklenirken hata:', err);
+      alert('Müşteri eklenirken bir hata oluştu.');
+    } finally {
+      setCustomerSaving(false);
+    }
   };
 
   const filteredCustomers = customers.filter(c =>
@@ -601,14 +647,16 @@ export default function NewSaleModal({
           </button>
         </div>
 
-        {/* New Customer Modal Integration */}
+        {/* Yeni Müşteri Ekleme Modalı */}
         <NewCostumerModal
           isOpen={isNewCustomerModalOpen}
-          onClose={() => setIsNewCustomerModalOpen(false)}
-          onAdd={() => {
-            alert("Müşteri başarıyla eklendi. Listeyi yenilemek için sayfayı yenileyebilirsiniz.");
+          onClose={() => {
             setIsNewCustomerModalOpen(false);
+            setNewCustomerData(initialCustomerData);
           }}
+          newCustomerData={newCustomerData}
+          onChange={handleNewCustomerChange}
+          onAdd={handleAddNewCustomer}
         />
       </div >
     </div >

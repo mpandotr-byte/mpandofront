@@ -512,7 +512,12 @@ function Sales() {
           projects={projects.filter(p => String(p.contractor_id) === String(user?.company_id))} />
         <NewSaleModal isOpen={isAddModalOpen} formData={newSaleData} onClose={closeAddModal} onChange={handleNewSaleChange} onAdd={handleAddNewSale}
           customers={customers.filter(c => String(c.company_id) === String(user?.company_id))}
-          projects={projects.filter(p => String(p.contractor_id) === String(user?.company_id))} />
+          projects={projects.filter(p => String(p.contractor_id) === String(user?.company_id))}
+          onCustomerAdded={(newCustomer) => {
+            if (newCustomer) {
+              setCustomers(prev => [...prev, newCustomer]);
+            }
+          }} />
       </main>
     </div>
   );
