@@ -21,8 +21,10 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
         stairs_mt: '',
         stairs_coating_m2: '',
         column_count: '',
+        column_size: '', // Örn: 60x30
         column_m3: '',
         beam_mt: '',
+        beam_size: '', // Örn: 60x30
         beam_m3: '',
         slab_area_m2: '',
         reinforcement_type: '',
@@ -69,8 +71,10 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                     stairs_mt: floorData.stairs_mt ?? '',
                     stairs_coating_m2: floorData.stairs_coating_m2 ?? '',
                     column_count: floorData.column_count ?? '',
+                    column_size: floorData.column_size ?? '',
                     column_m3: floorData.column_m3 ?? '',
                     beam_mt: floorData.beam_mt ?? '',
+                    beam_size: floorData.beam_size ?? '',
                     beam_m3: floorData.beam_m3 ?? '',
                     slab_area_m2: floorData.slab_area_m2 ?? '',
                     reinforcement_type: floorData.reinforcement_type ?? '',
@@ -119,8 +123,10 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                     wall_area_m2: result.wall_area_m2 ?? result.wall_area ?? prev.wall_area_m2,
                     slab_area_m2: result.slab_area_m2 ?? result.slab_area ?? prev.slab_area_m2,
                     column_count: result.column_count ?? prev.column_count,
+                    column_size: result.column_size ?? prev.column_size,
                     column_m3: result.column_m3 ?? prev.column_m3,
                     beam_mt: result.beam_mt ?? prev.beam_mt,
+                    beam_size: result.beam_size ?? prev.beam_size,
                     beam_m3: result.beam_m3 ?? prev.beam_m3,
                     stairs_m3: result.stairs_m3 ?? prev.stairs_m3,
                     stairs_mt: result.stairs_mt ?? prev.stairs_mt,
@@ -276,6 +282,7 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                                     </div>
                                     <div className="space-y-2">
                                         <AIReadonlyInput value={formData.column_count} placeholder="ADET" isAnalyzing={isAnalyzing} />
+                                        <input type="text" name="column_size" value={formData.column_size} onChange={handleChange} placeholder="Boyut (Örn: 60x30)" className="block w-full px-4 py-2.5 bg-white border border-orange-200 rounded-2xl text-sm font-bold text-orange-800 outline-none placeholder:text-slate-300" />
                                         <AIReadonlyInput value={formData.column_m3} placeholder="m³" isAnalyzing={isAnalyzing} />
                                     </div>
                                 </div>
@@ -290,6 +297,7 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                                     </div>
                                     <div className="space-y-2">
                                         <AIReadonlyInput value={formData.beam_mt} placeholder="METRE" isAnalyzing={isAnalyzing} />
+                                        <input type="text" name="beam_size" value={formData.beam_size} onChange={handleChange} placeholder="Boyut (Örn: 60x30)" className="block w-full px-4 py-2.5 bg-white border border-orange-200 rounded-2xl text-sm font-bold text-orange-800 outline-none placeholder:text-slate-300" />
                                         <AIReadonlyInput value={formData.beam_m3} placeholder="m³" isAnalyzing={isAnalyzing} />
                                     </div>
                                 </div>

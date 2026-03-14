@@ -328,7 +328,7 @@ export default function NewSaleModal({
                         >
                           <option value="">Daire Seçiniz</option>
                           {units.map(u => (
-                            <option key={u.id} value={u.id}>No: {u.unit_number} ({u.unit_type})</option>
+                            <option key={u.id} value={u.id}>No: {u.unit_number} - {u.unit_type || 'Daire'}</option>
                           ))}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />

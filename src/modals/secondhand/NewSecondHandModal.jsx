@@ -193,7 +193,8 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
             newData.ownerPhone = sale.customers.phone || '';
             setOwnerSource('auto');
           } else {
-            newData.ownerName = 'Şirket Envanteri';
+            // Daireye bağlı müşteri yok - manuel seçim gerekli
+            newData.ownerName = '';
             newData.ownerPhone = '';
             setOwnerSource('manual');
           }
@@ -244,32 +245,25 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
     const finalAgentName = formData.agentName;
 
     if (!finalProjectName || !formData.ownerName || !formData.type || !formData.price || !finalAgentName) {
-      alert("Lütfen zorunlu (*) alanları doldurunuz.");
+      alert("Lütfen zorunlu (*) alanları doldurunuz (Proje, Ev Sahibi, Mülk Tipi, Fiyat, Danışman).");
       return;
     }
 
+    // Seçilen dairenin unit ID'sini bul
+    const selectedUnit = units.find(u => u.unit_number === formData.flat || String(u.id) === formData.flat);
+
+    // Seçilen müşteriyi bul (seller olarak)
+    const selectedCustomer = customers.find(c => c.full_name === formData.ownerName);
+
     const newListing = {
-      projectName: finalProjectName,
-      block: finalBlock,
-      flat: formData.flat,
-      ownerName: formData.ownerName,
-      ownerPhone: formData.ownerPhone,
-      buyerName: formData.buyerName,
-      buyerPhone: formData.buyerPhone,
-      type: formData.type,
-      status: formData.status,
-      price: formData.price ? (Number(formData.price).toLocaleString('tr-TR') + '₺') : '', // Formatlı fiyat için
-      deposit: formData.deposit,
-      commission: formData.commission,
-      notes: formData.notes,
-      agentName: finalAgentName,
-      contractStartDate: formData.contractStartDate,
-      contractEndDate: formData.contractEndDate,
-      contract_no: formData.contract_no,
-      dask_no: formData.dask_no,
-      water_meter_no: formData.water_meter_no,
-      electricity_meter_no: formData.electricity_meter_no,
-      direction: formData.direction,
+      property_title: `${finalProjectName}${finalBlock ? ' - ' + finalBlock : ''}${formData.flat ? ' No:' + formData.flat : ''} (${formData.type})`,
+      unit_id: selectedUnit?.id || null,
+      seller_id: selectedCustomer?.id || null,
+      listing_price: formData.price ? Number(formData.price) : 0,
+      sold_price: null,
+      seller_commission: formData.commission ? Number(formData.commission) : 0,
+      buyer_commission: 0,
+      status: formData.status || 'Aktif',
     };
 
     onAdd(newListing);
@@ -401,7 +395,7 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
                 )}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
-                    <span>Daire / No <span className="text-red-500">*</span></span>
+                    <span>Daire / No {formData.projectName !== 'Diğer' && <span className="text-red-500">*</span>}</span>
                     {loadingDetails && <span className="text-[10px] text-blue-500 animate-pulse">Yükleniyor...</span>}
                   </label>
                   <div className="relative">
@@ -412,7 +406,7 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
                           value={formData.flat}
                           onChange={handleChange}
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none cursor-pointer"
-                          required
+                          required={formData.projectName !== 'Diğer'}
                         >
                           <option value="">Seçiniz</option>
                           {units.map(u => (
@@ -431,7 +425,7 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
                         onChange={handleChange}
                         placeholder="Örn: No 4"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        required
+                        required={formData.projectName !== 'Diğer'}
                       />
                     )}
                   </div>

@@ -15,7 +15,11 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
         area_m2: '',
         wall_area_m2: '', // Net Duvar Yüzeyi
         door_count: 0,
+        door_width_cm: 90,
+        door_height_cm: 210,
         window_count: 0,
+        window_width_cm: 160,
+        window_height_cm: 160,
         perimeter_m: '',
         ceiling_area_m2: '',
         floor_height_m: '',
@@ -50,7 +54,11 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                     area_m2: roomData.area_m2 || '',
                     wall_area_m2: roomData.wall_area_m2 || '',
                     door_count: roomData.door_count || 0,
+                    door_width_cm: roomData.door_width_cm || 90,
+                    door_height_cm: roomData.door_height_cm || 210,
                     window_count: roomData.window_count || 0,
+                    window_width_cm: roomData.window_width_cm || 160,
+                    window_height_cm: roomData.window_height_cm || 160,
                     perimeter_m: roomData.perimeter_m || '',
                     ceiling_area_m2: roomData.ceiling_area_m2 || '',
                     floor_height_m: roomData.floor_height_m || '',
@@ -226,10 +234,34 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">KAPI ADET</label>
                                 <div className="relative"><input type="number" name="door_count" value={formData.door_count} onChange={handleChange} className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-black outline-none transition-all" /><DoorOpen size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" /></div>
+                                {formData.door_count > 0 && (
+                                    <div className="flex gap-2 mt-1">
+                                        <div className="flex-1">
+                                            <label className="text-[9px] text-slate-400 ml-1">Genişlik (cm)</label>
+                                            <input type="number" name="door_width_cm" value={formData.door_width_cm} onChange={handleChange} className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-[9px] text-slate-400 ml-1">Yükseklik (cm)</label>
+                                            <input type="number" name="door_height_cm" value={formData.door_height_cm} onChange={handleChange} className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none" />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">PENCERE ADET</label>
                                 <div className="relative"><input type="number" name="window_count" value={formData.window_count} onChange={handleChange} className="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-black outline-none transition-all" /><Layout size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" /></div>
+                                {formData.window_count > 0 && (
+                                    <div className="flex gap-2 mt-1">
+                                        <div className="flex-1">
+                                            <label className="text-[9px] text-slate-400 ml-1">Genişlik (cm)</label>
+                                            <input type="number" name="window_width_cm" value={formData.window_width_cm} onChange={handleChange} className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-[9px] text-slate-400 ml-1">Yükseklik (cm)</label>
+                                            <input type="number" name="window_height_cm" value={formData.window_height_cm} onChange={handleChange} className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none" />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
