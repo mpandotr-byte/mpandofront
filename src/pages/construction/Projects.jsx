@@ -32,7 +32,8 @@ import {
   ArrowLeft,
   X,
   Upload,
-  Download
+  Download,
+  Layers
 } from 'lucide-react';
 
 const getStatusClasses = (status) => {
@@ -248,8 +249,7 @@ function Projects() {
             location_lng: p.location_lng || '',
             block_count: p.block_count || Math.floor(Math.random() * 5) + 1,
             total_units: p.unit_count ?? p.total_units ?? (Math.floor(Math.random() * 50) + 20),
-            sold_count: p.sold_count ?? Math.floor(Math.random() * 15),
-            empty_count: p.empty_count ?? Math.floor(Math.random() * 10),
+            floor_count: p.floor_count || 0,
           };
         });
         setProjects(mappedProjects);
@@ -397,10 +397,8 @@ function Projects() {
     const exportData = filteredProjects.map(p => ({
       'Proje Adı': p.company,
       'Müteahhit': p.contractor,
-      'Ünite Sayısı': p.total_units,
+      'Daire Sayısı': p.total_units,
       'Blok Sayısı': p.block_count,
-      'Satılan': p.sold_count,
-      'Boş': p.empty_count,
       'Durum': p.status,
       'İlerleme': `%${p.progress}`,
       'Başlangıç': p.startDate,
@@ -688,7 +686,7 @@ function Projects() {
                         <div className="p-0.5">
 
                           {/* Stats Grid - Optimized */}
-                          <div className="grid grid-cols-2 gap-2 mb-4">
+                          <div className="grid grid-cols-3 gap-2 mb-4">
                             <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-2 md:p-2.5">
                               <div className="flex items-center gap-2 mb-0.5">
                                 <Building2 size={12} className="text-slate-400" />
@@ -703,13 +701,12 @@ function Projects() {
                               </div>
                               <span className="text-xs font-black text-slate-800">{proj.total_units} Adet</span>
                             </div>
-                            <div className="bg-emerald-50/30 border border-emerald-100/50 rounded-xl p-2 md:p-2.5">
-                              <p className="text-[9px] font-bold text-emerald-600 uppercase mb-0.5">Satılan</p>
-                              <span className="text-xs font-black text-emerald-700">{proj.sold_count}</span>
-                            </div>
-                            <div className="bg-slate-50 border border-slate-100/50 rounded-xl p-2 md:p-2.5">
-                              <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Boş</p>
-                              <span className="text-xs font-black text-slate-600">{proj.empty_count}</span>
+                            <div className="bg-blue-50/30 border border-blue-100/50 rounded-xl p-2 md:p-2.5">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <Layers size={12} className="text-blue-400" />
+                                <span className="text-[9px] font-bold text-blue-400 uppercase">Kat</span>
+                              </div>
+                              <span className="text-xs font-black text-blue-700">{proj.floor_count || '—'}</span>
                             </div>
                           </div>
 
