@@ -106,7 +106,8 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                 project_id: projectId,
                 block_id: blockId,
                 floor_number: formData.floor_number,
-                analysis_type: "floor_metrics"
+                height_cm: formData.height_cm,
+                analysis_type: "floor_full_metrics"
             });
 
             const result = response.ai_response || response;
@@ -127,8 +128,9 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                     common_area_m2: result.common_area_m2 ?? prev.common_area_m2,
                     common_wall_area_m2: result.common_wall_area_m2 ?? prev.common_wall_area_m2,
                     common_ceiling_area_m2: result.common_ceiling_area_m2 ?? prev.common_ceiling_area_m2,
+                    reinforcement_type: result.reinforcement_type ?? prev.reinforcement_type,
                 }));
-                alert("AI Analizi Başarılı: Kat metrajları otomatik olarak hesaplandı.");
+                alert("AI Analizi Başarılı: Kat metrajları, statik veriler ve donatı tipi otomatik olarak hesaplandı.");
             }
         } catch (error) {
             console.error("AI Floor Analysis Error:", error);

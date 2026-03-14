@@ -112,16 +112,32 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
         try {
             const selectedFile = constructionFiles.find(f => f.id.toString() === selectedDwgId);
 
-            // AI artık sadece teknik metrajlara odaklanıyor
+            // AI teknik metrajlar + tesisat metrajlarını hesaplıyor
             const response = await api.post('/ai/test-ai', {
-                prompt: `Sen profesyonel bir inşaat mühendisi ve mimarsın. Ekteki DWG dosyasındaki verileri analiz et. 
+                prompt: `Sen profesyonel bir inşaat mühendisi ve mimarsın. Ekteki DWG dosyasındaki verileri analiz et.
                         Blok ismi: "${formData.name}" ve Kat Sayısı: ${formData.floor_count} olan bu yapı için;
-                        Sadece temel alanını (m2), dış cephe alanını (m2) ve çatı alanını (m2) hesapla. 
-                        Yanıtı sadece JSON formatında ver: { foundation_area, total_facade, roof_area }`,
+                        1. Temel alanını (m²), dış cephe alanını (m²) ve çatı alanını (m²) hesapla.
+                        2. Tesisat metrajlarını hesapla:
+                           - Elektrik priz/sorti toplam adet
+                           - Pis su (Pimaş) toplam metre
+                           - Temiz su (PPRC) toplam metre
+                           - Doğalgaz hat toplam metre
+                           - Yangın tesisatı toplam metre
+                        Yanıtı sadece JSON formatında ver:
+                        {
+                          "foundation_area": 0,
+                          "total_facade": 0,
+                          "roof_area": 0,
+                          "elec_points": 0,
+                          "waste_water_mt": 0,
+                          "fresh_water_mt": 0,
+                          "gas_line_mt": 0,
+                          "fire_system_mt": 0
+                        }`,
                 context: {
                     dwg_id: selectedDwgId,
                     file_url: selectedFile?.file_url,
-                    analysis_type: "block_metrics_only",
+                    analysis_type: "block_full_metrics",
                     project_id: projectId,
                     user_input: {
                         name: formData.name,
@@ -135,12 +151,17 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
             if (result) {
                 setFormData(prev => ({
                     ...prev,
-                    // name ve floor_count korunuyor, sadece metrajlar güncelleniyor
-                    foundation_area_m2: result.foundation_area || prev.foundation_area_m2,
-                    total_facade_m2: result.total_facade || prev.total_facade_m2,
-                    roof_area_m2: result.roof_area || prev.roof_area_m2
+                    // name ve floor_count korunuyor, metrajlar + tesisat güncelleniyor
+                    foundation_area_m2: result.foundation_area ?? prev.foundation_area_m2,
+                    total_facade_m2: result.total_facade ?? prev.total_facade_m2,
+                    roof_area_m2: result.roof_area ?? prev.roof_area_m2,
+                    elec_points: result.elec_points ?? prev.elec_points,
+                    waste_water_mt: result.waste_water_mt ?? prev.waste_water_mt,
+                    fresh_water_mt: result.fresh_water_mt ?? prev.fresh_water_mt,
+                    gas_line_mt: result.gas_line_mt ?? prev.gas_line_mt,
+                    fire_system_mt: result.fire_system_mt ?? prev.fire_system_mt
                 }));
-                alert("AI Analizi Başarılı: Teknik metrajlar otomatik olarak hesaplandı.");
+                alert("AI Analizi Başarılı: Teknik metrajlar ve tesisat verileri otomatik olarak hesaplandı.");
             }
         } catch (error) {
             console.error("AI Analysis Error:", error);

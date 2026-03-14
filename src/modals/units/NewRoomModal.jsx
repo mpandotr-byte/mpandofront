@@ -83,7 +83,7 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                 unit_id: unitId,
                 room_name: formData.room_type,
                 room_type: formData.room_type,
-                analysis_type: "room_metrics"
+                analysis_type: "room_full_metrics"
             });
 
             const result = response.ai_response || response;
@@ -92,9 +92,14 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                 setFormData(prev => ({
                     ...prev,
                     area_m2: result.area_m2 ?? result.area ?? prev.area_m2,
-                    wall_area_m2: result.wall_area_m2 ?? result.wall_area ?? prev.wall_area_m2
+                    wall_area_m2: result.wall_area_m2 ?? result.wall_area ?? prev.wall_area_m2,
+                    door_count: result.door_count ?? prev.door_count,
+                    window_count: result.window_count ?? prev.window_count,
+                    ceiling_area_m2: result.ceiling_area_m2 ?? prev.ceiling_area_m2,
+                    perimeter_m: result.perimeter_m ?? prev.perimeter_m,
+                    floor_height_m: result.floor_height_m ?? prev.floor_height_m
                 }));
-                alert("AI Analizi Başarılı: Mahal metrajları otomatik olarak hesaplandı.");
+                alert("AI Analizi Başarılı: Mahal metrajları, kapı/pencere adetleri otomatik olarak hesaplandı.");
             }
         } catch (error) {
             console.error("AI Room Analysis Error:", error);

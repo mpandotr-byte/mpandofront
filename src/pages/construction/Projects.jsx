@@ -306,15 +306,10 @@ function Projects() {
     setNewProjectData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddNewProject = async () => {
+  const handleAddNewProject = async (uploadedFiles = []) => {
     if (!newProjectData.company) { alert('Proje Adı zorunludur.'); return; }
     try {
       const status = newProjectData.status;
-      let progress = 0;
-      if (status === 'Tamamlandı') progress = 100;
-      else if (status === 'Devam Ediyor') progress = 10;
-      else if (status === 'Planlanıyor') progress = 0;
-      else if (status === 'Gecikmede') progress = 5;
 
       const createData = {
         name: newProjectData.company,
@@ -333,7 +328,23 @@ function Projects() {
         contractor_id: user.company_id
       };
 
-      await api.post('/projects', createData);
+      const projectRes = await api.post('/projects', createData);
+      const newProjectId = projectRes?.id || projectRes?.data?.id;
+
+      // Yüklenen DWG/PDF dosyalarını projeye bağla
+      if (uploadedFiles && uploadedFiles.length > 0 && newProjectId) {
+        await Promise.all(uploadedFiles.map(file => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('project_id', newProjectId);
+          formData.append('file_type', file.name.split('.').pop().toUpperCase());
+          formData.append('file_name', file.name);
+          return api.upload('/construction/files/upload', formData).catch(err => {
+            console.error(`Dosya yükleme hatası (${file.name}):`, err);
+          });
+        }));
+      }
+
       await fetchProjects();
       closeAddModal();
     } catch (err) {
