@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
+import { api } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import {
     Bell,
     CheckCircle,
@@ -18,67 +20,88 @@ import {
     MoreVertical,
     ArrowLeft,
     ChevronRight,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react';
 
-// Örnek Bildirim Verileri
-const initialNotifications = [
-    {
-        id: 1,
-        title: "Yeni Ödeme Alındı",
-        text: "Ahmet Yılmaz tarafından AKSU Rezidans A Blok 12 Nolu daire için 50.000₺ tutarında peşinat ödemesi sisteme girildi. Finans departmanı onayı beklenmektedir.",
-        sender: "Finans Departmanı",
-        time: "5 dk önce",
-        date: "04 Mart 2026, 14:30",
-        unread: true,
-        type: "finance",
-        priority: "high"
-    },
-    {
-        id: 2,
-        title: "Satış Onayı Bekliyor",
-        text: "B Blok 4 Nolu dairenin satışı için müşteri evraklarını tamamladı. Satış departmanının son onayı gerekmektedir.",
-        sender: "Sistem",
-        time: "1 saat önce",
-        date: "04 Mart 2026, 13:45",
-        unread: true,
-        type: "approval",
-        priority: "urgent"
-    },
-    {
-        id: 3,
-        title: "Stok Uyarısı: Çimento",
-        text: "Merkez depodaki Çimento stoğu kritik seviyenin altına düştü. Mevcut: 15 Torba. Minimum: 50 Torba.",
-        sender: "Depo Yönetimi",
-        time: "3 saat önce",
-        date: "04 Mart 2026, 11:20",
-        unread: false,
-        type: "stock",
-        priority: "medium"
-    },
-    {
-        id: 4,
-        title: "Yeni Proje Görevi",
-        text: "Güneş Evleri projesi için 'Çevre Düzenleme Planı' görevi size atandı. Teslim tarihi: 15 Mart.",
-        sender: "Proje Yöneticisi",
-        time: "1 gün önce",
-        date: "03 Mart 2026, 09:15",
-        unread: false,
-        type: "project",
-        priority: "low"
-    },
-    {
-        id: 5,
-        title: "Müşteri Geri Bildirimi",
-        text: "Mehmet Demir, son yapılan görüşme ile ilgili olumlu geri bildirim bıraktı. Sözleşme revizeleri talep ediliyor.",
-        sender: "Satış CRM",
-        time: "2 gün önce",
-        date: "02 Mart 2026, 16:00",
-        unread: false,
-        type: "customer",
-        priority: "medium"
+// subject_type -> notification type mapping
+const mapSubjectType = (subjectType) => {
+    if (!subjectType) return 'system';
+    const type = subjectType.toLowerCase();
+    if (type.includes('sale')) return 'approval';
+    if (type.includes('user')) return 'system';
+    if (type.includes('project')) return 'project';
+    if (type.includes('customer') || type.includes('client')) return 'customer';
+    if (type.includes('material') || type.includes('stock') || type.includes('inventory')) return 'stock';
+    if (type.includes('payment') || type.includes('finance')) return 'finance';
+    return 'system';
+};
+
+// event -> priority mapping
+const mapEventToPriority = (event) => {
+    if (!event) return 'low';
+    switch (event) {
+        case 'deleted': return 'high';
+        case 'created': return 'medium';
+        case 'updated': return 'low';
+        case 'login': return 'low';
+        case 'logout': return 'low';
+        case 'viewed': return 'low';
+        default: return 'low';
     }
-];
+};
+
+// Relative time formatting
+const formatRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Az önce';
+    if (diffMins < 60) return `${diffMins} dk önce`;
+    if (diffHours < 24) return `${diffHours} saat önce`;
+    if (diffDays < 7) return `${diffDays} gün önce`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
+    return `${Math.floor(diffDays / 30)} ay önce`;
+};
+
+// Format date for detail view
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const mins = String(date.getMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year}, ${hours}:${mins}`;
+};
+
+// Check if created within last 24 hours
+const isRecent = (dateString) => {
+    if (!dateString) return false;
+    const now = new Date();
+    const date = new Date(dateString);
+    return (now - date) < 86400000; // 24 hours in ms
+};
+
+// Map API activity to notification format
+const mapActivityToNotification = (activity) => ({
+    id: activity.id,
+    title: activity.description || 'Bildirim',
+    text: activity.description || '',
+    sender: activity.user?.full_name || 'Sistem',
+    time: formatRelativeTime(activity.created_at),
+    date: formatDate(activity.created_at),
+    unread: isRecent(activity.created_at),
+    type: mapSubjectType(activity.subject_type),
+    priority: mapEventToPriority(activity.event),
+});
 
 const getTypeStyles = (type) => {
     switch (type) {
@@ -102,15 +125,44 @@ const getPriorityBadge = (priority) => {
 
 function Notifications() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [notifications, setNotifications] = useState(initialNotifications);
+    const [notifications, setNotifications] = useState([]);
     const [selectedNotif, setSelectedNotif] = useState(null);
     const [filter, setFilter] = useState('all');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const { user } = useAuth();
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
+    const fetchActivities = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await api.get('/activities?limit=50&offset=0');
+            const activities = response.data || response || [];
+            const mapped = (Array.isArray(activities) ? activities : []).map(mapActivityToNotification);
+            setNotifications(mapped);
+        } catch (err) {
+            console.error('Bildirimler yüklenirken hata:', err);
+            setError('Bildirimler yüklenemedi. Lütfen tekrar deneyin.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchActivities();
+    }, [fetchActivities]);
+
     const filteredNotifs = notifications.filter(n => {
-        if (filter === 'unread') return n.unread;
-        return true;
+        const matchesFilter = filter === 'unread' ? n.unread : true;
+        const matchesSearch = searchQuery
+            ? n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              n.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              n.sender.toLowerCase().includes(searchQuery.toLowerCase())
+            : true;
+        return matchesFilter && matchesSearch;
     });
 
     const handleSelectNotif = (notif) => {
@@ -153,7 +205,10 @@ function Notifications() {
                                     <CheckCircle size={18} />
                                     <span>Hepsini Oku</span>
                                 </button>
-                                <button className="flex items-center justify-center w-12 h-12 bg-[#0A1128] text-white rounded-2xl font-bold shadow-lg shadow-[#0A1128]/20">
+                                <button
+                                    onClick={fetchActivities}
+                                    className="flex items-center justify-center w-12 h-12 bg-[#0A1128] text-white rounded-2xl font-bold shadow-lg shadow-[#0A1128]/20 hover:bg-[#0A1128]/90 transition-all"
+                                >
                                     <Filter size={20} />
                                 </button>
                             </div>
@@ -185,6 +240,8 @@ function Notifications() {
                                         <input
                                             type="text"
                                             placeholder="Bildirimlerde ara..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
                                             className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold placeholder:text-slate-400 focus:ring-2 focus:ring-[#D36A47]/20 transition-all"
                                         />
                                     </div>
@@ -210,7 +267,26 @@ function Notifications() {
 
                                 {/* List */}
                                 <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 lg:bg-white p-4 lg:p-0">
-                                    {filteredNotifs.length > 0 ? (
+                                    {loading ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                                            <Loader2 size={40} className="text-[#D36A47] animate-spin mb-4" />
+                                            <p className="text-sm font-bold text-slate-500">Bildirimler yükleniyor...</p>
+                                        </div>
+                                    ) : error ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                                            <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-4">
+                                                <AlertCircle size={40} className="text-red-400" />
+                                            </div>
+                                            <h4 className="text-sm font-black text-[#0A1128]">Hata Oluştu</h4>
+                                            <p className="text-xs text-slate-400 mt-1 font-bold">{error}</p>
+                                            <button
+                                                onClick={fetchActivities}
+                                                className="mt-4 px-5 py-2.5 bg-[#D36A47] text-white rounded-xl text-xs font-bold hover:bg-[#C25936] transition-all"
+                                            >
+                                                Tekrar Dene
+                                            </button>
+                                        </div>
+                                    ) : filteredNotifs.length > 0 ? (
                                         <div className="flex flex-col gap-3 lg:gap-0 lg:divide-y lg:divide-slate-50">
                                             {filteredNotifs.map((notif) => {
                                                 const styles = getTypeStyles(notif.type);

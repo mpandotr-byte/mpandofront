@@ -30,6 +30,21 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({ full_name: '', email: '', password_hash: '', role: 'SITE_ENGINEER', is_active: true });
   const { user } = useAuth();
+  const [notification, setNotification] = useState(null);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const sendVerificationEmail = async (email) => {
+    try {
+      await api.post('/auth/send-verification', { email });
+      showNotification('Kullaniciya dogrulama e-postasi gonderildi');
+    } catch (err) {
+      showNotification('Dogrulama e-postasi gonderilemedi: ' + (err.message || 'Bilinmeyen hata'), 'error');
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -57,6 +72,8 @@ export default function UserManagement() {
         await api.put(`/users/${editingUser.id}`, updateData);
       } else {
         await api.post('/users', { ...formData, company_id: user?.company_id || 1 });
+        // Yeni kullanici olusturulduktan sonra dogrulama e-postasi gonder
+        sendVerificationEmail(formData.email);
       }
       setIsModalOpen(false);
       setEditingUser(null);
@@ -182,6 +199,14 @@ export default function UserManagement() {
                       <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${u.email_verified ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
                         {u.email_verified ? '✓ Email Dogrulandi' : '⚠ Email Dogrulanmadi'}
                       </span>
+                      {!u.email_verified && (
+                        <button
+                          onClick={() => sendVerificationEmail(u.email)}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold border bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                        >
+                          <Mail size={10} /> Dogrulama Gonder
+                        </button>
+                      )}
                     </div>
 
                     {u.last_login && (
@@ -192,6 +217,13 @@ export default function UserManagement() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Notification Toast */}
+          {notification && (
+            <div className={`fixed top-6 right-6 z-[10000] px-5 py-3 rounded-xl shadow-lg text-sm font-bold transition-all ${notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`}>
+              {notification.message}
             </div>
           )}
 

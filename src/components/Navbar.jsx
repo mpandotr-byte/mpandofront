@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api/client';
 import {
   Bell,
   ChevronDown,
@@ -11,55 +12,98 @@ import {
   User,
   LogOut,
   Settings,
-  UserCircle
+  UserCircle,
+  MessageSquare,
+  Loader2
 } from 'lucide-react';
 
-const initialMockNotifications = [
-  {
-    id: 1,
-    title: "Yeni Ödeme Alındı",
-    text: "Ahmet Yılmaz tarafından AKSU Rezidans A Blok 12 Nolu daire için 50.000₺ tutarında peşinat ödemesi sisteme girildi.",
-    sender: "Finans Departmanı",
-    time: "5 dk önce",
-    unread: true
-  },
-  {
-    id: 2,
-    title: "Satış Onayı",
-    text: "A Blok 12 Nolu dairenin satışı yönetici tarafından onaylanmıştır.",
-    sender: "Sistem",
-    time: "1 saat önce",
-    unread: true
-  },
-  {
-    id: 3,
-    title: "Yeni Stok Talebi",
-    text: "Şantiye alanından yeni bir malzeme talebi oluşturuldu: Çimento (100 Torba).",
-    sender: "Şantiye Şefi",
-    time: "3 saat önce",
-    unread: false
-  },
-  {
-    id: 4,
-    title: "Proje Güncellemesi",
-    text: "Dolunay Yaşam Merkezi projesinin teslim tarihi güncellenmiştir.",
-    sender: "Proje Yöneticisi",
-    time: "1 gün önce",
-    unread: false
-  },
-];
+// Relative time formatting
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return '';
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Az önce';
+  if (diffMins < 60) return `${diffMins} dk önce`;
+  if (diffHours < 24) return `${diffHours} saat önce`;
+  if (diffDays < 7) return `${diffDays} gün önce`;
+  return `${Math.floor(diffDays / 7)} hafta önce`;
+};
+
+// Check if created within last 24 hours
+const isRecent = (dateString) => {
+  if (!dateString) return false;
+  const now = new Date();
+  const date = new Date(dateString);
+  return (now - date) < 86400000;
+};
+
+// Map API activity to notification format
+const mapActivityToNotification = (activity) => ({
+  id: activity.id,
+  title: activity.description || 'Bildirim',
+  text: activity.description || '',
+  sender: activity.user?.full_name || 'Sistem',
+  time: formatRelativeTime(activity.created_at),
+  unread: isRecent(activity.created_at),
+});
 
 function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(initialMockNotifications);
+  const [notifications, setNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   const profileDropdownRef = useRef(null);
   const notificationsDropdownRef = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // Fetch recent activities for navbar
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoadingNotifications(true);
+      const response = await api.get('/activities?limit=5&offset=0');
+      const activities = response.data || response || [];
+      const mapped = (Array.isArray(activities) ? activities : []).map(mapActivityToNotification);
+      setNotifications(mapped);
+    } catch (err) {
+      console.error('Navbar bildirimleri yüklenemedi:', err);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
+
+  // Fetch unread message count
+  const fetchUnreadMessageCount = useCallback(async () => {
+    try {
+      const response = await api.get('/messages/unread/count');
+      const count = response.count ?? response.data ?? response ?? 0;
+      setUnreadMessageCount(typeof count === 'number' ? count : 0);
+    } catch (err) {
+      console.error('Okunmamış mesaj sayısı alınamadı:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    fetchUnreadMessageCount();
+
+    // Refresh every 60 seconds
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchUnreadMessageCount();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [fetchNotifications, fetchUnreadMessageCount]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -121,10 +165,26 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
 
           <div className="flex items-center gap-2">
 
+            {/* Unread Messages Badge */}
+            {unreadMessageCount > 0 && (
+              <button
+                onClick={() => navigate('/messages')}
+                className="relative p-2.5 rounded-xl text-slate-500 hover:text-[#D36A47] hover:bg-slate-100 transition-all duration-300 group"
+              >
+                <MessageSquare className="w-[19px] h-[19px] transition-transform duration-300 group-hover:scale-110" />
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-black bg-[#D36A47] text-white rounded-full shadow-lg shadow-[#D36A47]/30">
+                  {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                </span>
+              </button>
+            )}
+
             {/* Notifications */}
             <div className="relative" ref={notificationsDropdownRef}>
               <button
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                onClick={() => {
+                  setIsNotificationsOpen(!isNotificationsOpen);
+                  if (!isNotificationsOpen) fetchNotifications();
+                }}
                 className={`relative p-2.5 rounded-xl transition-all duration-300 group ${isNotificationsOpen
                   ? 'bg-[#0A1128] text-white shadow-lg shadow-black/20'
                   : 'text-slate-500 hover:text-[#D36A47] hover:bg-slate-100'
@@ -154,7 +214,12 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
                   </div>
 
                   <div className="max-h-[350px] overflow-y-auto custom-scrollbar bg-slate-50/10">
-                    {notifications.length > 0 ? (
+                    {loadingNotifications ? (
+                      <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
+                        <Loader2 className="w-7 h-7 text-[#D36A47] animate-spin mb-3" />
+                        <p className="text-[11px] text-slate-500 font-medium">Yükleniyor...</p>
+                      </div>
+                    ) : notifications.length > 0 ? (
                       <div className="divide-y divide-slate-50/50">
                         {notifications.map((notif) => (
                           <div
@@ -227,10 +292,22 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
                   </div>
 
                   <div className="py-1">
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium"
+                    >
                       <UserCircle size={16} className="text-slate-400" /> Profil
                     </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium"
+                    >
                       <Settings size={16} className="text-slate-400" /> Ayarlar
                     </button>
                   </div>

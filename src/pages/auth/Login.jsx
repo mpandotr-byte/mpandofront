@@ -247,9 +247,9 @@ const Login = () => {
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Şifre
                   </label>
-                  <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+                  <button type="button" onClick={() => navigate("/forgot-password")} className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
                     Şifremi Unuttum
-                  </a>
+                  </button>
                 </div>
                 <div className="relative">
                   <input

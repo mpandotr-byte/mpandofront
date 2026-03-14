@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 
 import Login from "./pages/auth/Login";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import Profile from "./pages/auth/Profile";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Projects from "./pages/construction/Projects";
 import ProjectDetails from "./pages/construction/ProjectDetails";
@@ -77,6 +79,8 @@ function App() {
       <Routes>
         {/* --- KİMLİK DOĞRULAMA (Login) --- */}
         <Route path="/" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
         {/* --- ANA KOMUTA MERKEZİ --- */}
         <Route
