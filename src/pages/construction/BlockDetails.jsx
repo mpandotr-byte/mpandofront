@@ -5,52 +5,13 @@ import Navbar from '../../components/Navbar';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import {
-    ArrowLeft,
-    Building2,
-    Layers,
-    Home,
-    Maximize,
-    AlertCircle,
-    ChevronDown,
-    ChevronUp,
-    MoreVertical,
-    Edit2,
-    Trash2,
-    Filter,
-    X,
-    LayoutGrid,
-    Plus,
-    PlusCircle,
-    Compass,
-    FileText,
-    User
+    ArrowLeft, Building2, Layers, Home, Maximize, ChevronDown, ChevronUp,
+    Edit2, Trash2, Plus, PlusCircle, MoreVertical, X, Zap, Droplets, Flame,
+    DoorOpen, Layout, Ruler, Package
 } from 'lucide-react';
 import NewFloorModal from '../../modals/blocks/NewFloorModal';
 import NewUnitModal from '../../modals/units/NewUnitModal';
 import NewRoomModal from '../../modals/units/NewRoomModal';
-
-const getUnitStatusDetails = (status) => {
-    switch (String(status).toUpperCase()) {
-        case 'SOLD':
-        case 'SATILDI':
-            return { label: 'Satıldı', classes: 'bg-rose-50 text-rose-700 border-rose-100' };
-        case 'RESERVED':
-        case 'REZERVE':
-        case 'REZERV':
-            return { label: 'Rezerve', classes: 'bg-amber-50 text-amber-700 border-amber-100' };
-        case 'BARTER':
-            return { label: 'Barter', classes: 'bg-purple-50 text-purple-700 border-purple-100' };
-        case 'ARSA SAHIBI':
-        case 'ARSA SAHİBİ':
-            return { label: 'Arsa Sahibi', classes: 'bg-indigo-50 text-indigo-700 border-indigo-100' };
-        case 'AVAILABLE':
-        case 'SATILIK':
-        case 'MÜSAİT':
-        case 'BOŞ':
-        default:
-            return { label: 'Satılık', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
-    }
-};
 
 function BlockDetails() {
     const { projectId, blockId } = useParams();
@@ -60,1015 +21,480 @@ function BlockDetails() {
     const [block, setBlock] = useState(null);
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [sales, setSales] = useState([]);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [expandedFloors, setExpandedFloors] = useState({});
     const [expandedUnits, setExpandedUnits] = useState({});
     const [activeFloorMenu, setActiveFloorMenu] = useState(null);
-    const [statusFilter, setStatusFilter] = useState('ALL');
-    const [typeFilter, setTypeFilter] = useState('ALL');
+    const [activeUnitMenu, setActiveUnitMenu] = useState(null);
 
+    // Modaller
     const [isAddFloorModalOpen, setIsAddFloorModalOpen] = useState(false);
     const [editingFloor, setEditingFloor] = useState(null);
     const [isAddUnitModalOpen, setIsAddUnitModalOpen] = useState(false);
-    const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
+    const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState(null);
     const [selectedFloorForUnit, setSelectedFloorForUnit] = useState(null);
     const [selectedUnitForRoom, setSelectedUnitForRoom] = useState(null);
-    const [activeUnitMenu, setActiveUnitMenu] = useState(null);
-    const [isUnitDetailsModalOpen, setIsUnitDetailsModalOpen] = useState(false);
-    const [selectedUnitForDetails, setSelectedUnitForDetails] = useState(null);
 
+    // Toplu kat reçete atama
     const [selectedFloors, setSelectedFloors] = useState([]);
     const [recipes, setRecipes] = useState([]);
-    const [isBulkFloorRecipeModalOpen, setIsBulkFloorRecipeModalOpen] = useState(false);
-    const [bulkFloorRecipeData, setBulkFloorRecipeData] = useState({
-        beton_recipe_id: '',
-        demir_recipe_id: '',
-        hall_floor_recipe_id: '',
-        hall_wall_recipe_id: '',
-        hall_ceiling_recipe_id: '',
-        stairs_recipe_id: '',
-        extra_recipe_id: ''
-    });
 
     const fetchBlockDetails = async () => {
         setLoading(true);
         try {
-            // Fetch project, block and sales data
-            const [projectData, blockResponse, salesData] = await Promise.all([
+            const [projectData, blockResponse] = await Promise.all([
                 api.get(`/projects/${projectId}`),
-                api.get(`/projects/blocks/${blockId}`),
-                api.get(`/sales`).catch(() => [])
+                api.get(`/projects/blocks/${blockId}`)
             ]);
-
             setProject(projectData);
-            setSales(salesData || []);
-
-            let blockData = blockResponse.block || blockResponse.data || blockResponse;
-
-            // Verileri normalize et
-            const normalizeUnit = (u) => ({
-                ...u,
-                rooms: u.rooms || u.unit_rooms || [],
-                rooms_normalized: (u.rooms || u.unit_rooms || []).map(r => ({
-                    ...r,
-                    name: r.name || r.room_name || 'Oda',
-                    area_m2: r.area_m2 || r.area || 0
-                }))
-            });
-
-            if (blockData.units) {
-                blockData.units = blockData.units.map(normalizeUnit);
-            }
-
-            // Eğer üniteler katların içinde değil de düz liste (block.units) olarak geldiyse grupla
-            // Ancak katın içinde zaten üniteler varsa ve bu üniteler detaylıysa (örn: odalar varsa) üzerine yazma
-            if (blockData.units && blockData.floors) {
-                console.log("Üniteler düz liste olarak geldi, katlara dağıtılıyor...");
-                blockData.floors = blockData.floors.map(f => {
-                    const existingUnits = (f.units || []).map(normalizeUnit);
-
-                    const hasDetails = existingUnits.length > 0 && existingUnits.some(u => u.rooms.length > 0);
-
-                    if (hasDetails) {
-                        return { ...f, units: existingUnits };
-                    }
-
-                    return {
-                        ...f,
-                        units: blockData.units.filter(u => Number(u.floor_id) === Number(f.id))
-                    };
-                });
-            }
-
-            setBlock(blockData);
-
+            setBlock(blockResponse);
             // Reçeteleri çek
-            const recipesData = await api.get('/recipes');
-            setRecipes(recipesData || []);
+            try {
+                const recipeData = await api.get('/recipes');
+                setRecipes(recipeData || []);
+            } catch { }
         } catch (err) {
-            console.error("Blok detayları alınırken hata:", err);
+            console.error('Blok detayı çekilemedi:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSaveFloor = async (floorData) => {
+    useEffect(() => { fetchBlockDetails(); }, [blockId, projectId]);
+
+    const toggleFloor = (floorId) => setExpandedFloors(prev => ({ ...prev, [floorId]: !prev[floorId] }));
+    const toggleUnit = (unitId) => setExpandedUnits(prev => ({ ...prev, [unitId]: !prev[unitId] }));
+
+    // ─── CRUD İşlemleri ───
+    const handleAddFloor = async (data) => {
         try {
-            if (floorData.id) {
-                await api.put(`/projects/floors/${floorData.id}`, floorData);
+            if (data.id) {
+                await api.put(`/projects/floors/${data.id}`, data);
             } else {
-                await api.post('/projects/floors', floorData);
+                await api.post(`/projects/blocks/${blockId}/floors`, data);
             }
-            await fetchBlockDetails();
             setIsAddFloorModalOpen(false);
             setEditingFloor(null);
+            fetchBlockDetails();
         } catch (err) {
-            console.error("Kat kaydetme hatası:", err);
-            alert("Kat kaydedilirken bir hata oluştu.");
+            console.error('Kat eklenemedi:', err);
+            alert('İşlem sırasında hata oluştu.');
         }
     };
 
     const handleDeleteFloor = async (floorId) => {
-        if (!window.confirm("Bu katı silmek istediğinize emin misiniz? Katın içindeki tüm üniteler de silinecektir.")) return;
+        if (!window.confirm('Bu katı silmek istediğinize emin misiniz?')) return;
         try {
             await api.delete(`/projects/floors/${floorId}`);
-            await fetchBlockDetails();
-        } catch (err) {
-            console.error("Kat silme hatası:", err);
-            alert("Kat silinirken bir hata oluştu.");
-        }
+            fetchBlockDetails();
+        } catch (err) { alert('Kat silinirken hata oluştu.'); }
     };
 
-    const handleSaveUnit = async (unitData) => {
+    const handleAddUnit = async (data) => {
         try {
-            if (unitData.id) {
-                await api.put(`/projects/units/${unitData.id}`, unitData);
+            if (data.id) {
+                await api.put(`/projects/units/${data.id}`, data);
             } else {
-                await api.post('/projects/units', unitData);
+                await api.post(`/projects/floors/${selectedFloorForUnit}/units`, data);
             }
-            await fetchBlockDetails();
             setIsAddUnitModalOpen(false);
             setEditingUnit(null);
-            setSelectedFloorForUnit(null);
+            fetchBlockDetails();
         } catch (err) {
-            console.error("Ünite kaydetme hatası:", err);
-            alert("Ünite kaydedilirken bir hata oluştu.");
+            console.error('Daire eklenemedi:', err);
+            alert('İşlem sırasında hata oluştu.');
         }
     };
 
     const handleDeleteUnit = async (unitId) => {
-        if (!window.confirm("Bu üniteyi silmek istediğinize emin misiniz?")) return;
+        if (!window.confirm('Bu daireyi silmek istediğinize emin misiniz?')) return;
         try {
             await api.delete(`/projects/units/${unitId}`);
-            await fetchBlockDetails();
-        } catch (err) {
-            console.error("Ünite silme hatası:", err);
-            alert("Ünite silinirken bir hata oluştu.");
-        }
+            fetchBlockDetails();
+        } catch (err) { alert('Daire silinirken hata oluştu.'); }
     };
 
-    const handleSaveRoom = async (roomData) => {
+    const handleAddRoom = async (data) => {
         try {
-            if (editingRoom) {
-                await api.put(`/projects/rooms/${editingRoom.id}`, roomData);
+            if (data.id) {
+                await api.put(`/projects/rooms/${data.id}`, data);
             } else {
-                await api.post(`/projects/rooms`, roomData);
+                await api.post(`/projects/units/${selectedUnitForRoom}/rooms`, data);
             }
             setIsAddRoomModalOpen(false);
             setEditingRoom(null);
-
-            // Katı yenile
-            if (selectedFloorForUnit) {
-                const refreshedFloor = await api.get(`/projects/floors/${selectedFloorForUnit}`);
-                const normalizedUnits = (refreshedFloor.units || []).map(u => ({
-                    ...u,
-                    rooms: u.rooms || u.unit_rooms || [],
-                    rooms_normalized: (u.rooms || u.unit_rooms || []).map(r => ({
-                        ...r,
-                        name: r.name || r.room_name || 'Oda',
-                        area_m2: r.area_m2 || r.area || 0
-                    }))
-                }));
-
-                const detailedFloor = { ...refreshedFloor, units: normalizedUnits };
-
-                setBlock(prev => ({
-                    ...prev,
-                    floors: prev.floors.map(f =>
-                        Number(f.id) === Number(selectedFloorForUnit)
-                            ? { ...f, ...detailedFloor }
-                            : f
-                    )
-                }));
-            }
+            fetchBlockDetails();
         } catch (err) {
-            console.error("Oda kaydedilirken hata:", err);
-            alert("Oda kaydedilemedi: " + err.message);
+            console.error('Oda eklenemedi:', err);
+            alert('İşlem sırasında hata oluştu.');
         }
     };
 
-    const handleDeleteRoom = async (roomId, floorId) => {
-        if (!window.confirm("Bu odayı silmek istediğinizden emin misiniz?")) return;
+    const handleDeleteRoom = async (roomId) => {
+        if (!window.confirm('Bu odayı silmek istediğinize emin misiniz?')) return;
         try {
             await api.delete(`/projects/rooms/${roomId}`);
-
-            const refreshedFloor = await api.get(`/projects/floors/${floorId}`);
-            const normalizedUnits = (refreshedFloor.units || []).map(u => ({
-                ...u,
-                rooms: u.rooms || u.unit_rooms || [],
-                rooms_normalized: (u.rooms || u.unit_rooms || []).map(r => ({
-                    ...r,
-                    name: r.name || r.room_name || 'Oda',
-                    area_m2: r.area_m2 || r.area || 0
-                }))
-            }));
-
-            const detailedFloor = { ...refreshedFloor, units: normalizedUnits };
-
-            setBlock(prev => ({
-                ...prev,
-                floors: prev.floors.map(f =>
-                    Number(f.id) === Number(floorId)
-                        ? { ...f, ...detailedFloor }
-                        : f
-                )
-            }));
-        } catch (err) {
-            console.error("Oda silinirken hata:", err);
-            alert("Oda silinemedi.");
-        }
-    };
-
-    // Dropdown dışında bir yere tıklandığında menüyü kapat
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            // Eğer tıklanan yer bir menü butonu veya menü içi değilse kapat
-            if (!e.target.closest('.floor-menu-container')) {
-                setActiveFloorMenu(null);
-            }
-            if (!e.target.closest('.unit-actions-container')) {
-                setActiveUnitMenu(null);
-            }
-        };
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, []);
-
-    const toggleFloor = async (floorId) => {
-        const isOpening = !expandedFloors[floorId];
-
-        if (isOpening) {
-            try {
-                const refreshedFloor = await api.get(`/projects/floors/${floorId}`);
-
-                // Normalizasyon (Oda verilerini 'rooms' anahtarı altında topla)
-                const normalizedUnits = (refreshedFloor.units || []).map(u => ({
-                    ...u,
-                    rooms: u.rooms || u.unit_rooms || [],
-                    rooms_normalized: (u.rooms || u.unit_rooms || []).map(r => ({
-                        ...r,
-                        name: r.name || r.room_name || 'Oda',
-                        area_m2: r.area_m2 || r.area || 0
-                    }))
-                }));
-
-                const detailedFloor = { ...refreshedFloor, units: normalizedUnits };
-
-                setBlock(prev => {
-                    if (!prev || !prev.floors) return prev;
-                    return {
-                        ...prev,
-                        floors: prev.floors.map(f =>
-                            Number(f.id) === Number(floorId)
-                                ? { ...f, ...detailedFloor }
-                                : f
-                        )
-                    };
-                });
-            } catch (err) {
-                console.error("Kat detayları yüklenemedi:", err);
-            }
-        }
-
-        setExpandedFloors(prev => ({
-            ...prev,
-            [floorId]: !prev[floorId]
-        }));
-    };
-
-    const toggleUnit = (unit) => {
-        setSelectedUnitForDetails(unit);
-        setIsUnitDetailsModalOpen(true);
-    };
-
-    useEffect(() => {
-        if (user && projectId && blockId) {
             fetchBlockDetails();
-        }
-    }, [projectId, blockId, user]);
+        } catch (err) { alert('Oda silinirken hata oluştu.'); }
+    };
 
-    // Benzersiz ünite tiplerini al
-    const unitTypes = React.useMemo(() => {
-        if (!block?.floors) return [];
-        const types = new Set();
-        (block.floors || []).forEach(floor => {
-            (floor.units || []).forEach(unit => {
-                if (unit.unit_type) types.add(unit.unit_type);
-            });
-        });
-        return Array.from(types).sort();
-    }, [block]);
+    const getRecipeName = (id) => {
+        if (!id) return '—';
+        const r = recipes.find(r => String(r.id) === String(id));
+        return r?.name || '—';
+    };
 
-    // Filtrelenmiş katlar ve üniteler
-    const filteredFloors = React.useMemo(() => {
-        if (!block?.floors) return [];
+    const floors = (block?.floors || []).sort((a, b) => (a.floor_number || 0) - (b.floor_number || 0));
+    const totalUnits = floors.reduce((acc, f) => acc + (f.units?.length || 0), 0);
 
-        console.log("Filtreleme yapılıyor. Katlar:", block.floors);
-
-        return block.floors
-            .map(floor => {
-                const floorUnits = floor.units || [];
-                const filtered = floorUnits.filter(unit => {
-                    const status = String(unit.sales_status || 'AVAILABLE').toUpperCase();
-                    const currentFilter = statusFilter.toUpperCase();
-
-                    const matchesStatus = currentFilter === 'ALL' ||
-                        (currentFilter === 'SOLD' && (status === 'SOLD' || status === 'SATILDI')) ||
-                        (currentFilter === 'AVAILABLE' && (status === 'AVAILABLE' || status === 'SATILIK' || status === 'MÜSAİT' || status === 'BOŞ')) ||
-                        (currentFilter === 'RESERVED' && (status === 'RESERVED' || status === 'REZERVE' || status === 'REZERV')) ||
-                        (currentFilter === 'BARTER' && status === 'BARTER') ||
-                        (currentFilter === 'OWNER' && (status === 'ARSA SAHIBI' || status === 'ARSA SAHİBİ'));
-
-                    const matchesType = typeFilter === 'ALL' || unit.unit_type === typeFilter;
-
-                    return matchesStatus && matchesType;
-                });
-
-                return { ...floor, units: filtered };
-            })
-            .sort((a, b) => a.floor_number - b.floor_number);
-    }, [block, statusFilter, typeFilter]);
-
-    const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
-    const closeMobileMenu = () => setIsMobileMenuOpen(false);
-
-    const handleSelectFloor = (floorId) => {
-        setSelectedFloors(prev =>
-            prev.includes(floorId) ? prev.filter(id => id !== floorId) : [...prev, floorId]
+    if (loading) {
+        return (
+            <div className="flex min-h-screen bg-slate-50">
+                <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={() => setIsMobileMenuOpen(false)} />
+                <main className="flex-1 h-screen overflow-y-auto pt-16 md:pt-0">
+                    <Navbar title="Blok Detayı" toggleMobileMenu={() => setIsMobileMenuOpen(p => !p)} />
+                    <div className="flex items-center justify-center h-96">
+                        <div className="animate-spin w-8 h-8 border-4 border-[#D36A47] border-t-transparent rounded-full" />
+                    </div>
+                </main>
+            </div>
         );
-    };
-
-    const handleSelectAllFloors = () => {
-        if (selectedFloors.length === (block?.floors?.length || 0)) {
-            setSelectedFloors([]);
-        } else {
-            setSelectedFloors(block?.floors?.map(f => f.id) || []);
-        }
-    };
-
-    const handleBulkFloorRecipeAssign = async () => {
-        if (selectedFloors.length === 0) return;
-        try {
-            await Promise.all(selectedFloors.map(floorId =>
-                api.put(`/projects/floors/${floorId}`, {
-                    ...bulkFloorRecipeData
-                })
-            ));
-            alert(`${selectedFloors.length} kata reçeteler başarıyla atandı.`);
-            setIsBulkFloorRecipeModalOpen(false);
-            setSelectedFloors([]);
-            await fetchBlockDetails();
-        } catch (err) {
-            console.error("Toplu kat reçete atama hatası:", err);
-            alert("Reçeteler atanırken bir hata oluştu.");
-        }
-    };
+    }
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans text-slate-800">
-            <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={closeMobileMenu} />
+        <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
+            <Sidebar isMobileMenuOpen={isMobileMenuOpen} closeMobileMenu={() => setIsMobileMenuOpen(false)} />
+            <main className="flex-1 h-screen overflow-y-auto pt-16 md:pt-0 relative">
+                <Navbar title="Blok Yapı Detayı" toggleMobileMenu={() => setIsMobileMenuOpen(p => !p)} />
 
-            <main className="flex-1 overflow-y-auto h-screen pt-16 md:pt-0 relative">
-                <Navbar title={block ? `${block.name} Detayı` : "Blok Detayı"} toggleMobileMenu={toggleMobileMenu} />
+                <div className="px-4 sm:px-6 md:px-8 pb-12 pt-4 md:pt-6 space-y-6">
 
-                <div className="px-3 sm:px-8 pb-12 pt-3 md:pt-6 space-y-6">
-                    <button
-                        onClick={() => navigate(`/projects/${projectId}`)}
-                        className="group flex items-center gap-2 text-slate-500 hover:text-[#D36A47] transition-all mb-2 font-bold text-xs uppercase tracking-wider"
-                    >
-                        <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Geri Dön
+                    {/* ═══ GERİ BUTONU ═══ */}
+                    <button onClick={() => navigate(`/projects/${projectId}`)} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#D36A47] transition-colors">
+                        <ArrowLeft size={16} /> {project?.name || 'Proje'} &rsaquo; Bloklar
                     </button>
 
-                    {loading ? (
-                        <div className="animate-pulse space-y-6">
-                            <div className="bg-white rounded-2xl border border-slate-100 p-8 h-32"></div>
-                            <div className="bg-white rounded-2xl border border-slate-100 p-8 h-64"></div>
-                        </div>
-                    ) : !block ? (
-                        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-                            <AlertCircle size={48} className="mx-auto text-slate-300 mb-4" />
-                            <h3 className="text-lg font-bold text-slate-700 mb-2">Blok Bulunamadı</h3>
-                            <p className="text-slate-500 mb-6">Aradığınız blok silinmiş veya bulunamıyor olabilir.</p>
-                            <button onClick={() => navigate(`/projects/${projectId}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition-colors">
-                                Projeye Dön
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                            {/* Header Banner - Updated to match Projects.jsx style */}
-                            <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-2xl p-6 md:p-8 text-white shadow-xl shadow-slate-900/10">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
-                                <div className="absolute bottom-0 left-0 w-40 h-40 bg-slate-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl" />
-
-                                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-[#D36A47] shadow-inner">
-                                            <Building2 size={32} />
-                                        </div>
-                                        <div>
-                                            <h1 className="text-2xl md:text-3xl font-black tracking-tight">{block.name}</h1>
-                                            <p className="text-white/60 text-sm font-medium mt-1">
-                                                Proje: <span className="text-white">{project?.name || project?.project_name}</span>
-                                            </p>
-                                        </div>
+                    {/* ═══ BLOK BAŞLIK BANNER ═══ */}
+                    <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-3xl p-6 md:p-8 text-white shadow-2xl">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-[100px]" />
+                        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                                        <Building2 size={24} className="text-[#D36A47]" />
                                     </div>
-                                    <div className="flex gap-4">
-                                        <div className="bg-white/10 backdrop-blur-md text-white px-5 py-3 rounded-2xl border border-white/10 flex flex-col items-center justify-center min-w-[100px] shadow-lg">
-                                            <span className="text-2xl font-black leading-none">{block.floor_count}</span>
-                                            <span className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-60">Toplam Kat</span>
-                                        </div>
+                                    <div>
+                                        <h1 className="text-2xl font-black tracking-tight uppercase">{block?.name || 'Blok'}</h1>
+                                        <p className="text-white/50 text-xs font-bold uppercase tracking-widest">{block?.building_type || 'Konut'} • {project?.name}</p>
                                     </div>
+                                </div>
+                                <div className="flex gap-6 mt-4">
+                                    <Stat label="Kat" value={floors.length} />
+                                    <Stat label="Daire" value={totalUnits} />
+                                    <Stat label="Temel Alanı" value={block?.foundation_area_m2 ? `${block.foundation_area_m2} m²` : '—'} />
+                                    <Stat label="Dış Cephe" value={block?.total_facade_m2 ? `${block.total_facade_m2} m²` : '—'} />
+                                    <Stat label="Çatı" value={block?.roof_area_m2 ? `${block.roof_area_m2} m²` : '—'} />
                                 </div>
                             </div>
+                            <button
+                                onClick={() => { setIsAddFloorModalOpen(true); setEditingFloor(null); }}
+                                className="flex items-center gap-2 text-sm font-black text-white bg-[#D36A47] hover:bg-[#E37A57] px-6 py-3 rounded-2xl transition-all shadow-lg"
+                            >
+                                <Plus size={18} /> YENİ KAT EKLE
+                            </button>
+                        </div>
+                    </div>
 
-                            {/* Floors & Units */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-8">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
-                                    <h2 className="text-base md:text-lg font-bold text-slate-800 flex items-center gap-2">
-                                        <Layers size={20} className="text-[#D36A47]" />
-                                        Kat ve Ünite Listesi
-                                    </h2>
+                    {/* ═══ BLOK TEKNİK BİLGİLER ═══ */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <TechCard icon={<Zap size={14} />} label="Elektrik (Priz/Sorti)" value={block?.elec_points || 0} unit="Adet" color="amber" />
+                        <TechCard icon={<Droplets size={14} />} label="Pis Su (Pimaş)" value={block?.waste_water_mt || 0} unit="mt" color="blue" />
+                        <TechCard icon={<Droplets size={14} />} label="Temiz Su (PPRC)" value={block?.fresh_water_mt || 0} unit="mt" color="cyan" />
+                        <TechCard icon={<Flame size={14} />} label="Doğalgaz Hattı" value={block?.gas_line_mt || 0} unit="mt" color="orange" />
+                        <TechCard icon={<Flame size={14} />} label="Yangın Tesisatı" value={block?.fire_system_mt || 0} unit="mt" color="red" />
+                        <TechCard icon={<Layers size={14} />} label="Asansör" value={block?.elevator_count || 0} unit="Adet" color="slate" />
+                    </div>
 
-                                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                                        {/* Status Filter Pills */}
-                                        <div className="flex p-1 bg-slate-100/80 rounded-xl">
-                                            {['ALL', 'AVAILABLE', 'SOLD', 'RESERVED', 'BARTER', 'OWNER'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    onClick={() => setStatusFilter(status)}
-                                                    className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${statusFilter === status
-                                                        ? 'bg-white text-[#D36A47] shadow-sm'
-                                                        : 'text-slate-400 hover:text-slate-600'
-                                                        }`}
-                                                >
-                                                    {status === 'ALL' ? 'HEPSİ' :
-                                                        status === 'AVAILABLE' ? 'SATILIK' :
-                                                            status === 'SOLD' ? 'SATILDI' :
-                                                                status === 'RESERVED' ? 'REZERVE' :
-                                                                    status === 'BARTER' ? 'BARTER' : 'ARSA SAHİBİ'}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        {/* Unit Type Dropdown */}
-                                        <div className="relative">
-                                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 cursor-pointer hover:bg-slate-50 transition-all shadow-sm">
-                                                <LayoutGrid size={14} className="text-[#0A1128]" />
-                                                <select
-                                                    value={typeFilter}
-                                                    onChange={(e) => setTypeFilter(e.target.value)}
-                                                    className="bg-transparent text-[11px] font-black text-slate-700 focus:outline-none cursor-pointer appearance-none pr-4 uppercase tracking-tight"
-                                                >
-                                                    <option value="ALL">Tüm Tipler</option>
-                                                    {unitTypes.map(type => (
-                                                        <option key={type} value={type}>{type}</option>
-                                                    ))}
-                                                </select>
-                                                <ChevronDown size={12} className="absolute right-3 text-slate-400 pointer-events-none" />
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={() => {
-                                                const currentFloorCount = (block.floors || []).length;
-                                                const maxFloorCount = parseInt(block.floor_count || 0);
-
-                                                if (currentFloorCount >= maxFloorCount) {
-                                                    alert(`Bu blok için belirlenen maksimum kat sayısına (${maxFloorCount}) ulaşıldı.`);
-                                                    return;
-                                                }
-                                                setIsAddFloorModalOpen(true);
-                                            }}
-                                            disabled={(block.floors || []).length >= parseInt(block.floor_count || 0)}
-                                            className={`flex items-center gap-1.5 text-[10px] font-black text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-[#D36A47]/10 ml-auto ${(block.floors || []).length >= parseInt(block.floor_count || 0)
-                                                ? 'bg-slate-400 cursor-not-allowed opacity-70'
-                                                : 'bg-[#D36A47] hover:bg-[#B95839] hover:scale-105 active:scale-95'
-                                                }`}
-                                        >
-                                            <Plus size={14} /> <span>YENİ KAT EKLE</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {selectedFloors.length > 0 && (
-                                    <div className="mb-6 flex items-center justify-between bg-[#0A1128]/5 border border-[#0A1128]/10 p-4 rounded-2xl animate-in fade-in slide-in-from-top-2">
-                                        <div className="flex items-center gap-3">
-                                            <span className="bg-[#0A1128] text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black">{selectedFloors.length}</span>
-                                            <span className="text-sm font-bold text-[#0A1128]">Kat Seçildi</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={handleSelectAllFloors}
-                                                className="px-4 py-2 bg-white border border-slate-200 text-[#0A1128] rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
-                                            >
-                                                {selectedFloors.length === (block?.floors?.length || 0) ? 'Seçimi Kaldır' : 'Tümünü Seç'}
-                                            </button>
-                                            <button
-                                                onClick={() => setIsBulkFloorRecipeModalOpen(true)}
-                                                className="px-4 py-2 bg-[#D36A47] text-white rounded-xl text-xs font-bold hover:bg-[#B95839] transition-all flex items-center gap-2"
-                                            >
-                                                <Layers size={14} /> Reçete Ata
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {(
-                                    <div className="space-y-8">
-                                        {filteredFloors.map((floor, index) => {
-                                            const isExpanded = !!expandedFloors[floor.id];
-                                            const isMenuOpen = activeFloorMenu === floor.id;
-                                            const isLastItems = index >= filteredFloors.length - 2 && filteredFloors.length > 3;
-
-                                            return (
-                                                <div key={floor.id} className={`relative pl-2 sm:pl-8 before:absolute before:inset-y-0 before:left-0 sm:before:left-0 before:w-1 sm:before:w-1 before:bg-slate-100 before:rounded-full ${isMenuOpen ? 'z-50' : 'z-10'}`}>
-                                                    <div
-                                                        className="font-bold text-slate-800 flex items-center justify-between mb-4 sticky top-[64px] md:top-0 bg-white/95 backdrop-blur-sm px-2 py-3 cursor-pointer hover:bg-slate-50 transition-all rounded-xl border border-transparent hover:border-slate-100 group shadow-sm sm:shadow-none"
-                                                    >
-                                                        <div className="flex items-center gap-3 flex-1" onClick={() => toggleFloor(floor.id)}>
-                                                            <div
-                                                                onClick={(e) => e.stopPropagation()}
-                                                                className="mr-2 flex items-center"
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={selectedFloors.includes(floor.id)}
-                                                                    onChange={() => handleSelectFloor(floor.id)}
-                                                                    className="w-5 h-5 rounded-lg border-slate-300 text-[#D36A47] focus:ring-[#D36A47] cursor-pointer accent-[#D36A47] bg-white"
-                                                                />
-                                                            </div>
-                                                            <div className="w-8 h-8 rounded-full bg-[#0A1128] text-white flex items-center justify-center sm:absolute sm:-left-[1.65rem] border-4 border-white shadow-md text-xs font-black">
-                                                                {floor.floor_number}
-                                                            </div>
-                                                            <span className="text-sm font-black ml-0 sm:ml-2 uppercase tracking-tight">Kat {floor.floor_number}</span>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">
-                                                                    {(floor.units || []).length} Ünite
-                                                                </span>
-                                                                {floor.gross_area_m2 > 0 && (
-                                                                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-                                                                        {floor.gross_area_m2} m² Brüt
-                                                                    </span>
-                                                                )}
-                                                                {(floor.column_count > 0 || floor.beam_count > 0) && (
-                                                                    <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-medium">
-                                                                        {floor.column_count || 0}K / {floor.beam_count || 0}Ki
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-2">
-                                                            {/* Kat İşlem Dropdown */}
-                                                            <div className="relative floor-menu-container">
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setActiveFloorMenu(isMenuOpen ? null : floor.id);
-                                                                    }}
-                                                                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                                                                >
-                                                                    <MoreVertical size={18} />
-                                                                </button>
-
-                                                                {isMenuOpen && (
-                                                                    <div className={`absolute right-0 ${isLastItems ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} w-44 bg-white border border-slate-200 rounded-xl shadow-2xl z-[999] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-100`}>
-                                                                        <div className="px-3 py-1.5 border-b border-slate-50 mb-1">
-                                                                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Kat İşlemleri</span>
-                                                                        </div>
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setSelectedFloorForUnit(floor.id);
-                                                                                setIsAddUnitModalOpen(true);
-                                                                                setTimeout(() => setActiveFloorMenu(null), 100);
-                                                                            }}
-                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                                                        >
-                                                                            <div className="w-6 h-6 rounded-lg bg-blue-100/50 flex items-center justify-center text-blue-600">
-                                                                                <Plus size={14} />
-                                                                            </div>
-                                                                            Yeni Ünite Ekle
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                console.log("Düzenle tıklandı, kat:", floor);
-                                                                                setEditingFloor(floor);
-                                                                                setIsAddFloorModalOpen(true);
-                                                                                setTimeout(() => setActiveFloorMenu(null), 100);
-                                                                            }}
-                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                                                        >
-                                                                            <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-center">
-                                                                                <Edit2 size={14} />
-                                                                            </div>
-                                                                            Katı Düzenle
-                                                                        </button>
-                                                                        <div className="h-px bg-slate-100 my-1"></div>
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                console.log("Silme tıklandı, kat ID:", floor.id);
-                                                                                handleDeleteFloor(floor.id);
-                                                                                // Menüyü biraz gecikmeli kapatarak işlemin tetiklenmesini garanti ediyoruz
-                                                                                setTimeout(() => setActiveFloorMenu(null), 100);
-                                                                            }}
-                                                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                                                                        >
-                                                                            <div className="w-6 h-6 rounded-lg bg-red-100/50 flex items-center justify-center text-red-600">
-                                                                                <Trash2 size={14} />
-                                                                            </div>
-                                                                            Katı Sil
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <div className="text-slate-300 w-px h-4 bg-slate-200 mx-1"></div>
-
-                                                            <div className="text-slate-400" onClick={() => toggleFloor(floor.id)}>
-                                                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {isExpanded && (
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-6 animate-in fade-in slide-in-from-top-2 duration-200 px-1 sm:px-0">
-                                                            {(floor.units || []).sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })).map(unit => {
-                                                                const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
-                                                                const isSold = unit.sales_status === 'SOLD' || unit.sales_status === 'SATILDI';
-
-                                                                return (
-                                                                    <div
-                                                                        key={unit.id}
-                                                                        onClick={() => toggleUnit(unit)}
-                                                                        className="group bg-white rounded-2xl border border-slate-200 p-4 hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#D36A47]/30 transition-all cursor-pointer relative overflow-hidden"
-                                                                    >
-                                                                        {/* Status Accent */}
-                                                                        <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full blur-3xl opacity-10 transition-colors ${statusDetails.classes.split(' ')[0]}`} />
-
-                                                                        <div className="relative flex flex-col h-full">
-                                                                            <div className="flex items-start justify-between mb-4">
-                                                                                <div className="flex items-center gap-3">
-                                                                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D36A47] group-hover:bg-[#D36A47] group-hover:text-white transition-all shadow-inner">
-                                                                                        <Home size={24} />
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        <h4 className="text-lg font-black text-slate-800 tracking-tight">
-                                                                                            {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
-                                                                                        </h4>
-                                                                                        <span className="text-[10px] font-bold text-slate-400 border border-slate-100 px-2 py-0.5 rounded-lg uppercase tracking-wider">
-                                                                                            {unit.unit_type}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                <div className="relative unit-actions-container" onClick={e => e.stopPropagation()}>
-                                                                                    <button
-                                                                                        onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            setActiveUnitMenu(activeUnitMenu === unit.id ? null : unit.id);
-                                                                                        }}
-                                                                                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                                                                                    >
-                                                                                        <MoreVertical size={18} />
-                                                                                    </button>
-
-                                                                                    {activeUnitMenu === unit.id && (
-                                                                                        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    setEditingRoom(null);
-                                                                                                    setSelectedUnitForRoom(unit.id);
-                                                                                                    setSelectedFloorForUnit(floor.id);
-                                                                                                    setIsAddRoomModalOpen(true);
-                                                                                                    setActiveUnitMenu(null);
-                                                                                                }}
-                                                                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                                                                            >
-                                                                                                <PlusCircle size={14} /> Oda Ekle
-                                                                                            </button>
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    setEditingUnit(unit);
-                                                                                                    setSelectedFloorForUnit(floor.id);
-                                                                                                    setIsAddUnitModalOpen(true);
-                                                                                                    setActiveUnitMenu(null);
-                                                                                                }}
-                                                                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                                                                            >
-                                                                                                <Edit2 size={14} /> Düzenle
-                                                                                            </button>
-                                                                                            <div className="h-px bg-slate-50 my-1 mx-2" />
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    handleDeleteUnit(unit.id);
-                                                                                                    setActiveUnitMenu(null);
-                                                                                                }}
-                                                                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                                                                                            >
-                                                                                                <Trash2 size={14} /> Sil
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <div className="grid grid-cols-2 gap-2 mb-4">
-                                                                                <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
-                                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Alan</p>
-                                                                                    <p className="text-xs font-black text-slate-700">
-                                                                                        {(unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0).toFixed(1)} m²
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="bg-slate-50 rounded-xl p-2 border border-slate-100/50">
-                                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Cephe</p>
-                                                                                    <p className="text-xs font-black text-slate-700 truncate">{unit.facade || '-'}</p>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <div className="mt-auto flex items-center justify-between">
-                                                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight border ${statusDetails.classes}`}>
-                                                                                    {statusDetails.label}
-                                                                                </span>
-                                                                                <span className="text-[10px] font-bold text-slate-400">
-                                                                                    {(unit.rooms || []).length} Oda
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-
-                                {(filteredFloors.length === 0 || (block.floors || []).length === 0) && (
-                                    <div className="bg-slate-50 border border-slate-100 border-dashed rounded-xl p-8 text-center text-slate-500">
-                                        {(statusFilter !== 'ALL' || typeFilter !== 'ALL') ? "Filtreye uygun daire bulunamadı." : "Bu blokta henüz kat ve daire tanımlanmamış."}
-                                    </div>
-                                )}
-                                {(block.floors || []).length === 0 && (
-                                    <div className="bg-slate-50 border border-slate-100 border-dashed rounded-xl p-8 text-center text-slate-500">
-                                        Bu blokta henüz kat tanımlanmamış.
-                                    </div>
-                                )}
+                    {/* ═══ BLOK REÇETE ATAMALARI ═══ */}
+                    {(block?.foundation_recipe_id || block?.facade_recipe_id || block?.roof_recipe_id || block?.plumbing_recipe_id || block?.basement_recipe_id) && (
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Blok Geneli Reçete Atamaları</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {block?.foundation_recipe_id && <RecipeBadge label="Temel" name={getRecipeName(block.foundation_recipe_id)} />}
+                                {block?.facade_recipe_id && <RecipeBadge label="Dış Cephe" name={getRecipeName(block.facade_recipe_id)} />}
+                                {block?.roof_recipe_id && <RecipeBadge label="Çatı" name={getRecipeName(block.roof_recipe_id)} />}
+                                {block?.plumbing_recipe_id && <RecipeBadge label="Tesisat" name={getRecipeName(block.plumbing_recipe_id)} />}
+                                {block?.basement_recipe_id && <RecipeBadge label="Bodrum" name={getRecipeName(block.basement_recipe_id)} />}
+                                {block?.elevator_recipe_id && <RecipeBadge label="Asansör" name={getRecipeName(block.elevator_recipe_id)} />}
                             </div>
                         </div>
                     )}
+
+                    {/* ═══ KATLAR LİSTESİ ═══ */}
+                    <div className="space-y-4">
+                        {floors.length === 0 ? (
+                            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+                                <Layers size={40} className="mx-auto text-slate-300 mb-3" />
+                                <p className="text-sm font-bold text-slate-400">Henüz kat eklenmemiş</p>
+                                <button onClick={() => { setIsAddFloorModalOpen(true); setEditingFloor(null); }} className="mt-4 text-sm font-bold text-[#D36A47] hover:underline">
+                                    İlk katı ekle
+                                </button>
+                            </div>
+                        ) : floors.map(floor => {
+                            const isExpanded = expandedFloors[floor.id];
+                            const floorUnits = (floor.units || []).sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true }));
+
+                            return (
+                                <div key={floor.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                                    {/* ── Kat Başlığı ── */}
+                                    <div
+                                        className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                                        onClick={() => toggleFloor(floor.id)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-[#0A1128] text-white flex items-center justify-center font-black text-sm">
+                                                {floor.floor_number}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black text-slate-800">{floor.floor_number}. Kat</h3>
+                                                <div className="flex gap-3 mt-0.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                                    <span>Brüt: {floor.gross_area_m2 || '—'} m²</span>
+                                                    <span>•</span>
+                                                    <span>Hol: {floor.common_area_m2 || '—'} m²</span>
+                                                    <span>•</span>
+                                                    <span>Yükseklik: {floor.height_cm || 300} cm</span>
+                                                    <span>•</span>
+                                                    <span>{floorUnits.length} Daire</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {/* Kat İşlemleri */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setActiveFloorMenu(activeFloorMenu === floor.id ? null : floor.id); }}
+                                                    className="p-2 hover:bg-slate-100 rounded-lg text-slate-400"
+                                                >
+                                                    <MoreVertical size={16} />
+                                                </button>
+                                                {activeFloorMenu === floor.id && (
+                                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                                                        <button onClick={(e) => { e.stopPropagation(); setSelectedFloorForUnit(floor.id); setEditingUnit(null); setIsAddUnitModalOpen(true); setActiveFloorMenu(null); }} className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-blue-50 text-blue-600 flex items-center gap-2"><PlusCircle size={14} /> Daire Ekle</button>
+                                                        <button onClick={(e) => { e.stopPropagation(); setEditingFloor(floor); setIsAddFloorModalOpen(true); setActiveFloorMenu(null); }} className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-slate-50 flex items-center gap-2"><Edit2 size={14} /> Katı Düzenle</button>
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteFloor(floor.id); setActiveFloorMenu(null); }} className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"><Trash2 size={14} /> Katı Sil</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {isExpanded ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                                        </div>
+                                    </div>
+
+                                    {/* ── Kat AI Statik Verileri ── */}
+                                    {isExpanded && (
+                                        <div className="border-t border-slate-100">
+                                            {/* Strüktürel Veriler */}
+                                            {(floor.column_count || floor.beam_mt || floor.slab_area_m2 || floor.stairs_m3) && (
+                                                <div className="px-5 py-3 bg-violet-50/30 border-b border-slate-100">
+                                                    <p className="text-[9px] font-black text-violet-500 uppercase tracking-widest mb-2">AI Statik Verileri</p>
+                                                    <div className="flex flex-wrap gap-4 text-[11px] font-bold text-violet-700">
+                                                        {floor.column_count && <span>Kolon: {floor.column_count} Adet ({floor.column_m3 || '—'} m³)</span>}
+                                                        {floor.beam_mt && <span>Kiriş: {floor.beam_mt} mt ({floor.beam_m3 || '—'} m³)</span>}
+                                                        {floor.slab_area_m2 && <span>Döşeme: {floor.slab_area_m2} m²</span>}
+                                                        {floor.stairs_m3 && <span>Merdiven: {floor.stairs_m3} m³ / {floor.stairs_mt || '—'} mt / {floor.stairs_coating_m2 || '—'} m² kaplama</span>}
+                                                        {floor.reinforcement_type && <span>Donatı: {floor.reinforcement_type}</span>}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Kat Reçeteleri */}
+                                            {(floor.beton_recipe_id || floor.hall_floor_recipe_id) && (
+                                                <div className="px-5 py-3 bg-slate-50/50 border-b border-slate-100">
+                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Kat Reçeteleri</p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {floor.beton_recipe_id && <RecipeBadge label="Beton" name={getRecipeName(floor.beton_recipe_id)} small />}
+                                                        {floor.kiris_recipe_id && <RecipeBadge label="Kiriş" name={getRecipeName(floor.kiris_recipe_id)} small />}
+                                                        {floor.kolon_recipe_id && <RecipeBadge label="Kolon" name={getRecipeName(floor.kolon_recipe_id)} small />}
+                                                        {floor.demir_recipe_id && <RecipeBadge label="Demir" name={getRecipeName(floor.demir_recipe_id)} small />}
+                                                        {floor.hall_floor_recipe_id && <RecipeBadge label="Hol Zemin" name={getRecipeName(floor.hall_floor_recipe_id)} small />}
+                                                        {floor.hall_wall_recipe_id && <RecipeBadge label="Hol Duvar" name={getRecipeName(floor.hall_wall_recipe_id)} small />}
+                                                        {floor.hall_ceiling_recipe_id && <RecipeBadge label="Hol Tavan" name={getRecipeName(floor.hall_ceiling_recipe_id)} small />}
+                                                        {floor.stairs_recipe_id && <RecipeBadge label="Merdiven" name={getRecipeName(floor.stairs_recipe_id)} small />}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* ── Daireler ── */}
+                                            <div className="px-5 py-4">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Daireler ({floorUnits.length})</p>
+                                                    <button
+                                                        onClick={() => { setSelectedFloorForUnit(floor.id); setEditingUnit(null); setIsAddUnitModalOpen(true); }}
+                                                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                                    >
+                                                        <PlusCircle size={12} /> Daire Ekle
+                                                    </button>
+                                                </div>
+
+                                                {floorUnits.length === 0 ? (
+                                                    <p className="text-xs text-slate-400 italic py-4 text-center">Henüz daire eklenmemiş</p>
+                                                ) : (
+                                                    <div className="space-y-2">
+                                                        {floorUnits.map(unit => {
+                                                            const isUnitExpanded = expandedUnits[unit.id];
+                                                            const rooms = unit.rooms || unit.unit_rooms || [];
+
+                                                            return (
+                                                                <div key={unit.id} className="border border-slate-100 rounded-xl overflow-hidden">
+                                                                    {/* Daire Başlığı */}
+                                                                    <div
+                                                                        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors"
+                                                                        onClick={() => toggleUnit(unit.id)}
+                                                                    >
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                                                                <Home size={14} />
+                                                                            </div>
+                                                                            <div>
+                                                                                <span className="text-sm font-bold text-slate-700">No: {unit.unit_number}</span>
+                                                                                <span className="text-[11px] text-slate-400 ml-2">({unit.unit_type || '—'})</span>
+                                                                                {unit.facade && <span className="text-[10px] text-slate-400 ml-2">• {unit.facade}</span>}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-[10px] font-bold text-slate-400">{rooms.length} Oda</span>
+                                                                            <div className="relative">
+                                                                                <button
+                                                                                    onClick={(e) => { e.stopPropagation(); setActiveUnitMenu(activeUnitMenu === unit.id ? null : unit.id); }}
+                                                                                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
+                                                                                >
+                                                                                    <MoreVertical size={14} />
+                                                                                </button>
+                                                                                {activeUnitMenu === unit.id && (
+                                                                                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                                                                                        <button onClick={(e) => { e.stopPropagation(); setSelectedUnitForRoom(unit.id); setEditingRoom(null); setIsAddRoomModalOpen(true); setActiveUnitMenu(null); }} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-emerald-50 text-emerald-600 flex items-center gap-2"><PlusCircle size={12} /> Oda Ekle</button>
+                                                                                        <button onClick={(e) => { e.stopPropagation(); setSelectedFloorForUnit(floor.id); setEditingUnit(unit); setIsAddUnitModalOpen(true); setActiveUnitMenu(null); }} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-slate-50 flex items-center gap-2"><Edit2 size={12} /> Düzenle</button>
+                                                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteUnit(unit.id); setActiveUnitMenu(null); }} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"><Trash2 size={12} /> Sil</button>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            {isUnitExpanded ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* ── Odalar (Mahal) ── */}
+                                                                    {isUnitExpanded && (
+                                                                        <div className="border-t border-slate-100 bg-slate-50/30 px-4 py-3">
+                                                                            <div className="flex items-center justify-between mb-2">
+                                                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Odalar / Mahaller</p>
+                                                                                <button
+                                                                                    onClick={() => { setSelectedUnitForRoom(unit.id); setEditingRoom(null); setIsAddRoomModalOpen(true); }}
+                                                                                    className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                                                                                >
+                                                                                    <PlusCircle size={10} /> Oda Ekle
+                                                                                </button>
+                                                                            </div>
+
+                                                                            {rooms.length === 0 ? (
+                                                                                <p className="text-[11px] text-slate-400 italic py-2 text-center">Henüz oda eklenmemiş</p>
+                                                                            ) : (
+                                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                                                    {rooms.map(room => (
+                                                                                        <div key={room.id} className="bg-white rounded-lg border border-slate-100 p-3 group hover:border-[#D36A47]/30 transition-colors">
+                                                                                            <div className="flex items-center justify-between mb-2">
+                                                                                                <span className="text-xs font-bold text-slate-700">{room.name || room.room_type || 'Oda'}</span>
+                                                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                                    <button onClick={() => { setSelectedUnitForRoom(unit.id); setEditingRoom(room); setIsAddRoomModalOpen(true); }} className="p-1 hover:bg-slate-100 rounded text-slate-400"><Edit2 size={10} /></button>
+                                                                                                    <button onClick={() => handleDeleteRoom(room.id)} className="p-1 hover:bg-red-50 rounded text-red-400"><Trash2 size={10} /></button>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div className="grid grid-cols-2 gap-1 text-[10px] text-slate-500">
+                                                                                                <span>Zemin: {room.area_m2 || '—'} m²</span>
+                                                                                                <span>Duvar: {room.wall_area_m2 || '—'} m²</span>
+                                                                                                <span>Kapı: {room.door_count || 0}</span>
+                                                                                                <span>Pencere: {room.window_count || 0}</span>
+                                                                                            </div>
+                                                                                            {/* Oda Reçeteleri */}
+                                                                                            {(room.wall_recipe_id || room.floor_recipe_id || room.ceiling_recipe_id) && (
+                                                                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                                                                    {room.wall_recipe_id && <span className="text-[8px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Duvar: {getRecipeName(room.wall_recipe_id)}</span>}
+                                                                                                    {room.floor_recipe_id && <span className="text-[8px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Zemin: {getRecipeName(room.floor_recipe_id)}</span>}
+                                                                                                    {room.ceiling_recipe_id && <span className="text-[8px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Tavan: {getRecipeName(room.ceiling_recipe_id)}</span>}
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
+
+                {/* ═══ MODALLAR ═══ */}
+                <NewFloorModal
+                    isOpen={isAddFloorModalOpen}
+                    onClose={() => { setIsAddFloorModalOpen(false); setEditingFloor(null); }}
+                    onAdd={handleAddFloor}
+                    blockId={blockId}
+                    projectId={projectId}
+                    floorData={editingFloor}
+                />
+                <NewUnitModal
+                    isOpen={isAddUnitModalOpen}
+                    onClose={() => { setIsAddUnitModalOpen(false); setEditingUnit(null); }}
+                    onAdd={handleAddUnit}
+                    floorId={selectedFloorForUnit}
+                    unitData={editingUnit}
+                />
+                <NewRoomModal
+                    isOpen={isAddRoomModalOpen}
+                    onClose={() => { setIsAddRoomModalOpen(false); setEditingRoom(null); }}
+                    onAdd={handleAddRoom}
+                    unitId={selectedUnitForRoom}
+                    projectId={projectId}
+                    roomData={editingRoom}
+                />
             </main>
-
-            <NewFloorModal
-                isOpen={isAddFloorModalOpen}
-                onClose={() => {
-                    setIsAddFloorModalOpen(false);
-                    setEditingFloor(null);
-                }}
-                onAdd={handleSaveFloor}
-                blockId={blockId}
-                projectId={projectId}
-                floorData={editingFloor}
-                maxFloors={block?.floor_count}
-            />
-
-            <NewUnitModal
-                isOpen={isAddUnitModalOpen}
-                onClose={() => {
-                    setIsAddUnitModalOpen(false);
-                    setEditingUnit(null);
-                    setSelectedFloorForUnit(null);
-                }}
-                onAdd={handleSaveUnit}
-                floorId={selectedFloorForUnit}
-                unitData={editingUnit}
-            />
-
-            <NewRoomModal
-                isOpen={isAddRoomModalOpen}
-                onClose={() => {
-                    setIsAddRoomModalOpen(false);
-                    setEditingRoom(null);
-                    setSelectedUnitForRoom(null);
-                }}
-                onAdd={handleSaveRoom}
-                unitId={selectedUnitForRoom}
-                projectId={projectId}
-                roomData={editingRoom}
-            />
-
-            <BulkFloorRecipeModal
-                isOpen={isBulkFloorRecipeModalOpen}
-                onClose={() => setIsBulkFloorRecipeModalOpen(false)}
-                onSave={handleBulkFloorRecipeAssign}
-                recipes={recipes}
-                formData={bulkFloorRecipeData}
-                onChange={(e) => {
-                    const { name, value } = e.target;
-                    setBulkFloorRecipeData(prev => ({ ...prev, [name]: value }));
-                }}
-                selectedCount={selectedFloors.length}
-            />
-            <UnitDetailsModal
-                isOpen={isUnitDetailsModalOpen}
-                unit={selectedUnitForDetails}
-                sales={sales}
-                onClose={() => {
-                    setIsUnitDetailsModalOpen(false);
-                    setSelectedUnitForDetails(null);
-                }}
-            />
-
         </div>
     );
 }
 
-const UnitDetailsModal = ({ isOpen, unit, sales, onClose }) => {
-    if (!isOpen || !unit) return null;
+// ── Yardımcı Bileşenler ──
 
-    const sale = sales.find(s => String(s.unit_id) === String(unit.id));
-    const customer = sale?.customers;
-    const statusDetails = getUnitStatusDetails(unit.sales_status || 'AVAILABLE');
-    const totalArea = (unit.rooms || []).reduce((acc, curr) => acc + (Number(curr.area_m2 || curr.area) || 0), 0);
+const Stat = ({ label, value }) => (
+    <div className="flex flex-col">
+        <span className="text-lg font-black text-white">{value}</span>
+        <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">{label}</span>
+    </div>
+);
 
-    return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div
-                className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 relative flex flex-col max-h-[90vh]"
-                onClick={e => e.stopPropagation()}
-            >
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-[#D36A47] hover:text-white transition-all z-10 shadow-sm"
-                >
-                    <X size={20} />
-                </button>
-
-                <div className="overflow-y-auto custom-scrollbar p-6 md:p-10">
-                    {/* Header */}
-                    <div className="flex items-center gap-5 mb-10">
-                        <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-[#0A1128] to-[#1e2a4a] flex items-center justify-center text-white shadow-xl shadow-slate-200">
-                            <Home size={32} />
-                        </div>
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-                                    {String(unit.unit_number).trim().match(/^Daire/i) ? unit.unit_number : `Daire ${unit.unit_number}`}
-                                </h2>
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusDetails.classes}`}>
-                                    {statusDetails.label}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-slate-500 font-bold text-xs uppercase tracking-wider">
-                                <span className="flex items-center gap-1.5"><LayoutGrid size={14} className="text-[#D36A47]" /> {unit.unit_type}</span>
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                                <span className="flex items-center gap-1.5"><Maximize size={14} className="text-[#D36A47]" /> {totalArea.toFixed(2)} m² Toplam Alan</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Info Section */}
-                        <div className="space-y-8">
-                            <div>
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <Building2 size={16} className="text-[#D36A47]" /> Genel Bilgiler
-                                </h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-bold text-slate-500">Ünite No</span>
-                                        <span className="text-sm font-black text-slate-800">{unit.unit_number}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
-                                        <span className="text-sm font-bold text-slate-500">Cephe</span>
-                                        <span className="text-sm font-black text-slate-800">{unit.facade || '-'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Rooms Section */}
-                        <div>
-                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <Maximize size={16} className="text-[#D36A47]" /> Oda Detayları
-                            </h3>
-                            <div className="bg-slate-50 rounded-[2rem] p-4 border border-slate-100 max-h-[300px] overflow-y-auto custom-scrollbar">
-                                {(unit.rooms || []).length === 0 ? (
-                                    <div className="py-10 text-center">
-                                        <p className="text-sm font-bold text-slate-400 italic">Oda tanımlanmamış</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {(unit.rooms || []).map((room, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 shadow-sm transition-all hover:scale-[1.02]">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                                                        <Maximize size={16} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-black text-slate-800">{room.name || room.room_name}</p>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{room.room_type || 'Genel'}</p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-sm font-black text-[#D36A47] bg-orange-50 px-3 py-1 rounded-full">{room.area_m2 || room.area} m²</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="p-6 md:p-8 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">MPANDO EMLAK YÖNETİM SİSTEMİ</p>
-                    <button
-                        onClick={onClose}
-                        className="px-8 py-3 bg-[#0A1128] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
-                    >
-                        Kapat
-                    </button>
-                </div>
-            </div>
+const TechCard = ({ icon, label, value, unit, color }) => (
+    <div className={`bg-white rounded-xl border border-slate-100 p-3 flex items-center gap-3`}>
+        <div className={`w-8 h-8 rounded-lg bg-${color}-50 text-${color}-500 flex items-center justify-center`}>{icon}</div>
+        <div>
+            <p className="text-xs font-black text-slate-700">{value} <span className="text-[10px] font-bold text-slate-400">{unit}</span></p>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
         </div>
-    );
-};
+    </div>
+);
 
-const BulkFloorRecipeModal = ({ isOpen, onClose, onSave, recipes, formData, onChange, selectedCount }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden p-8 md:p-10 animate-in zoom-in-95 duration-500">
-                <div className="flex items-center justify-between mb-8">
-                    <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600">
-                        <Layers size={28} />
-                    </div>
-                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <div className="mb-8">
-                    <h3 className="text-2xl font-black text-slate-900 mb-2">Toplu Kat Reçete Atama</h3>
-                    <p className="text-sm font-bold text-slate-500">Seçili {selectedCount} kata aynı anda malzeme/işçilik reçeteleri atayabilirsiniz.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[50vh] overflow-y-auto custom-scrollbar pr-2 mb-8">
-                    {[
-                        { label: 'Beton Reçetesi', name: 'beton_recipe_id' },
-                        { label: 'Demir Reçetesi', name: 'demir_recipe_id' },
-                        { label: 'Koridor Zemin', name: 'hall_floor_recipe_id' },
-                        { label: 'Koridor Duvar', name: 'hall_wall_recipe_id' },
-                        { label: 'Koridor Tavan', name: 'hall_ceiling_recipe_id' },
-                        { label: 'Merdiven', name: 'stairs_recipe_id' },
-                        { label: 'Ekstra', name: 'extra_recipe_id' }
-                    ].map((field) => (
-                        <div key={field.name} className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{field.label}</label>
-                            <select
-                                name={field.name}
-                                value={formData[field.name]}
-                                onChange={onChange}
-                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-[#D36A47] transition-all appearance-none"
-                            >
-                                <option value="">Seçiniz...</option>
-                                {recipes.map(recipe => (
-                                    <option key={recipe.id} value={recipe.id}>{recipe.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="flex gap-3 mt-8">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
-                    >
-                        İPTAL
-                    </button>
-                    <button
-                        onClick={onSave}
-                        className="flex-1 bg-[#D36A47] hover:bg-[#B95839] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-200"
-                    >
-                        REÇETELERİ ATA
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
+const RecipeBadge = ({ label, name, small }) => (
+    <span className={`inline-flex items-center gap-1 ${small ? 'text-[9px] px-2 py-0.5' : 'text-[10px] px-2.5 py-1'} font-bold bg-[#D36A47]/5 text-[#D36A47] border border-[#D36A47]/10 rounded-lg`}>
+        <Package size={small ? 8 : 10} /> {label}: {name}
+    </span>
+);
 
 export default BlockDetails;
