@@ -51,11 +51,14 @@ function Materials() {
         setLoading(true);
         try {
             const [materialsData, suppliersData] = await Promise.all([
-                api.get('/materials/catalog'),
-                api.get('/suppliers')
+                api.get('/materials/catalog').catch(err => { console.error("Malzeme verisi çekilemedi:", err); return []; }),
+                api.get('/suppliers').catch(err => { console.error("Tedarikçi verisi çekilemedi:", err); return []; })
             ]);
-            setMaterials(materialsData || []);
-            setSuppliers(suppliersData || []);
+            // API yanıtı { data: [...] } formatında gelebilir
+            const matList = Array.isArray(materialsData) ? materialsData : (materialsData?.data || []);
+            const supList = Array.isArray(suppliersData) ? suppliersData : (suppliersData?.data || []);
+            setMaterials(matList);
+            setSuppliers(supList);
         } catch (error) {
             console.error("Materials fetch error:", error);
         } finally {
