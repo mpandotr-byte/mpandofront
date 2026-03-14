@@ -12,7 +12,7 @@ import {
 const getStatusClasses = (status) => {
     switch (status) {
         case 'ACTIVE': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-        case 'DRAFT': return 'bg-amber-50 text-amber-700 border-amber-200';
+        case 'DRAFT': return 'bg-orange-50 text-orange-700 border-orange-200';
         case 'ARCHIVED': return 'bg-slate-100 text-slate-600 border-slate-200';
         default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
@@ -89,7 +89,7 @@ export default function Announcements() {
                     <Eye size={13} />
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); setEditItem(row); }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 rounded-lg transition-all">
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-orange-600 hover:border-orange-200 rounded-lg transition-all">
                     <Pencil size={13} />
                 </button>
             </div>
@@ -106,7 +106,7 @@ export default function Announcements() {
                     {/* Stats */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center"><Megaphone size={24} /></div>
+                            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center"><Megaphone size={24} /></div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Toplam Duyuru</p>
                                 <h3 className="text-xl font-black text-slate-800">{announcements.length}</h3>
@@ -120,7 +120,7 @@ export default function Announcements() {
                             </div>
                         </div>
                         <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center"><Clock size={24} /></div>
+                            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center"><Clock size={24} /></div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bu Ay</p>
                                 <h3 className="text-xl font-black text-slate-800">{announcements.filter(a => { const d = new Date(a.created_at); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}</h3>
@@ -137,8 +137,8 @@ export default function Announcements() {
                     </div>
 
                     {selectedItems.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl">
-                            <span className="text-sm font-semibold text-indigo-800">{selectedItems.length} kayit secildi</span>
+                        <div className="flex flex-wrap items-center justify-between bg-orange-50 border border-orange-200 p-3.5 rounded-xl">
+                            <span className="text-sm font-semibold text-orange-800">{selectedItems.length} kayit secildi</span>
                             <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200">
                                 <Trash2 size={15} /> Sil
                             </button>

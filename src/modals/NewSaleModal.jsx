@@ -29,7 +29,8 @@ export default function NewSaleModal({
   onChange,
   onAdd,
   customers = [],
-  projects = []
+  projects = [],
+  onCustomerAdded
 }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [blocks, setBlocks] = useState([]);
@@ -606,8 +607,8 @@ export default function NewSaleModal({
           isOpen={isNewCustomerModalOpen}
           onClose={() => setIsNewCustomerModalOpen(false)}
           onAdd={() => {
-            alert("Müşteri başarıyla eklendi. Listeyi yenilemek için sayfayı yenileyebilirsiniz.");
             setIsNewCustomerModalOpen(false);
+            if (onCustomerAdded) onCustomerAdded();
           }}
         />
       </div >

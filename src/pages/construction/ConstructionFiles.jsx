@@ -27,11 +27,11 @@ import NewConstructionFileModal from '../../modals/construction/NewConstructionF
 
 const fileCategories = [
     { name: 'Mimari', color: 'bg-blue-500' },
-    { name: 'Statik', color: 'bg-indigo-500' },
+    { name: 'Statik', color: 'bg-orange-500' },
     { name: 'Hakediş', color: 'bg-emerald-500' },
     { name: 'Mekanik', color: 'bg-orange-500' },
-    { name: 'Elektrik', color: 'bg-amber-500' },
-    { name: 'Ruhsat/İzin', color: 'bg-rose-500' },
+    { name: 'Elektrik', color: 'bg-orange-500' },
+    { name: 'Ruhsat/İzin', color: 'bg-red-500' },
     { name: 'Sözleşme', color: 'bg-slate-600' },
     { name: 'Diğer', color: 'bg-slate-400' }
 ];
@@ -112,7 +112,7 @@ const ConstructionFiles = () => {
         if (!type) return <Files className="text-slate-400" size={24} />;
         switch (type.toLowerCase()) {
             case 'dwg': return <FileCode className="text-blue-500" size={24} />;
-            case 'pdf': return <FileText className="text-rose-500" size={24} />;
+            case 'pdf': return <FileText className="text-red-500" size={24} />;
             case 'xlsx':
             case 'xls': return <FileJson className="text-emerald-500" size={24} />;
             default: return <Files className="text-slate-400" size={24} />;
@@ -142,7 +142,7 @@ const ConstructionFiles = () => {
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-[24px] bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-blue-900/40 border border-white/10 group hover:rotate-6 transition-transform">
+                                    <div className="w-16 h-16 rounded-[24px] bg-gradient-to-br from-blue-600 to-orange-700 flex items-center justify-center shadow-2xl shadow-blue-900/40 border border-white/10 group hover:rotate-6 transition-transform">
                                         <FolderOpen size={32} className="text-white" />
                                     </div>
                                     <div>

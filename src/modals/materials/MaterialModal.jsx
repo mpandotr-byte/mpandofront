@@ -80,9 +80,9 @@ export default function MaterialModal({ isOpen, onClose, material, onSave, suppl
 
     const tabs = [
         { id: 'general', label: 'Genel Bilgiler', icon: <Package size={16} />, color: 'bg-blue-500' },
-        { id: 'technical', label: 'Teknik & Geometrik', icon: <Ruler size={16} />, color: 'bg-amber-500' },
+        { id: 'technical', label: 'Teknik & Geometrik', icon: <Ruler size={16} />, color: 'bg-orange-500' },
         { id: 'logistics', label: 'Lojistik & Ambalaj', icon: <Truck size={16} />, color: 'bg-emerald-500' },
-        { id: 'suppliers', label: 'Tedarikçiler & Fiyatlar', icon: <Building2 size={16} />, color: 'bg-purple-500' }
+        { id: 'suppliers', label: 'Tedarikçiler & Fiyatlar', icon: <Building2 size={16} />, color: 'bg-orange-500' }
     ];
 
     return (
@@ -365,7 +365,7 @@ export default function MaterialModal({ isOpen, onClose, material, onSave, suppl
                             <div className="space-y-6 animate-slide-up">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+                                        <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
                                             <Building2 size={16} />
                                         </div>
                                         <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Aktif Tedarikçi Teklifleri</h3>

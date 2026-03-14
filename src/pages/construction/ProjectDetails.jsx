@@ -38,7 +38,7 @@ const getStatusClasses = (status) => {
         case 'IN_PROGRESS':
         case 'Devam Ediyor': return 'bg-blue-50 text-blue-700 border-blue-200';
         case 'PLANNING':
-        case 'Planlanıyor': return 'bg-purple-50 text-purple-700 border-purple-200';
+        case 'Planlanıyor': return 'bg-orange-50 text-orange-700 border-orange-200';
         case 'DELAYED':
         case 'Gecikmede': return 'bg-red-50 text-red-700 border-red-200';
         case 'FINISHING':
@@ -65,7 +65,7 @@ const getProgressBarColor = (status) => {
         case 'IN_PROGRESS':
         case 'Devam Ediyor': return 'bg-blue-600';
         case 'PLANNING':
-        case 'Planlanıyor': return 'bg-purple-500';
+        case 'Planlanıyor': return 'bg-orange-500';
         case 'DELAYED':
         case 'Gecikmede': return 'bg-red-500';
         case 'FINISHING':
@@ -767,7 +767,7 @@ function ProjectDetails() {
                                                             <button
                                                                 onClick={() => handleAiFileAnalysis(f.file_url, f.file_name)}
                                                                 disabled={isAiAnalyzing}
-                                                                className="p-1 text-slate-400 hover:text-purple-600 transition-colors" title="AI Analiz">
+                                                                className="p-1 text-slate-400 hover:text-orange-600 transition-colors" title="AI Analiz">
                                                                 <Sparkles size={12} />
                                                             </button>
                                                         </div>
@@ -785,18 +785,18 @@ function ProjectDetails() {
                                     </div>
 
                                     {/* AI Otomatik Doldurma */}
-                                    <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl shadow-sm p-6 text-white">
+                                    <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-2xl shadow-sm p-6 text-white">
                                         <div className="flex items-center gap-2 mb-3">
                                             <Sparkles size={20} />
                                             <h3 className="font-bold text-lg">AI Otomatik Doldurma</h3>
                                         </div>
-                                        <p className="text-purple-100 text-xs mb-4">
+                                        <p className="text-orange-100 text-xs mb-4">
                                             AI, proje bilgilerini analiz ederek blok, kat ve daire detaylarını otomatik doldurur.
                                         </p>
                                         <button
                                             onClick={handleAiAutoFill}
                                             disabled={isAiAnalyzing}
-                                            className="w-full py-3 bg-white text-purple-700 font-bold rounded-xl shadow-sm hover:shadow-md transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                            className="w-full py-3 bg-white text-orange-700 font-bold rounded-xl shadow-sm hover:shadow-md transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                                         >
                                             {isAiAnalyzing ? (
                                                 <><Loader2 size={16} className="animate-spin" /> Analiz Ediliyor...</>

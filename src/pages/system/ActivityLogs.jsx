@@ -10,11 +10,11 @@ import {
 
 const EVENT_TYPES = {
   created: { label: 'Olusturma', icon: Plus, color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
-  updated: { label: 'Guncelleme', icon: Edit2, color: 'bg-amber-50 text-amber-600 border-amber-200' },
+  updated: { label: 'Guncelleme', icon: Edit2, color: 'bg-orange-50 text-orange-600 border-orange-200' },
   deleted: { label: 'Silme', icon: Trash2, color: 'bg-red-50 text-red-600 border-red-200' },
   login: { label: 'Giris', icon: LogIn, color: 'bg-blue-50 text-blue-600 border-blue-200' },
   logout: { label: 'Cikis', icon: LogOut, color: 'bg-slate-50 text-slate-600 border-slate-200' },
-  viewed: { label: 'Goruntuleme', icon: Eye, color: 'bg-purple-50 text-purple-600 border-purple-200' },
+  viewed: { label: 'Goruntuleme', icon: Eye, color: 'bg-orange-50 text-orange-600 border-orange-200' },
 };
 
 const SUBJECT_LABELS = {

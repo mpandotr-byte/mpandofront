@@ -169,13 +169,13 @@ function SalesProjectDetails() {
                 <p className="text-2xl font-black text-emerald-600">{projectStats.available}</p>
                 <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1">Satilik</p>
               </div>
-              <div className="bg-rose-50 rounded-2xl border border-rose-100 p-4 text-center">
-                <p className="text-2xl font-black text-rose-600">{projectStats.sold}</p>
-                <p className="text-[10px] font-bold text-rose-500 uppercase mt-1">Satilan</p>
+              <div className="bg-red-50 rounded-2xl border border-red-100 p-4 text-center">
+                <p className="text-2xl font-black text-red-600">{projectStats.sold}</p>
+                <p className="text-[10px] font-bold text-red-500 uppercase mt-1">Satilan</p>
               </div>
-              <div className="bg-amber-50 rounded-2xl border border-amber-100 p-4 text-center">
-                <p className="text-2xl font-black text-amber-600">{projectStats.reserved}</p>
-                <p className="text-[10px] font-bold text-amber-500 uppercase mt-1">Rezerve</p>
+              <div className="bg-orange-50 rounded-2xl border border-orange-100 p-4 text-center">
+                <p className="text-2xl font-black text-orange-600">{projectStats.reserved}</p>
+                <p className="text-[10px] font-bold text-orange-500 uppercase mt-1">Rezerve</p>
               </div>
               <div className="bg-blue-50 rounded-2xl border border-blue-100 p-4 text-center">
                 <p className="text-lg font-black text-blue-700">%{projectStats.salesPercent}</p>
@@ -237,13 +237,13 @@ function SalesProjectDetails() {
                         <p className="text-lg font-black text-emerald-600">{stats.available}</p>
                         <p className="text-[8px] font-bold text-emerald-500 uppercase">Satilik</p>
                       </div>
-                      <div className="text-center bg-rose-50 rounded-xl p-2">
-                        <p className="text-lg font-black text-rose-600">{stats.sold}</p>
-                        <p className="text-[8px] font-bold text-rose-500 uppercase">Satilan</p>
+                      <div className="text-center bg-red-50 rounded-xl p-2">
+                        <p className="text-lg font-black text-red-600">{stats.sold}</p>
+                        <p className="text-[8px] font-bold text-red-500 uppercase">Satilan</p>
                       </div>
-                      <div className="text-center bg-amber-50 rounded-xl p-2">
-                        <p className="text-lg font-black text-amber-600">{stats.reserved}</p>
-                        <p className="text-[8px] font-bold text-amber-500 uppercase">Rezerve</p>
+                      <div className="text-center bg-orange-50 rounded-xl p-2">
+                        <p className="text-lg font-black text-orange-600">{stats.reserved}</p>
+                        <p className="text-[8px] font-bold text-orange-500 uppercase">Rezerve</p>
                       </div>
                     </div>
 

@@ -293,19 +293,19 @@ const ExcelProjectModal = ({ isOpen, onClose, onImport }) => {
                                         <p className="text-lg font-black text-blue-700">{summary.projects}</p>
                                         <p className="text-[10px] font-bold text-blue-500 uppercase">Proje</p>
                                     </div>
-                                    <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl text-center">
-                                        <p className="text-lg font-black text-purple-700">{summary.blocks}</p>
-                                        <p className="text-[10px] font-bold text-purple-500 uppercase">Blok</p>
+                                    <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl text-center">
+                                        <p className="text-lg font-black text-orange-700">{summary.blocks}</p>
+                                        <p className="text-[10px] font-bold text-orange-500 uppercase">Blok</p>
                                     </div>
-                                    <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-center">
-                                        <p className="text-lg font-black text-amber-700">{summary.units}</p>
-                                        <p className="text-[10px] font-bold text-amber-500 uppercase">Daire</p>
+                                    <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl text-center">
+                                        <p className="text-lg font-black text-orange-700">{summary.units}</p>
+                                        <p className="text-[10px] font-bold text-orange-500 uppercase">Daire</p>
                                     </div>
                                 </div>
                             )}
 
                             {error && (
-                                <div className="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl flex items-start gap-3">
+                                <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-2xl flex items-start gap-3">
                                     <AlertCircle size={20} className="mt-0.5" />
                                     <p className="text-sm font-semibold">{error}</p>
                                 </div>

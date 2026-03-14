@@ -15,7 +15,7 @@ const getStatusClasses = (status) => {
         case 'OPEN': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
         case 'CLOSED': return 'bg-slate-100 text-slate-600 border-slate-200';
         case 'AWARDED': return 'bg-blue-50 text-blue-700 border-blue-200';
-        case 'PENDING': return 'bg-amber-50 text-amber-700 border-amber-200';
+        case 'PENDING': return 'bg-orange-50 text-orange-700 border-orange-200';
         case 'ACCEPTED': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
         case 'REJECTED': return 'bg-red-50 text-red-600 border-red-200';
         default: return 'bg-slate-50 text-slate-700 border-slate-200';
@@ -96,7 +96,7 @@ export default function Tenders() {
         )},
         { key: 'actions', label: 'Islemler', sortable: false, align: 'center', stopPropagation: true, render: (_, row) => (
             <button onClick={(e) => { e.stopPropagation(); setEditItem(row); }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-lg transition-all shadow-sm">
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 rounded-lg transition-all shadow-sm">
                 <Pencil size={13} /> Duzenle
             </button>
         )},
@@ -131,7 +131,7 @@ export default function Tenders() {
                     {/* Stats */}
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center"><Gavel size={24} /></div>
+                            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center"><Gavel size={24} /></div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Toplam Ihale</p>
                                 <h3 className="text-xl font-black text-slate-800">{tenders.length}</h3>
@@ -145,7 +145,7 @@ export default function Tenders() {
                             </div>
                         </div>
                         <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center"><Send size={24} /></div>
+                            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center"><Send size={24} /></div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Toplam Teklif</p>
                                 <h3 className="text-xl font-black text-slate-800">{bids.length}</h3>
@@ -182,10 +182,10 @@ export default function Tenders() {
 
                     {/* Selection Bar */}
                     {selectedItems.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl animate-fade-in">
+                        <div className="flex flex-wrap items-center justify-between bg-orange-50 border border-orange-200 p-3.5 rounded-xl animate-fade-in">
                             <div className="flex items-center gap-3">
-                                <span className="flex items-center justify-center bg-indigo-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedItems.length}</span>
-                                <span className="text-sm font-semibold text-indigo-800">kayit secildi</span>
+                                <span className="flex items-center justify-center bg-orange-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedItems.length}</span>
+                                <span className="text-sm font-semibold text-orange-800">kayit secildi</span>
                             </div>
                             <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors">
                                 <Trash2 size={15} /> Sil

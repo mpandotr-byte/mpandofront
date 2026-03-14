@@ -238,7 +238,7 @@ const JobOrderModal = ({
                             </div>
                             <div className="col-span-2 lg:col-span-1 space-y-1.5">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Toplam Bedel</label>
-                                <div className="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl text-sm font-black text-indigo-700">
+                                <div className="w-full px-4 py-3.5 bg-orange-50 border border-orange-100 rounded-2xl text-sm font-black text-orange-700">
                                     {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(formData.total_price)}
                                 </div>
                             </div>

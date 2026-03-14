@@ -229,7 +229,7 @@ function Materials() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => openEditModal(row)}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                        className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
                         title="Düzenle"
                     >
                         <Pencil size={16} />
@@ -260,7 +260,7 @@ function Materials() {
                     {/* ═════════════════ HEADER BANNER ═════════════════ */}
                     <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-3xl p-6 md:p-10 text-white animate-fade-in shadow-2xl shadow-slate-900/20">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-[100px]" />
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-[80px]" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-[80px]" />
 
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                             <div className="animate-slide-up">

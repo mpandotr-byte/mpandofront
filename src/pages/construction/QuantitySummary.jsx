@@ -150,7 +150,7 @@ function QuantitySummary({ isSubPage = false }) {
                 </div>
 
                 <div className="bg-white p-6 rounded-[32px] border border-slate-200/60 shadow-xl shadow-slate-200/5 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
                         <Calculator size={20} />
                     </div>
                     <div>

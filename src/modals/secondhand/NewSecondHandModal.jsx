@@ -375,20 +375,20 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
             </section>
 
             <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
-              <div className="flex items-center gap-2 mb-4 text-purple-700 font-semibold border-b border-slate-200 pb-2">
+              <div className="flex items-center gap-2 mb-4 text-orange-700 font-semibold border-b border-slate-200 pb-2">
                 <Users size={18} />
                 <h3>Taraf Bilgileri</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">Ev Sahibi</h4>
+                  <h4 className="text-xs font-bold text-orange-600 uppercase tracking-wider">Ev Sahibi</h4>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-700">Ad Soyad <span className="text-red-500">*</span></label>
-                    <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} placeholder="Ad Soyad Giriniz" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" required />
+                    <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} placeholder="Ad Soyad Giriniz" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" required />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-700">Telefon</label>
-                    <input type="tel" name="ownerPhone" value={formData.ownerPhone} onChange={handleChange} placeholder="+90" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                    <input type="tel" name="ownerPhone" value={formData.ownerPhone} onChange={handleChange} placeholder="+90" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" />
                   </div>
                 </div>
                 <div className="space-y-4 md:border-l md:border-slate-300 md:pl-6">

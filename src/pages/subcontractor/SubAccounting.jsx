@@ -41,7 +41,7 @@ export default function SubAccounting() {
 
                     {/* Profit Summary Section */}
                     <div className="bg-[#0A1128] rounded-[48px] p-10 md:p-14 text-white shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] -mr-64 -mt-64" />
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[120px] -mr-64 -mt-64" />
                         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
                             <div className="space-y-4 text-center md:text-left">
                                 <span className="text-[11px] font-black text-white/40 uppercase tracking-[0.4em]">Net Kârlılık Durumu</span>
@@ -55,7 +55,7 @@ export default function SubAccounting() {
                                     <span className="text-xl font-bold">{summary.income.toLocaleString('tr-TR')} ₺</span>
                                 </div>
                                 <div className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-md flex flex-col items-center gap-2">
-                                    <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-2"><ArrowDownRight size={28} /></div>
+                                    <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center mb-2"><ArrowDownRight size={28} /></div>
                                     <span className="text-[10px] font-black text-white/40 uppercase">GİDER</span>
                                     <span className="text-xl font-bold">{totalExpense.toLocaleString('tr-TR')} ₺</span>
                                 </div>
@@ -68,7 +68,7 @@ export default function SubAccounting() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Gelir Kalemleri</h2>
-                                <button className="text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-widest">DETAYLI RAPOR</button>
+                                <button className="text-[10px] font-black text-orange-600 hover:underline uppercase tracking-widest">DETAYLI RAPOR</button>
                             </div>
                             <div className="grid grid-cols-1 gap-4">
                                 {[
@@ -100,7 +100,7 @@ export default function SubAccounting() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Gider Kalemleri</h2>
-                                <button className="text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-widest">GİDER ANALİZİ</button>
+                                <button className="text-[10px] font-black text-orange-600 hover:underline uppercase tracking-widest">GİDER ANALİZİ</button>
                             </div>
                             <div className="grid grid-cols-1 gap-4">
                                 {[
@@ -120,7 +120,7 @@ export default function SubAccounting() {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-xl font-black text-slate-800">{item.amount.toLocaleString('tr-TR')} ₺</div>
-                                            <div className="flex items-center justify-end gap-1 text-[9px] font-black text-rose-500 uppercase mt-1">
+                                            <div className="flex items-center justify-end gap-1 text-[9px] font-black text-red-500 uppercase mt-1">
                                                 <ArrowDownRight size={10} /> %5 TASARRUF
                                             </div>
                                         </div>

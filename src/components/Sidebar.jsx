@@ -194,7 +194,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
           {isSidebarCollapsed && (
             <button
-              className="hidden lg:flex absolute -right-3 top-6 w-6 h-6 bg-[#1e293b] border border-white/10 rounded-full items-center justify-center text-slate-400 shadow-lg hover:text-white hover:bg-indigo-600 hover:border-indigo-600 hover:scale-110 transition-all"
+              className="hidden lg:flex absolute -right-3 top-6 w-6 h-6 bg-[#1e293b] border border-white/10 rounded-full items-center justify-center text-slate-400 shadow-lg hover:text-white hover:bg-orange-600 hover:border-orange-600 hover:scale-110 transition-all"
               onClick={toggleDesktopCollapse}
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

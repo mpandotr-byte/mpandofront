@@ -39,7 +39,7 @@ export default function SubJobs() {
                             <input
                                 type="text"
                                 placeholder="İş ismi veya proje ile ara..."
-                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-indigo-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-orange-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
                             />
                         </div>
                         <button className="px-8 py-4 bg-slate-50 border border-slate-100 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 hover:bg-white transition-all"><Filter size={16} /> TÜMÜNÜ FİLTRELE</button>
@@ -77,7 +77,7 @@ export default function SubJobs() {
                                     </div>
                                     <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden p-0.5 border border-slate-100">
                                         <div
-                                            className={`h-full rounded-full bg-gradient-to-r ${job.color === 'emerald' ? 'from-emerald-400 to-teal-500' : 'from-indigo-400 to-blue-500'} transition-all duration-1000 shadow-lg`}
+                                            className={`h-full rounded-full bg-gradient-to-r ${job.color === 'emerald' ? 'from-emerald-400 to-teal-500' : 'from-orange-400 to-blue-500'} transition-all duration-1000 shadow-lg`}
                                             style={{ width: `${(job.doneAmount / job.totalAmount) * 100}%` }}
                                         ></div>
                                     </div>
@@ -89,16 +89,16 @@ export default function SubJobs() {
 
                                 {/* Action Buttons - Grid */}
                                 <div className="grid grid-cols-3 gap-4 border-t border-slate-50 pt-10">
-                                    <button className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-[32px] border border-transparent hover:bg-white hover:border-indigo-100 hover:shadow-xl transition-all group/btn">
-                                        <Users size={20} className="text-slate-300 group-hover/btn:text-indigo-600 mb-2" />
+                                    <button className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-[32px] border border-transparent hover:bg-white hover:border-orange-100 hover:shadow-xl transition-all group/btn">
+                                        <Users size={20} className="text-slate-300 group-hover/btn:text-orange-600 mb-2" />
                                         <span className="text-[9px] font-black text-slate-400 group-hover/btn:text-slate-800 uppercase tracking-widest">Puantaj Gir</span>
                                     </button>
                                     <button className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-[32px] border border-transparent hover:bg-white hover:border-emerald-100 hover:shadow-xl transition-all group/btn">
                                         <TrendingUp size={20} className="text-slate-300 group-hover/btn:text-emerald-600 mb-2" />
                                         <span className="text-[9px] font-black text-slate-400 group-hover/btn:text-slate-800 uppercase tracking-widest">Hakediş Yap</span>
                                     </button>
-                                    <button className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-[32px] border border-transparent hover:bg-white hover:border-amber-100 hover:shadow-xl transition-all group/btn">
-                                        <Box size={20} className="text-slate-300 group-hover/btn:text-amber-600 mb-2" />
+                                    <button className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-[32px] border border-transparent hover:bg-white hover:border-orange-100 hover:shadow-xl transition-all group/btn">
+                                        <Box size={20} className="text-slate-300 group-hover/btn:text-orange-600 mb-2" />
                                         <span className="text-[9px] font-black text-slate-400 group-hover/btn:text-slate-800 uppercase tracking-widest">Stok Ata</span>
                                     </button>
                                 </div>

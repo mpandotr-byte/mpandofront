@@ -136,45 +136,45 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                             <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em] mt-1 flex items-center gap-2"><ChevronRight size={14} className="text-[#D36A47]" /> DETAYLI ÜRETİM VE METRAJ NOKTASI</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center hover:bg-slate-50 rounded-full text-slate-400 hover:text-rose-500 transition-all border border-transparent hover:border-rose-100"><X size={24} /></button>
+                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center hover:bg-slate-50 rounded-full text-slate-400 hover:text-red-500 transition-all border border-transparent hover:border-red-100"><X size={24} /></button>
                 </div>
 
                 <div className="p-10 overflow-y-auto custom-scrollbar">
                     {/* ═════════════════ AI DWG ANALYZER SECTION ═════════════════ */}
                     {!isEdit && (
-                        <div className="mb-10 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-[2rem] p-6 border border-violet-100 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-violet-500/10 transition-colors" />
+                        <div className="mb-10 bg-gradient-to-br from-orange-50 to-orange-50 rounded-[2rem] p-6 border border-orange-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-orange-500/10 transition-colors" />
                             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-violet-600 border border-violet-100">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-orange-600 border border-orange-100">
                                         <BrainCircuit size={28} className={isAnalyzing ? 'animate-pulse' : ''} />
                                     </div>
                                     <div className="space-y-1">
-                                        <h3 className="text-sm font-black text-violet-900 uppercase tracking-tight">AI DESTEKLİ MAHAL ANALİZİ (BETA)</h3>
-                                        <p className="text-[10px] text-violet-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek mahal metrajlarını AI ile doldurun</p>
+                                        <h3 className="text-sm font-black text-orange-900 uppercase tracking-tight">AI DESTEKLİ MAHAL ANALİZİ (BETA)</h3>
+                                        <p className="text-[10px] text-orange-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek mahal metrajlarını AI ile doldurun</p>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-1 w-full max-w-md gap-3">
                                     <div className="relative flex-1">
-                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400" size={16} />
+                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400" size={16} />
                                         <select
                                             value={selectedDwgId}
                                             onChange={(e) => setSelectedDwgId(e.target.value)}
-                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-violet-100 rounded-2xl text-[11px] font-black uppercase text-violet-900 outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-400 transition-all appearance-none shadow-sm"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-orange-100 rounded-2xl text-[11px] font-black uppercase text-orange-900 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all appearance-none shadow-sm"
                                         >
                                             <option value="">Analiz İçin DWG Seçin</option>
                                             {constructionFiles.map(file => (
                                                 <option key={file.id} value={file.id}>{file.file_name.toUpperCase()}</option>
                                             ))}
                                         </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-violet-300 pointer-events-none" size={16} />
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-orange-300 pointer-events-none" size={16} />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={handleAIAnalysis}
                                         disabled={!selectedDwgId || isAnalyzing}
-                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-600/20 active:scale-95 whitespace-nowrap"
+                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-600/20 active:scale-95 whitespace-nowrap"
                                     >
                                         {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                                         {isAnalyzing ? 'ANALİZ EDİLİYOR...' : 'ASİSTANI ÇALIŞTIR'}
@@ -203,11 +203,11 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                             </div>
                             <div className="lg:col-span-12"><hr className="border-white" /></div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
-                                <label className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] ml-1">ZEMİN ALANI <span className="text-[9px] bg-indigo-50 px-1.5 py-0.5 rounded uppercase">AI</span></label>
+                                <label className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] ml-1">ZEMİN ALANI <span className="text-[9px] bg-orange-50 px-1.5 py-0.5 rounded uppercase">AI</span></label>
                                 <div className="relative">
-                                    <input readOnly value={formData.area_m2} placeholder={isAnalyzing ? '' : "AI Dolduracak"} className={`block w-full px-5 py-4 bg-indigo-50/20 border border-indigo-100 rounded-2xl font-black text-indigo-900 outline-none transition-all cursor-default placeholder:text-slate-300 placeholder:italic ${isAnalyzing ? 'animate-pulse' : ''}`} />
-                                    {isAnalyzing && <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-100/0 via-indigo-200/60 to-indigo-100/0 animate-[shimmer_1.5s_infinite]" />}
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-indigo-300">m²</span>
+                                    <input readOnly value={formData.area_m2} placeholder={isAnalyzing ? '' : "AI Dolduracak"} className={`block w-full px-5 py-4 bg-orange-50/20 border border-orange-100 rounded-2xl font-black text-orange-900 outline-none transition-all cursor-default placeholder:text-slate-300 placeholder:italic ${isAnalyzing ? 'animate-pulse' : ''}`} />
+                                    {isAnalyzing && <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-100/0 via-orange-200/60 to-orange-100/0 animate-[shimmer_1.5s_infinite]" />}
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-orange-300">m²</span>
                                 </div>
                             </div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">

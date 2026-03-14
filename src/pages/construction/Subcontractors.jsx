@@ -156,7 +156,7 @@ const Subcontractors = () => {
                                         <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D36A47] border border-slate-100 group-hover:bg-[#D36A47] group-hover:text-white transition-all duration-300">
                                             <Briefcase size={24} />
                                         </div>
-                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-xl text-amber-600">
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 rounded-xl text-orange-600">
                                             <Star size={12} fill="currentColor" />
                                             <span className="text-xs font-black">{s.rating || '0.0'}</span>
                                         </div>
@@ -178,7 +178,7 @@ const Subcontractors = () => {
                                                 <Wallet size={12} />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Bakiye</span>
                                             </div>
-                                            <span className="text-sm font-black text-indigo-600">
+                                            <span className="text-sm font-black text-orange-600">
                                                 {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(s.balance)}
                                             </span>
                                         </div>

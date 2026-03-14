@@ -185,7 +185,7 @@ export default function Stock() {
                                             {stockSummary.filter(s => (s.subcontractor_quantity || s.assigned_qty) > 0).length} <span className="text-xs text-slate-400 font-bold ml-1">SAHADA</span>
                                         </h3>
                                     </div>
-                                    <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
+                                    <div className="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-all">
                                         <ClipboardList size={28} />
                                     </div>
                                 </div>
@@ -241,15 +241,15 @@ export default function Stock() {
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Depo Mevcut</p>
                                                     <p className="text-lg font-black text-slate-900">{(item.warehouse_quantity ?? item.warehouse_qty) ?? 0} <span className="text-[10px] text-slate-400">{item.unit}</span></p>
                                                 </div>
-                                                <div className="bg-white/50 rounded-2xl p-4 border border-slate-100 group-hover:bg-amber-50 group-hover:border-amber-100 transition-all">
+                                                <div className="bg-white/50 rounded-2xl p-4 border border-slate-100 group-hover:bg-orange-50 group-hover:border-orange-100 transition-all">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Zimmetli</p>
-                                                    <p className="text-lg font-black text-amber-600">{(item.subcontractor_quantity ?? item.assigned_qty) ?? 0} <span className="text-[10px] text-slate-300">{item.unit}</span></p>
+                                                    <p className="text-lg font-black text-orange-600">{(item.subcontractor_quantity ?? item.assigned_qty) ?? 0} <span className="text-[10px] text-slate-300">{item.unit}</span></p>
                                                 </div>
                                             </div>
 
                                             <div className="mt-5 pt-5 border-t border-slate-100 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                                                 <span>Alt Limit: {item.min_stock_level}</span>
-                                                <span className="text-indigo-600">Toplam: {item.total_quantity || item.total_qty}</span>
+                                                <span className="text-orange-600">Toplam: {item.total_quantity || item.total_qty}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -325,7 +325,7 @@ export default function Stock() {
                     {activeTab === 'consumption' && (
                         <div className="space-y-6 animate-in fade-in duration-500">
                             {/* Summary Card */}
-                            <div className="p-8 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
+                            <div className="p-8 bg-gradient-to-br from-orange-900 to-slate-900 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
                                 <div className="relative flex flex-col md:flex-row justify-between items-center">
                                     <div>
@@ -377,10 +377,10 @@ export default function Stock() {
                             <div className="bg-white rounded-[40px] p-8 border border-white shadow-xl shadow-slate-200/40">
                                 <div className="space-y-4">
                                     {filteredConsumption.map((report, i) => (
-                                        <div key={i} className="p-7 bg-slate-50 border border-slate-100 rounded-[32px] hover:bg-white hover:border-indigo-100 transition-all hover:shadow-xl group">
+                                        <div key={i} className="p-7 bg-slate-50 border border-slate-100 rounded-[32px] hover:bg-white hover:border-orange-100 transition-all hover:shadow-xl group">
                                             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
                                                 <div className="flex items-center gap-6">
-                                                    <div className="w-14 h-14 rounded-2xl bg-white text-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                    <div className="w-14 h-14 rounded-2xl bg-white text-orange-600 flex items-center justify-center shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-all">
                                                         <History size={28} />
                                                     </div>
                                                     <div>

@@ -30,8 +30,8 @@ export default function SuppOffers() {
     const getStatusStyles = (status) => {
         switch (status) {
             case 'APPROVED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100';
-            case 'WAITING': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'REJECTED': return 'bg-red-50 text-red-600 border-red-100';
+            case 'WAITING': return 'bg-orange-50 text-orange-600 border-orange-100';
             default: return 'bg-slate-50 text-slate-400';
         }
     };
@@ -60,7 +60,7 @@ export default function SuppOffers() {
                             <input
                                 type="text"
                                 placeholder="Proje, firma veya malzeme ile ara..."
-                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-indigo-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-orange-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
                             />
                         </div>
                         <button className="w-full md:w-auto px-10 py-5 bg-[#0A1128] text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
@@ -84,7 +84,7 @@ export default function SuppOffers() {
                                                     <Building2 size={12} className="text-slate-300" /> {offer.company}
                                                 </div>
                                                 <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-500 uppercase tracking-widest italic">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-orange-500 uppercase tracking-widest italic">
                                                     {offer.project}
                                                 </div>
                                             </div>
@@ -106,18 +106,18 @@ export default function SuppOffers() {
                                         <div className="text-sm font-black text-slate-800">{offer.qty.toLocaleString('tr-TR')} {offer.unit}</div>
                                     </div>
                                     <div className="space-y-1">
-                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-indigo-500">Teklif Tutarı</div>
-                                        <div className="text-lg font-black text-indigo-600">{offer.amount.toLocaleString('tr-TR')} ₺</div>
+                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-orange-500">Teklif Tutarı</div>
+                                        <div className="text-lg font-black text-orange-600">{offer.amount.toLocaleString('tr-TR')} ₺</div>
                                     </div>
                                     <div className="col-span-2 md:col-span-1 flex items-center justify-end">
-                                        <button className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-[0.2em] transition-all">DETAYLI ANALİZ <ArrowRight size={14} /></button>
+                                        <button className="flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-orange-600 uppercase tracking-[0.2em] transition-all">DETAYLI ANALİZ <ArrowRight size={14} /></button>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                     <div className="flex items-center gap-2">
                                         <button className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 hover:text-[#0A1128] hover:border-[#0A1128] transition-all shadow-sm"><FileText size={20} /></button>
-                                        <button className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 hover:text-indigo-600 hover:border-indigo-600 transition-all shadow-sm"><MessageCircle size={20} /></button>
+                                        <button className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 hover:text-orange-600 hover:border-orange-600 transition-all shadow-sm"><MessageCircle size={20} /></button>
                                         <span className="text-[10px] font-black text-slate-400 uppercase ml-2">Teknik Evrak & Mesajlar</span>
                                     </div>
                                     <button className={`px-10 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-widest transition-all ${offer.status === 'APPROVED' ? 'bg-[#00875A] text-white shadow-xl shadow-emerald-100' : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-50'}`}>

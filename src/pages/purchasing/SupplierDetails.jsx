@@ -188,18 +188,18 @@ const SupplierDetails = () => {
                                         {/* Categories Panel */}
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                                <Layers size={14} className="text-indigo-500" />
+                                                <Layers size={14} className="text-orange-500" />
                                                 KATEGORİ & ETİKETLER
                                             </div>
                                             <div className="flex flex-wrap gap-2 text-left">
                                                 {typeof supplier.category_tags === 'string'
                                                     ? supplier.category_tags.split(',').map(tag => (
-                                                        <span key={tag} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm transition-all hover:bg-indigo-600 hover:text-white cursor-default">
+                                                        <span key={tag} className="px-4 py-2 bg-orange-50 text-orange-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-orange-100 shadow-sm transition-all hover:bg-orange-600 hover:text-white cursor-default">
                                                             {tag.trim()}
                                                         </span>
                                                     ))
                                                     : supplier.category_tags.map(tag => (
-                                                        <span key={tag} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm transition-all hover:bg-indigo-600 hover:text-white cursor-default">
+                                                        <span key={tag} className="px-4 py-2 bg-orange-50 text-orange-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-orange-100 shadow-sm transition-all hover:bg-orange-600 hover:text-white cursor-default">
                                                             {tag}
                                                         </span>
                                                     ))
@@ -224,7 +224,7 @@ const SupplierDetails = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-xl transition-all group">
-                                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-orange-600 group-hover:text-white transition-all">
                                                         <Phone size={18} />
                                                     </div>
                                                     <div>
@@ -324,7 +324,7 @@ const SupplierDetails = () => {
                                             <div className="space-y-4">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-left block">Termin (Gün)</label>
                                                 <div className="relative">
-                                                    <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500" />
+                                                    <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" />
                                                     <input
                                                         required
                                                         type="number"
@@ -387,7 +387,7 @@ const SupplierDetails = () => {
                                         <div className="w-px h-10 bg-slate-100" />
                                         <div className="text-right">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Bakiye Durumu</p>
-                                            <p className="text-xl font-black text-indigo-600 leading-none">AKTİF</p>
+                                            <p className="text-xl font-black text-orange-600 leading-none">AKTİF</p>
                                         </div>
                                     </div>
                                 </div>
@@ -417,7 +417,7 @@ const SupplierDetails = () => {
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-[10px] font-black text-slate-400 tracking-wider">KOD: {item.material_code}</span>
                                                                         <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                                                                        <button className="text-[9px] font-black text-indigo-500 uppercase tracking-widest hover:underline decoration-indigo-300 underline-offset-4 decoration-2">MALZEME KARTINI AÇ</button>
+                                                                        <button className="text-[9px] font-black text-orange-500 uppercase tracking-widest hover:underline decoration-orange-300 underline-offset-4 decoration-2">MALZEME KARTINI AÇ</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -433,8 +433,8 @@ const SupplierDetails = () => {
                                                         <td className="px-6 py-8 text-center">
                                                             <div className="flex flex-col items-center leading-tight">
                                                                 <span className="text-sm font-black text-slate-800">{item.lead_time_days} İŞ GÜNÜ</span>
-                                                                <div className="w-12 h-1 bg-indigo-50 rounded-full mt-2 overflow-hidden shadow-inner">
-                                                                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, (item.lead_time_days / 15) * 100)}%` }}></div>
+                                                                <div className="w-12 h-1 bg-orange-50 rounded-full mt-2 overflow-hidden shadow-inner">
+                                                                    <div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.min(100, (item.lead_time_days / 15) * 100)}%` }}></div>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -443,7 +443,7 @@ const SupplierDetails = () => {
                                                         </td>
                                                         <td className="px-10 py-8 text-right">
                                                             <div className="flex justify-end gap-2">
-                                                                <button className="p-3 bg-white border border-slate-100 rounded-xl text-slate-300 hover:text-indigo-600 hover:shadow-lg transition-all" title="Fiyat Geçmişi Analizi">
+                                                                <button className="p-3 bg-white border border-slate-100 rounded-xl text-slate-300 hover:text-orange-600 hover:shadow-lg transition-all" title="Fiyat Geçmişi Analizi">
                                                                     <TrendingUp size={18} />
                                                                 </button>
                                                                 <button className="p-3 bg-white border border-slate-100 rounded-xl text-slate-300 hover:text-[#D36A47] hover:shadow-lg transition-all" title="İhale Geçmişi">

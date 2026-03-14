@@ -30,7 +30,7 @@ export default function SubPayments() {
         switch (status) {
             case 'APPROVED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
             case 'PAID': return 'bg-blue-50 text-blue-600 border-blue-100';
-            case 'UNDER_REVIEW': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'UNDER_REVIEW': return 'bg-orange-50 text-orange-600 border-orange-100';
             default: return 'bg-slate-50 text-slate-400';
         }
     };
@@ -59,7 +59,7 @@ export default function SubPayments() {
                             <input
                                 type="text"
                                 placeholder="Hakediş no, iş ismi veya proje ile ara..."
-                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-indigo-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-orange-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
                             />
                         </div>
                         <button className="w-full md:w-auto px-10 py-5 bg-[#0A1128] text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
@@ -73,7 +73,7 @@ export default function SubPayments() {
                             <div key={payment.id} className="bg-white rounded-[40px] p-8 md:p-10 border border-slate-100 shadow-sm hover:shadow-2xl transition-all group overflow-hidden relative">
                                 {payment.comparison === 'DISCREPANCY' && (
                                     <div className="absolute top-0 right-0 p-6">
-                                        <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-100 rounded-xl text-[10px] font-black text-rose-600 uppercase tracking-widest animate-pulse">
+                                        <div className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 rounded-xl text-[10px] font-black text-red-600 uppercase tracking-widest animate-pulse">
                                             <AlertCircle size={14} /> ÖLÇÜM FARKI VAR
                                         </div>
                                     </div>
@@ -106,8 +106,8 @@ export default function SubPayments() {
                                             <div className="text-lg font-black text-slate-800">{payment.amount.toLocaleString('tr-TR')} m2</div>
                                         </div>
                                         <div className="space-y-1">
-                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-indigo-500">Tutar</div>
-                                            <div className="text-xl font-black text-indigo-600">{payment.doneValue.toLocaleString('tr-TR')} ₺</div>
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-orange-500">Tutar</div>
+                                            <div className="text-xl font-black text-orange-600">{payment.doneValue.toLocaleString('tr-TR')} ₺</div>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <button className="w-12 h-12 rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-slate-800 transition-all shadow-sm"><FileText size={20} /></button>
@@ -117,13 +117,13 @@ export default function SubPayments() {
                                 </div>
 
                                 {payment.comparison === 'DISCREPANCY' && (
-                                    <div className="mt-8 p-6 bg-rose-50 border border-rose-100 rounded-[32px] flex items-center justify-between">
+                                    <div className="mt-8 p-6 bg-red-50 border border-red-100 rounded-[32px] flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            <div className="text-[10px] font-black text-rose-600 uppercase tracking-widest italic">Şirket Ölçümü: 7.250 m2</div>
-                                            <div className="w-px h-4 bg-rose-200"></div>
-                                            <div className="text-[10px] font-black text-rose-400 uppercase tracking-widest italic">Fark: -750 m2</div>
+                                            <div className="text-[10px] font-black text-red-600 uppercase tracking-widest italic">Şirket Ölçümü: 7.250 m2</div>
+                                            <div className="w-px h-4 bg-red-200"></div>
+                                            <div className="text-[10px] font-black text-red-400 uppercase tracking-widest italic">Fark: -750 m2</div>
                                         </div>
-                                        <button className="text-[10px] font-black text-rose-600 uppercase tracking-widest border-b border-rose-200 hover:border-rose-600 transition-all">İtiraz Et / Revize Gönder</button>
+                                        <button className="text-[10px] font-black text-red-600 uppercase tracking-widest border-b border-red-200 hover:border-red-600 transition-all">İtiraz Et / Revize Gönder</button>
                                     </div>
                                 )}
                             </div>

@@ -27,8 +27,8 @@ export default function SubBids() {
     const getStatusStyles = (status) => {
         switch (status) {
             case 'APPROVED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100';
-            case 'WAITING': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'REJECTED': return 'bg-red-50 text-red-600 border-red-100';
+            case 'WAITING': return 'bg-orange-50 text-orange-600 border-orange-100';
             default: return 'bg-slate-50 text-slate-400';
         }
     };
@@ -59,11 +59,11 @@ export default function SubBids() {
                                 placeholder="Proje, iş ismi veya firma ile ara..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-indigo-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-orange-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
                             />
                         </div>
                         <div className="flex gap-4 w-full md:w-auto">
-                            <button className="flex-1 md:flex-none px-8 py-5 bg-white text-slate-400 border border-slate-100 rounded-[24px] text-xs font-black uppercase tracking-widest hover:border-indigo-200 transition-all flex items-center justify-center gap-2">
+                            <button className="flex-1 md:flex-none px-8 py-5 bg-white text-slate-400 border border-slate-100 rounded-[24px] text-xs font-black uppercase tracking-widest hover:border-orange-200 transition-all flex items-center justify-center gap-2">
                                 <Filter size={18} /> FİLTRELE
                             </button>
                             <button className="flex-1 md:flex-none px-10 py-5 bg-[#D36A47] text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
@@ -109,17 +109,17 @@ export default function SubBids() {
                                         <div className="text-sm font-black text-slate-800">{bid.price.toLocaleString('tr-TR')} ₺</div>
                                     </div>
                                     <div className="space-y-1 text-right">
-                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-indigo-500">Toplam Tutarı</div>
-                                        <div className="text-base font-black text-indigo-600">{(bid.amount * bid.price).toLocaleString('tr-TR')} ₺</div>
+                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-orange-500">Toplam Tutarı</div>
+                                        <div className="text-base font-black text-orange-600">{(bid.amount * bid.price).toLocaleString('tr-TR')} ₺</div>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between pt-2">
                                     <div className="flex items-center gap-2">
-                                        <button className="p-3 bg-white rounded-xl border border-slate-100 text-slate-400 hover:text-indigo-600 transition-all"><FileText size={18} /></button>
+                                        <button className="p-3 bg-white rounded-xl border border-slate-100 text-slate-400 hover:text-orange-600 transition-all"><FileText size={18} /></button>
                                         <span className="text-[10px] font-black text-slate-400 uppercase">Sözleşme & Teknik Şartname</span>
                                     </div>
-                                    <button className="flex items-center gap-2 text-[10px] font-black text-slate-800 hover:text-indigo-600 uppercase tracking-widest transition-all">DETAYLI İNCELE <ArrowRight size={14} /></button>
+                                    <button className="flex items-center gap-2 text-[10px] font-black text-slate-800 hover:text-orange-600 uppercase tracking-widest transition-all">DETAYLI İNCELE <ArrowRight size={14} /></button>
                                 </div>
                             </div>
                         ))}

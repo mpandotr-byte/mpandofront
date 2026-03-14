@@ -107,9 +107,9 @@ const getTypeStyles = (type) => {
     switch (type) {
         case 'finance': return { icon: <CreditCard size={18} />, color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-600' };
         case 'approval': return { icon: <CheckCircle2 size={18} />, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-600' };
-        case 'stock': return { icon: <Package size={18} />, color: 'amber', bg: 'bg-amber-50', text: 'text-amber-600' };
-        case 'project': return { icon: <Briefcase size={18} />, color: 'indigo', bg: 'bg-indigo-50', text: 'text-indigo-600' };
-        case 'customer': return { icon: <User size={18} />, color: 'rose', bg: 'bg-rose-50', text: 'text-rose-600' };
+        case 'stock': return { icon: <Package size={18} />, color: 'amber', bg: 'bg-orange-50', text: 'text-orange-600' };
+        case 'project': return { icon: <Briefcase size={18} />, color: 'indigo', bg: 'bg-orange-50', text: 'text-orange-600' };
+        case 'customer': return { icon: <User size={18} />, color: 'rose', bg: 'bg-red-50', text: 'text-red-600' };
         default: return { icon: <Bell size={18} />, color: 'slate', bg: 'bg-slate-50', text: 'text-slate-600' };
     }
 };

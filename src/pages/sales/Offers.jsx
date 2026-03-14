@@ -14,7 +14,8 @@ import {
     Clock,
     ArrowRight,
     ShieldCheck,
-    Save
+    Save,
+    Banknote
 } from 'lucide-react';
 
 function Offers() {
@@ -35,8 +36,12 @@ function Offers() {
         try {
             setLoading(true);
             const data = await api.get('/sales');
-            // Sadece onay bekleyenleri filtrele
-            const pendingOffers = (data || []).filter(item => item.approval_status === 'Onay Bekliyor');
+            // Onay bekleyen ve beklemede olan teklifleri filtrele
+            const pendingOffers = (data || []).filter(item =>
+                item.approval_status === 'Onay Bekliyor' ||
+                item.approval_status === 'Beklemede' ||
+                !item.approval_status
+            );
             setOffers(pendingOffers);
         } catch (err) {
             console.error('Teklifler yüklenirken hata:', err);
@@ -64,34 +69,41 @@ function Offers() {
         }
 
         try {
-            await api.put(`/sales/${selectedOffer.id}`, {
-                approval_status: 'Onaylandı',
-                sale_status: approvalData.status,
-                offered_price: Number(approvalData.final_price),
-                notes: selectedOffer.notes + `\n\nYönetici Notu: ${approvalData.manager_note}`
+            // Önce approve endpoint ile onay bildirimini gönder
+            await api.post(`/sales/${selectedOffer.id}/approve`, {
+                status: 'Onaylandı',
+                manager_price: Number(approvalData.final_price),
+                manager_notes: approvalData.manager_note || ''
             });
+
+            // Sonra satış durumunu güncelle
+            await api.put(`/sales/${selectedOffer.id}`, {
+                sale_status: approvalData.status,
+                offered_price: Number(approvalData.final_price)
+            });
+
             alert("Teklif onaylandı ve satış kaydı güncellendi.");
             setIsApprovalModalOpen(false);
             fetchOffers();
         } catch (err) {
             console.error("Onaylama hatası:", err);
-            alert("İşlem sırasında bir hata oluştu.");
+            alert("İşlem sırasında bir hata oluştu: " + err.message);
         }
     };
 
     const handleReject = async () => {
         if (!window.confirm("Bu teklifi reddetmek istediğinize emin misiniz?")) return;
         try {
-            await api.put(`/sales/${selectedOffer.id}`, {
-                approval_status: 'Reddedildi',
-                sale_status: 'Reddedildi'
+            await api.post(`/sales/${selectedOffer.id}/approve`, {
+                status: 'Reddedildi',
+                manager_notes: approvalData.manager_note || 'Yönetici tarafından reddedildi'
             });
             alert("Teklif reddedildi.");
             setIsApprovalModalOpen(false);
             fetchOffers();
         } catch (err) {
             console.error("Reddetme hatası:", err);
-            alert("İşlem sırasında bir hata oluştu.");
+            alert("İşlem sırasında bir hata oluştu: " + err.message);
         }
     };
 
@@ -166,7 +178,7 @@ function Offers() {
                 <Navbar title="Müşteri Teklifleri Onay Paneli" toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
                 <div className="px-6 py-8 space-y-6">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div className="bg-gradient-to-r from-blue-600 to-orange-700 rounded-2xl p-6 text-white shadow-lg">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md">
                                 <ShieldCheck size={24} />
@@ -307,8 +319,5 @@ function Offers() {
         </div>
     );
 }
-
-// Eksik iconları lucide-react'tan ekle
-import { Banknote } from 'lucide-react';
 
 export default Offers;

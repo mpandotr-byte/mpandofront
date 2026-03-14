@@ -215,7 +215,7 @@ export default function RecipeModal({ isOpen, onClose, recipe, onSave, materials
                                         <h3 className="flex items-center gap-2 text-sm font-black text-[#0A1128] uppercase tracking-wider">
                                             <Hammer size={18} className="text-[#D36A47]" /> Gerekli İşçilikler
                                         </h3>
-                                        <button type="button" onClick={addLabor} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 text-[11px] font-black rounded-lg hover:bg-indigo-600 hover:text-white transition-all">
+                                        <button type="button" onClick={addLabor} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 text-[11px] font-black rounded-lg hover:bg-orange-600 hover:text-white transition-all">
                                             <Plus size={14} /> İŞÇİLİK EKLE
                                         </button>
                                     </div>
@@ -226,7 +226,7 @@ export default function RecipeModal({ isOpen, onClose, recipe, onSave, materials
                                                     <select
                                                         value={item.labor_id}
                                                         onChange={(e) => updateLabor(index, 'labor_id', e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-600"
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-600"
                                                     >
                                                         <option value="">İşçilik Seçin</option>
                                                         {labors.map(l => <option key={l.id} value={l.id}>{l.name} ({l.code})</option>)}
@@ -238,7 +238,7 @@ export default function RecipeModal({ isOpen, onClose, recipe, onSave, materials
                                                         step="0.001"
                                                         value={item.quantity}
                                                         onChange={(e) => updateLabor(index, 'quantity', e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-600"
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-600"
                                                         placeholder="Çarpan"
                                                     />
                                                 </div>

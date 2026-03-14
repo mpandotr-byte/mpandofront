@@ -207,7 +207,7 @@ const SubcontractorDetails = () => {
                                     <p className="text-sm font-black text-slate-800">{subcontractor?.authorized_person || 'Bilgi Yok'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5"><Phone size={14} className="text-indigo-500" /> Telefon</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5"><Phone size={14} className="text-orange-500" /> Telefon</p>
                                     <p className="text-sm font-black text-slate-800">{subcontractor?.phone || 'Bilgi Yok'}</p>
                                 </div>
                                 <div>
@@ -300,7 +300,7 @@ const SubcontractorDetails = () => {
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Toplam Bedel</p>
-                                                <p className="text-sm font-black text-indigo-600 font-mono">{job.totalPrice}</p>
+                                                <p className="text-sm font-black text-orange-600 font-mono">{job.totalPrice}</p>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Hedef Tarih</p>
@@ -359,7 +359,7 @@ const SubcontractorDetails = () => {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">ONAYLANDI</span>
-                                                <button className="p-2 text-slate-300 hover:text-indigo-600 transition-colors" title="Raporu Gör">
+                                                <button className="p-2 text-slate-300 hover:text-orange-600 transition-colors" title="Raporu Gör">
                                                     <FileText size={18} />
                                                 </button>
                                             </div>

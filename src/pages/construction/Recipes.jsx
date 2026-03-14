@@ -119,7 +119,7 @@ function Recipes() {
                     <div className="flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
                         <Package size={12} /> {row.recipe_materials?.length || 0} Malzeme
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
                         <Hammer size={12} /> {row.recipe_labors?.length || 0} İşçilik
                     </div>
                 </div>
@@ -130,7 +130,7 @@ function Recipes() {
             label: 'İşlemler',
             render: (_, row) => (
                 <div className="flex items-center gap-2">
-                    <button onClick={() => { setSelectedRecipe(row); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                    <button onClick={() => { setSelectedRecipe(row); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
                         <Pencil size={16} />
                     </button>
                     <button onClick={() => handleDelete(row.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">

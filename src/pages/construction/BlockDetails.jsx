@@ -33,16 +33,16 @@ const getUnitStatusDetails = (status) => {
     switch (String(status).toUpperCase()) {
         case 'SOLD':
         case 'SATILDI':
-            return { label: 'Satıldı', classes: 'bg-rose-50 text-rose-700 border-rose-100' };
+            return { label: 'Satıldı', classes: 'bg-red-50 text-red-700 border-red-100' };
         case 'RESERVED':
         case 'REZERVE':
         case 'REZERV':
-            return { label: 'Rezerve', classes: 'bg-amber-50 text-amber-700 border-amber-100' };
+            return { label: 'Rezerve', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
         case 'BARTER':
-            return { label: 'Barter', classes: 'bg-purple-50 text-purple-700 border-purple-100' };
+            return { label: 'Barter', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
         case 'ARSA SAHIBI':
         case 'ARSA SAHİBİ':
-            return { label: 'Arsa Sahibi', classes: 'bg-indigo-50 text-indigo-700 border-indigo-100' };
+            return { label: 'Arsa Sahibi', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
         case 'AVAILABLE':
         case 'SATILIK':
         case 'MÜSAİT':
@@ -1015,7 +1015,7 @@ const BulkFloorRecipeModal = ({ isOpen, onClose, onSave, recipes, formData, onCh
                     <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600">
                         <Layers size={28} />
                     </div>
-                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
+                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">
                         <X size={20} />
                     </button>
                 </div>

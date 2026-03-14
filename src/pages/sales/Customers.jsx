@@ -336,7 +336,7 @@ function Customers() {
             {val?.charAt(0) || '?'}
           </div>
           <div>
-            <p className="font-semibold text-slate-800 text-[13px] group-hover:text-indigo-600 transition-colors">{val}</p>
+            <p className="font-semibold text-slate-800 text-[13px] group-hover:text-orange-600 transition-colors">{val}</p>
             {row.email !== '-' && (
               <p className="text-[11px] text-slate-400 flex items-center gap-1">
                 <Mail size={10} />{row.email}
@@ -375,7 +375,7 @@ function Customers() {
       render: (_, row) => (
         <button
           onClick={() => openEditModal(row)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-lg transition-all shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 rounded-lg transition-all shadow-sm"
         >
           <Pencil size={13} /> Düzenle
         </button>
@@ -552,7 +552,7 @@ function Customers() {
                       const isReserved = ['RESERVED', 'REZERVE', 'REZERV'].includes(statusLabel);
                       const isBarter = statusLabel === 'BARTER';
                       const isLandowner = statusLabel === 'LANDOWNER';
-                      const badgeClass = isSold ? 'bg-emerald-50 text-emerald-600' : isReserved ? 'bg-amber-50 text-amber-600' : isBarter ? 'bg-purple-50 text-purple-600' : isLandowner ? 'bg-sky-50 text-sky-600' : 'bg-blue-50 text-blue-600';
+                      const badgeClass = isSold ? 'bg-emerald-50 text-emerald-600' : isReserved ? 'bg-orange-50 text-orange-600' : isBarter ? 'bg-orange-50 text-orange-600' : isLandowner ? 'bg-sky-50 text-sky-600' : 'bg-blue-50 text-blue-600';
                       const badgeText = isSold ? 'TAPULU' : isReserved ? 'REZERVE' : isBarter ? 'BARTER' : isLandowner ? 'ARSA SAHİBİ' : 'ATANMIŞ';
 
                       return (

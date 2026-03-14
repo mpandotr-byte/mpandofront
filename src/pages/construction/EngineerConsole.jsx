@@ -84,7 +84,7 @@ export default function EngineerConsole() {
             title: 'Satın Alma Talebi',
             desc: 'Acil malzeme ihtiyacı bildirin',
             icon: <ShoppingCart size={24} />,
-            color: 'bg-amber-500',
+            color: 'bg-orange-500',
             actionText: 'Talep Oluştur',
             path: '/purchasing'
         },
@@ -102,7 +102,7 @@ export default function EngineerConsole() {
             title: 'Günlük Saha Raporu',
             desc: 'İş özeti ve kadro takibi girin',
             icon: <FileText size={24} />,
-            color: 'bg-indigo-500',
+            color: 'bg-orange-500',
             actionText: 'Rapor Yaz',
             path: '/daily-reports'
         },
@@ -111,7 +111,7 @@ export default function EngineerConsole() {
             title: 'Saha Günlüğü',
             desc: 'Hatalı imalat ve notları fotoğraflayın',
             icon: <Camera size={24} />,
-            color: 'bg-rose-500',
+            color: 'bg-red-500',
             actionText: 'Tespit Ekle',
             path: '/site-logs'
         },
@@ -137,7 +137,7 @@ export default function EngineerConsole() {
                     {/* Top Stats Banner */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center">
                                 <AlertTriangle size={24} />
                             </div>
                             <div>
@@ -164,7 +164,7 @@ export default function EngineerConsole() {
                             </div>
                         </div>
                         <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center">
                                 <Users size={24} />
                             </div>
                             <div>
@@ -224,7 +224,7 @@ export default function EngineerConsole() {
                                                 <span className="text-[11px] text-slate-400 font-medium uppercase tracking-tighter">{del.supplier_name || del.supplier || '-'}</span>
                                             </div>
                                         </div>
-                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${(del.status === 'Yolda' || del.status === 'DELIVERED') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${(del.status === 'Yolda' || del.status === 'DELIVERED') ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
                                             {del.status || 'Bekleniyor'}
                                         </div>
                                     </div>
@@ -234,7 +234,7 @@ export default function EngineerConsole() {
 
                         {/* Weather Widget */}
                         <div className="bg-gradient-to-br from-[#0A1128] to-[#1E293B] rounded-[40px] p-8 text-white flex flex-col items-center justify-center text-center shadow-xl">
-                            <CloudSun size={64} className="text-amber-400 mb-6 animate-pulse" />
+                            <CloudSun size={64} className="text-orange-400 mb-6 animate-pulse" />
                             <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-2">İstanbul, Pendik</h4>
                             <div className="text-5xl font-black mb-4">12°C</div>
                             <p className="text-sm font-medium text-white/70 mb-8 leading-relaxed">Parçalı bulutlu, öğleden sonra <br />hafif yağış bekleniyor.</p>

@@ -295,7 +295,7 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null }) => {
                                             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-[#D36A47] transition-all outline-none font-medium resize-none"
                                         />
                                     </div>
-                                    <p className="text-[9px] text-amber-500 font-bold italic ml-1">* Bu bilgi nakliye maliyetlerinin hesaplanmasında kritik öneme sahiptir.</p>
+                                    <p className="text-[9px] text-orange-500 font-bold italic ml-1">* Bu bilgi nakliye maliyetlerinin hesaplanmasında kritik öneme sahiptir.</p>
                                 </div>
                             </div>
                         )}

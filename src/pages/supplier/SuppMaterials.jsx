@@ -39,7 +39,7 @@ export default function SuppMaterials() {
                             <input
                                 type="text"
                                 placeholder="Malzeme adı veya kod ile ara..."
-                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-indigo-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-orange-400 focus:bg-white outline-none transition-all placeholder:text-slate-300"
                             />
                         </div>
                         <div className="flex gap-4 w-full md:w-auto">
@@ -62,10 +62,10 @@ export default function SuppMaterials() {
                                         <Package size={28} />
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">{mat.code}</div>
+                                        <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">{mat.code}</div>
                                         <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight leading-none mb-3">{mat.name}</h3>
                                         <div className="flex items-center gap-3">
-                                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${mat.stock < 100 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${mat.stock < 100 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                                 STOK: {mat.stock.toLocaleString('tr-TR')} {mat.unit}
                                             </span>
                                             <span className="text-[9px] font-black text-slate-300 uppercase italic whitespace-nowrap">{mat.leadTime} GÜN TERMİN</span>
@@ -74,14 +74,14 @@ export default function SuppMaterials() {
                                     <div className="w-full pt-6 border-t border-slate-50 flex items-center justify-between">
                                         <div className="text-xl font-black text-slate-800">{mat.price.toLocaleString('tr-TR')} ₺ <span className="text-[10px] text-slate-400 font-bold uppercase">/ {mat.unit}</span></div>
                                         <div className="flex gap-2">
-                                            <button className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm"><Edit2 size={16} /></button>
-                                            <button className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all shadow-sm"><Trash2 size={16} /></button>
+                                            <button className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-orange-600 hover:bg-orange-50 transition-all shadow-sm"><Edit2 size={16} /></button>
+                                            <button className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-red-600 hover:bg-red-50 transition-all shadow-sm"><Trash2 size={16} /></button>
                                         </div>
                                     </div>
                                 </div>
                             ))}
-                            <div className="border-4 border-dashed border-slate-100 rounded-[40px] flex flex-col items-center justify-center p-8 opacity-40 hover:opacity-100 transition-all cursor-pointer group hover:bg-white hover:border-indigo-100 min-h-[300px]">
-                                <Plus size={40} className="text-slate-300 group-hover:text-indigo-600 mb-4" />
+                            <div className="border-4 border-dashed border-slate-100 rounded-[40px] flex flex-col items-center justify-center p-8 opacity-40 hover:opacity-100 transition-all cursor-pointer group hover:bg-white hover:border-orange-100 min-h-[300px]">
+                                <Plus size={40} className="text-slate-300 group-hover:text-orange-600 mb-4" />
                                 <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] text-center">KATALOĞA YENİ<br />ÜRÜN EKLE</span>
                             </div>
                         </div>
@@ -112,14 +112,14 @@ export default function SuppMaterials() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-8 text-center">
-                                                <span className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest border ${mat.stock < 100 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                                                <span className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest border ${mat.stock < 100 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
                                                     {mat.stock.toLocaleString('tr-TR')} {mat.unit}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-8 text-center text-sm font-black text-slate-800">{mat.price.toLocaleString('tr-TR')} ₺</td>
                                             <td className="px-6 py-8 text-center text-xs font-bold text-slate-400 uppercase italic">{mat.leadTime} Gün</td>
                                             <td className="px-10 py-8 text-right">
-                                                <button className="p-3 text-slate-300 hover:text-indigo-600 transition-colors"><ArrowRight size={20} /></button>
+                                                <button className="p-3 text-slate-300 hover:text-orange-600 transition-colors"><ArrowRight size={20} /></button>
                                             </td>
                                         </tr>
                                     ))}

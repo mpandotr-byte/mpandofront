@@ -75,7 +75,7 @@ const Suppliers = () => {
                     {/* Header Section */}
                     <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0A1128] to-[#1E293B] rounded-[32px] p-6 md:p-10 text-white animate-fade-in shadow-2xl shadow-[#0A1128]/20">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-[100px]" />
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-[80px]" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-[80px]" />
 
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                             <div className="animate-slide-up">
@@ -144,7 +144,7 @@ const Suppliers = () => {
                                         <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D36A47] border border-slate-100 group-hover:bg-[#D36A47] group-hover:text-white transition-all duration-300">
                                             <Building2 size={24} />
                                         </div>
-                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-xl text-amber-600">
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 rounded-xl text-orange-600">
                                             <Star size={12} fill="currentColor" />
                                             <span className="text-xs font-black">{s.rating || '5.0'}</span>
                                         </div>
@@ -166,7 +166,7 @@ const Suppliers = () => {
                                                 <Wallet size={12} />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Bakiye</span>
                                             </div>
-                                            <span className="text-sm font-black text-indigo-600">
+                                            <span className="text-sm font-black text-orange-600">
                                                 {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(s.balance)}
                                             </span>
                                         </div>

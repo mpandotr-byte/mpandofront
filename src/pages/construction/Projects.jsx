@@ -38,7 +38,7 @@ import {
 const getStatusClasses = (status) => {
   switch (status) {
     case 'Devam Ediyor': return 'bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-2 py-1';
-    case 'Planlanıyor': return 'bg-purple-50 text-purple-700 border-purple-200 text-[10px] font-bold px-2 py-1';
+    case 'Planlanıyor': return 'bg-orange-50 text-orange-700 border-orange-200 text-[10px] font-bold px-2 py-1';
     case 'Gecikmede': return 'bg-red-50 text-red-700 border-red-200 text-[10px] font-bold px-2 py-1';
     case 'Bitiyor': return 'bg-yellow-50 text-yellow-700 border-yellow-200 text-[10px] font-bold px-2 py-1';
     case 'Tamamlandı': return 'bg-green-50 text-green-700 border-green-200 text-[10px] font-bold px-2 py-1';
@@ -60,8 +60,8 @@ const getStatusIcon = (status) => {
 const getProgressBarColor = (status) => {
   switch (status) {
     case 'Devam Ediyor': return 'bg-blue-500';
-    case 'Planlanıyor': return 'bg-purple-500';
-    case 'Gecikmede': return 'bg-rose-500';
+    case 'Planlanıyor': return 'bg-orange-500';
+    case 'Gecikmede': return 'bg-red-500';
     case 'Bitiyor': return 'bg-gradient-to-r from-blue-500 to-emerald-500';
     case 'Tamamlandı': return 'bg-emerald-500';
     default: return 'bg-slate-400';
@@ -71,8 +71,8 @@ const getProgressBarColor = (status) => {
 const getStatusBorderColor = (status) => {
   switch (status) {
     case 'Devam Ediyor': return 'border-blue-500';
-    case 'Planlanıyor': return 'border-purple-500';
-    case 'Gecikmede': return 'border-rose-500';
+    case 'Planlanıyor': return 'border-orange-500';
+    case 'Gecikmede': return 'border-red-500';
     case 'Bitiyor': return 'border-blue-500';
     case 'Tamamlandı': return 'border-emerald-500';
     default: return 'border-slate-300';
@@ -82,8 +82,8 @@ const getStatusBorderColor = (status) => {
 const getStatusBgColor = (status) => {
   switch (status) {
     case 'Devam Ediyor': return 'bg-blue-50/30';
-    case 'Planlanıyor': return 'bg-purple-50/30';
-    case 'Gecikmede': return 'bg-rose-50/30';
+    case 'Planlanıyor': return 'bg-orange-50/30';
+    case 'Gecikmede': return 'bg-red-50/30';
     case 'Bitiyor': return 'bg-gradient-to-br from-blue-50/40 to-emerald-50/40';
     case 'Tamamlandı': return 'bg-emerald-50/80';
     default: return 'bg-white';
@@ -468,9 +468,9 @@ function Projects() {
                 {/* Stat Pills */}
                 {[
                   { label: 'Devam', count: projects.filter(p => p.status === 'Devam Ediyor').length, color: 'bg-blue-500/20 text-blue-100' },
-                  { label: 'Plan', count: projects.filter(p => p.status === 'Planlanıyor').length, color: 'bg-amber-400/20 text-amber-100' },
+                  { label: 'Plan', count: projects.filter(p => p.status === 'Planlanıyor').length, color: 'bg-orange-400/20 text-orange-100' },
                   { label: 'Bitti', count: projects.filter(p => p.status === 'Tamamlandı').length, color: 'bg-emerald-400/20 text-emerald-100' },
-                  { label: 'Gecikme', count: projects.filter(p => p.status === 'Gecikmede').length, color: 'bg-rose-400/20 text-rose-100' },
+                  { label: 'Gecikme', count: projects.filter(p => p.status === 'Gecikmede').length, color: 'bg-red-400/20 text-red-100' },
                 ].filter(s => s.count > 0).map(s => (
                   <span key={s.label} className={`${s.color} backdrop-blur-md border border-white/5 px-3 py-1.5 rounded-xl text-xs font-bold`}>
                     {s.count} {s.label}
@@ -490,7 +490,7 @@ function Projects() {
                 placeholder="Proje ara..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all shadow-sm"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-300 transition-all shadow-sm"
               />
             </div>
 
@@ -503,7 +503,7 @@ function Projects() {
                 >
                   <Filter size={14} />
                   {selectedStatusFilter !== 'Hepsi' && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
                       {selectedStatusFilter}
                     </span>
                   )}
@@ -542,7 +542,7 @@ function Projects() {
                         {optionalColumns.map(col => (
                           <label key={col.key} className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-50 cursor-pointer group transition-colors">
                             <div className="flex items-center gap-2.5">
-                              <span className={`p-1.5 rounded-md ${visibleColumns.includes(col.key) ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400'} group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors`}>
+                              <span className={`p-1.5 rounded-md ${visibleColumns.includes(col.key) ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-400'} group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors`}>
                                 {col.icon}
                               </span>
                               <span className={`text-sm ${visibleColumns.includes(col.key) ? 'text-slate-700 font-semibold' : 'text-slate-500 font-medium'}`}>{col.label}</span>
@@ -551,7 +551,7 @@ function Projects() {
                               type="checkbox"
                               checked={visibleColumns.includes(col.key)}
                               onChange={() => toggleColumnVisibility(col.key)}
-                              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                              className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 cursor-pointer accent-orange-600"
                             />
                           </label>
                         ))}
@@ -588,13 +588,13 @@ function Projects() {
           {/* Selection Bar */}
           <div className="space-y-4">
             {selectedProjects.length > 0 && (
-              <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl animate-fade-in">
+              <div className="flex flex-wrap items-center justify-between bg-orange-50 border border-orange-200 p-3.5 rounded-xl animate-fade-in">
                 <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                  <span className="flex items-center justify-center bg-indigo-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedProjects.length}</span>
-                  <span className="text-sm font-semibold text-indigo-800">proje seçildi</span>
+                  <span className="flex items-center justify-center bg-orange-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedProjects.length}</span>
+                  <span className="text-sm font-semibold text-orange-800">proje seçildi</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-100 transition-colors px-3 py-1.5 rounded-lg border border-indigo-200">
+                  <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-orange-700 bg-white hover:bg-orange-100 transition-colors px-3 py-1.5 rounded-lg border border-orange-200">
                     <CheckSquare size={15} />
                     <span className="hidden sm:inline">{selectedProjects.length === filteredProjects.length ? 'Seçimi Temizle' : 'Tümünü Seç'}</span>
                   </button>
@@ -640,8 +640,8 @@ function Projects() {
                         {/* Actions Header */}
                         <div className={`p-4 md:p-5 -mx-4 md:-mx-5 -mt-4 md:-mt-5 mb-4 ${proj.status === 'Devam Ediyor' ? 'bg-blue-50/40' :
                           proj.status === 'Tamamlandı' ? 'bg-emerald-50/40' :
-                            proj.status === 'Planlanıyor' ? 'bg-purple-50/40' :
-                              proj.status === 'Gecikmede' ? 'bg-rose-50/40' :
+                            proj.status === 'Planlanıyor' ? 'bg-orange-50/40' :
+                              proj.status === 'Gecikmede' ? 'bg-red-50/40' :
                                 'bg-slate-50/40'
                           } border-b border-slate-100/60`}>
                           <div className="flex items-start justify-between">

@@ -102,9 +102,9 @@ export default function AccountingDashboard() {
 
     const mainButtons = [
         { id: 'income', title: 'GELİR YÖNETİMİ', desc: 'Müşteri Tahsilat & Satış Takibi', icon: <TrendingUp size={32} />, color: 'from-emerald-500 to-teal-600', path: '/accounting/income' },
-        { id: 'expense', title: 'GİDER YÖNETİMİ', desc: 'Tedarikçi Ödemeleri & Fatura Kontrol', icon: <TrendingDown size={32} />, color: 'from-rose-500 to-red-600', path: '/accounting/expense' },
-        { id: 'subcontractor', title: 'TAŞERON & PERSONEL', desc: 'Hakediş & Puantaj Ödemeleri', icon: <Users size={32} />, color: 'from-amber-500 to-orange-600', path: '/accounting/subcontractors' },
-        { id: 'cashflow', title: 'ÇEK & NAKİT AKIŞI', desc: 'Portföy & Finansal Projeksiyon', icon: <Wallet size={32} />, color: 'from-indigo-500 to-blue-600', path: '/accounting/cash-flow' }
+        { id: 'expense', title: 'GİDER YÖNETİMİ', desc: 'Tedarikçi Ödemeleri & Fatura Kontrol', icon: <TrendingDown size={32} />, color: 'from-red-500 to-red-600', path: '/accounting/expense' },
+        { id: 'subcontractor', title: 'TAŞERON & PERSONEL', desc: 'Hakediş & Puantaj Ödemeleri', icon: <Users size={32} />, color: 'from-orange-500 to-orange-600', path: '/accounting/subcontractors' },
+        { id: 'cashflow', title: 'ÇEK & NAKİT AKIŞI', desc: 'Portföy & Finansal Projeksiyon', icon: <Wallet size={32} />, color: 'from-orange-500 to-blue-600', path: '/accounting/cash-flow' }
     ];
 
     return (
@@ -129,7 +129,7 @@ export default function AccountingDashboard() {
                             amount={summary.monthlyPayment}
                             icon={<ArrowDownRight size={18} />}
                             trend="negative"
-                            color="text-rose-600"
+                            color="text-red-600"
                         />
                         <SummaryCard
                             title="30 Günlük Net Nakit"
@@ -144,14 +144,14 @@ export default function AccountingDashboard() {
                             amount={summary.totalChecksReceived}
                             icon={<CreditCard size={18} />}
                             trend="neutral"
-                            color="text-indigo-600"
+                            color="text-orange-600"
                         />
                         <SummaryCard
                             title="Toplam Borç"
                             amount={summary.totalDebt}
                             icon={<Receipt size={18} />}
                             trend="negative"
-                            color="text-amber-600"
+                            color="text-orange-600"
                             subText="(Ted. + Taş.)"
                         />
                     </div>
@@ -231,7 +231,7 @@ function ProjectMiniBalance({ project }) {
                         <h3 className="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight break-words">{project.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                             <div className="w-20 sm:w-40 h-1 md:h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-indigo-500" style={{ width: `${project.progress}%` }}></div>
+                                <div className="h-full bg-orange-500" style={{ width: `${project.progress}%` }}></div>
                             </div>
                             <span className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase leading-none">%{project.progress}</span>
                         </div>
@@ -253,24 +253,24 @@ function ProjectMiniBalance({ project }) {
                     <div className="text-xs md:text-sm font-black text-slate-800">{project.cost.toLocaleString('tr-TR')} ₺</div>
                 </div>
                 <div className="space-y-1 sm:text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 sm:border-transparent">
-                    <button className="text-[8px] md:text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-widest">DETAYLI ANALİZ</button>
+                    <button className="text-[8px] md:text-[10px] font-black text-orange-600 hover:underline uppercase tracking-widest">DETAYLI ANALİZ</button>
                 </div>
             </div>
 
             <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 md:gap-4">
-                <div className="flex-1 p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200">
+                <div className="flex-1 p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-orange-200">
                     <div className="flex items-center gap-3">
-                        <PieChart size={14} className="text-indigo-400" />
+                        <PieChart size={14} className="text-orange-400" />
                         <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">Maliyet Dağılımı</span>
                     </div>
-                    <ArrowRight size={14} className="text-slate-200 group-hover:text-indigo-600 transition-colors" />
+                    <ArrowRight size={14} className="text-slate-200 group-hover:text-orange-600 transition-colors" />
                 </div>
-                <div className="flex-1 p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200">
+                <div className="flex-1 p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-orange-200">
                     <div className="flex items-center gap-3">
-                        <FileText size={14} className="text-indigo-400" />
+                        <FileText size={14} className="text-orange-400" />
                         <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">Proje Belgeleri</span>
                     </div>
-                    <ArrowRight size={14} className="text-slate-200 group-hover:text-indigo-600 transition-colors" />
+                    <ArrowRight size={14} className="text-slate-200 group-hover:text-orange-600 transition-colors" />
                 </div>
             </div>
         </div>

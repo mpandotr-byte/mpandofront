@@ -167,16 +167,16 @@ export default function Dashboard() {
             name: p.name || p.project_name,
             status: mappedStatus,
             progress: p.progress || (mappedStatus === 'Tamamlandı' ? 100 : Math.floor(Math.random() * 40) + 20),
-            color: mappedStatus === 'Tamamlandı' ? '#10b981' : mappedStatus === 'Gecikmede' ? '#f43f5e' : '#D36A47'
+            color: mappedStatus === 'Tamamlandı' ? '#10b981' : mappedStatus === 'Gecikmede' ? '#DC2626' : '#D36A47'
           };
         });
         setConstructionProgress(mappedProjects);
 
         // 2. Process Sales Data
         const funnel = [
-          { name: 'Potansiyel', value: sales.filter(s => s.sale_status === 'Beklemede').length, color: '#6366f1' },
+          { name: 'Potansiyel', value: sales.filter(s => s.sale_status === 'Beklemede').length, color: '#D36A47' },
           { name: 'Sözleşme', value: sales.filter(s => s.sale_status === 'Satıldı').length, color: '#D36A47' },
-          { name: 'Kaybedildi', value: sales.filter(s => s.sale_status === 'İptal').length, color: '#f43f5e' },
+          { name: 'Kaybedildi', value: sales.filter(s => s.sale_status === 'İptal').length, color: '#DC2626' },
         ];
         setSalesFunnelData(funnel);
         setRecentSales(sales.slice(0, 5));
@@ -216,8 +216,8 @@ export default function Dashboard() {
 
         // 4. Process Other Stats
         const pStatus = [
-          { name: 'Onay Bekleyen', count: purchaseReqs.filter(r => r.status === 'OPEN').length, color: '#f59e0b' },
-          { name: 'Onaylanan', count: purchaseReqs.filter(r => r.status === 'APPROVED').length, color: '#6366f1' },
+          { name: 'Onay Bekleyen', count: purchaseReqs.filter(r => r.status === 'OPEN').length, color: '#D36A47' },
+          { name: 'Onaylanan', count: purchaseReqs.filter(r => r.status === 'APPROVED').length, color: '#D36A47' },
           { name: 'Sipariş Edilen', count: purchaseReqs.filter(r => r.status === 'ORDERED').length, color: '#10b981' },
         ];
         setPurchasingStatus(pStatus);
@@ -225,10 +225,10 @@ export default function Dashboard() {
         // 5. Calculate Department Workload
         const totalRecords = sales.length + projects.length + purchaseReqs.length + materials.length;
         setDepartmentWorkload(totalRecords > 0 ? [
-          { name: 'Satış', val: Math.round((sales.length / totalRecords) * 100), color: '#6366f1' },
+          { name: 'Satış', val: Math.round((sales.length / totalRecords) * 100), color: '#D36A47' },
           { name: 'İnşaat', val: Math.round((projects.length / totalRecords) * 100), color: '#D36A47' },
           { name: 'Satın Alma', val: Math.round((purchaseReqs.length / totalRecords) * 100), color: '#10b981' },
-          { name: 'Envanter', val: Math.round((materials.length / totalRecords) * 100), color: '#8b5cf6' },
+          { name: 'Envanter', val: Math.round((materials.length / totalRecords) * 100), color: '#D36A47' },
         ] : []);
 
         // 6. Supplier Stats
@@ -315,10 +315,10 @@ export default function Dashboard() {
 
             <div className="flex p-1.5 bg-slate-200/40 backdrop-blur-md rounded-[24px] overflow-x-auto no-scrollbar">
               <TabButton active={activeTab === 'global'} label="Genel Bakış" icon={LayoutDashboard} onClick={() => setActiveTab('global')} color="#0A1128" />
-              <TabButton active={activeTab === 'sales'} label="Satış" icon={UserCheck} onClick={() => setActiveTab('sales')} color="#6366f1" />
+              <TabButton active={activeTab === 'sales'} label="Satış" icon={UserCheck} onClick={() => setActiveTab('sales')} color="#D36A47" />
               <TabButton active={activeTab === 'construction'} label="İnşaat" icon={Construction} onClick={() => setActiveTab('construction')} color="#D36A47" />
               <TabButton active={activeTab === 'purchasing'} label="Satın Alma" icon={ShoppingCart} onClick={() => setActiveTab('purchasing')} color="#10b981" />
-              <TabButton active={activeTab === 'accounting'} label="Muhasebe" icon={DollarSign} onClick={() => setActiveTab('accounting')} color="#8b5cf6" />
+              <TabButton active={activeTab === 'accounting'} label="Muhasebe" icon={DollarSign} onClick={() => setActiveTab('accounting')} color="#D36A47" />
             </div>
           </div>
 
@@ -335,14 +335,14 @@ export default function Dashboard() {
                   </h2>
                 </div>
                 <div className="bg-white p-8 rounded-[40px] text-slate-900 border border-white shadow-sm hover:shadow-xl transition-all group">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-indigo-500 pl-3">Aktif Leads</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-orange-500 pl-3">Aktif Leads</p>
                   <h2 className="text-3xl font-black tracking-tighter">{stats.activeLeadsCount}</h2>
-                  <p className="mt-4 text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Sıcak Müşteri</p>
+                  <p className="mt-4 text-[10px] font-bold text-orange-500 uppercase tracking-widest">Sıcak Müşteri</p>
                 </div>
                 <div className="bg-white p-8 rounded-[40px] text-slate-900 border border-white shadow-sm hover:shadow-xl transition-all group">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-amber-500 pl-3">Projeler</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-orange-500 pl-3">Projeler</p>
                   <h2 className="text-3xl font-black tracking-tighter">{stats.projectCount} Şantiye</h2>
-                  <p className="mt-4 text-[10px] font-bold text-amber-500 uppercase tracking-widest">Devam Eden</p>
+                  <p className="mt-4 text-[10px] font-bold text-orange-500 uppercase tracking-widest">Devam Eden</p>
                 </div>
                 <div className="bg-white p-8 rounded-[40px] text-slate-900 border border-white shadow-sm hover:shadow-xl transition-all group">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-emerald-500 pl-3">Malzeme Çeşidi</p>
@@ -352,7 +352,7 @@ export default function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                <ModuleCard title="Performans Grafiği" subtitle="Finansal & Süreç Takibi" icon={Activity} color="#6366f1" className="lg:col-span-2">
+                <ModuleCard title="Performans Grafiği" subtitle="Finansal & Süreç Takibi" icon={Activity} color="#D36A47" className="lg:col-span-2">
                   <div className="h-[300px] w-full mt-6">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={financeHistory}>
@@ -388,7 +388,7 @@ export default function Dashboard() {
                 </ModuleCard>
               </div>
 
-              <ModuleCard title="Son Aktiviteler" subtitle="Sistem Kayıtları" icon={Bell} color="#8b5cf6">
+              <ModuleCard title="Son Aktiviteler" subtitle="Sistem Kayıtları" icon={Bell} color="#D36A47">
                 <div className="mt-6 space-y-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
                   {recentActivities.map(act => (
                     <div key={act.id} className="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-white hover:border-slate-200 transition-all group">
@@ -403,7 +403,7 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right">
                         {act.amount && !isNaN(Number(act.amount)) && Number(act.amount) !== 0 && (
-                          <p className={`text-[11px] font-black tracking-tighter ${act.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <p className={`text-[11px] font-black tracking-tighter ${act.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
                             {act.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(act.amount)))}
                           </p>
                         )}
@@ -420,7 +420,7 @@ export default function Dashboard() {
           {activeTab === 'sales' && (
             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <ModuleCard title="Satış Hunisi" subtitle="Müşteri Dönüşüm Oranları" icon={Target} color="#6366f1">
+                <ModuleCard title="Satış Hunisi" subtitle="Müşteri Dönüşüm Oranları" icon={Target} color="#D36A47">
                   <div className="h-[300px] w-full flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -441,13 +441,13 @@ export default function Dashboard() {
                   </div>
                 </ModuleCard>
 
-                <ModuleCard title="Personel Performans Grafiği" subtitle="Satış Adedi Hedef Analizi" icon={Star} color="#f59e0b">
+                <ModuleCard title="Personel Performans Grafiği" subtitle="Satış Adedi Hedef Analizi" icon={Star} color="#D36A47">
                   <div className="h-[300px] w-full mt-6">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={staffPerformance}>
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} dy={10} />
                         <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '20px' }} />
-                        <Bar dataKey="sales" name="Gerçekleşen" radius={[10, 10, 0, 0]} maxBarSize={40} fill="#6366f1" />
+                        <Bar dataKey="sales" name="Gerçekleşen" radius={[10, 10, 0, 0]} maxBarSize={40} fill="#D36A47" />
                         <Bar dataKey="target" name="Hedef" radius={[10, 10, 0, 0]} maxBarSize={40} fill="#e2e8f0" />
                       </BarChart>
                     </ResponsiveContainer>
@@ -456,12 +456,12 @@ export default function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <ModuleCard title="Onayi Bekleyen Müşteriler" subtitle="Evrak Bekleyenler" icon={UserCheck} color="#6366f1">
+                <ModuleCard title="Onayi Bekleyen Müşteriler" subtitle="Evrak Bekleyenler" icon={UserCheck} color="#D36A47">
                   <div className="space-y-4 mt-6">
                     {pendingCustomers.map((sale) => (
-                      <div key={sale.id} onClick={() => navigate('/sales')} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8FAFB] border border-white hover:border-indigo-100 transition-all cursor-pointer group">
+                      <div key={sale.id} onClick={() => navigate('/sales')} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8FAFB] border border-white hover:border-orange-100 transition-all cursor-pointer group">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-400 group-hover:text-indigo-500 shadow-sm">
+                          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-400 group-hover:text-orange-500 shadow-sm">
                             <UserCheck size={18} />
                           </div>
                           <div>
@@ -471,7 +471,7 @@ export default function Dashboard() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-black text-slate-900 tracking-tighter">{formatCurrency(sale.offered_price)}</p>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">BEKLEMEDE</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-orange-500">BEKLEMEDE</span>
                         </div>
                       </div>
                     ))}
@@ -508,17 +508,17 @@ export default function Dashboard() {
               {attendanceAlerts.length > 0 && (
                 <div className="grid grid-cols-1 gap-4">
                   {attendanceAlerts.map(alert => (
-                    <div key={alert.id} className="bg-rose-50 border border-rose-200 p-4 rounded-3xl flex items-center justify-between animate-pulse">
+                    <div key={alert.id} className="bg-red-50 border border-red-200 p-4 rounded-3xl flex items-center justify-between animate-pulse">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-200">
+                        <div className="w-10 h-10 rounded-2xl bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-200">
                           <AlertTriangle size={20} />
                         </div>
                         <div>
-                          <p className="text-sm font-black text-rose-900 uppercase tracking-tight">Puantaj Uyarısı</p>
-                          <p className="text-xs font-bold text-rose-500 tracking-wide">[{alert.project}] projesinde bugün henüz puantaj girişi yapılmadı!</p>
+                          <p className="text-sm font-black text-red-900 uppercase tracking-tight">Puantaj Uyarısı</p>
+                          <p className="text-xs font-bold text-red-500 tracking-wide">[{alert.project}] projesinde bugün henüz puantaj girişi yapılmadı!</p>
                         </div>
                       </div>
-                      <button onClick={() => navigate('/attendance')} className="px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Puantajı Düzenle</button>
+                      <button onClick={() => navigate('/attendance')} className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Puantajı Düzenle</button>
                     </div>
                   ))}
                 </div>
@@ -541,18 +541,18 @@ export default function Dashboard() {
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Puantaj</span>
                     </button>
                     <button onClick={() => navigate('/projects')} className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-white rounded-[24px] hover:bg-white hover:border-[#D36A47]/30 hover:shadow-xl transition-all group">
-                      <Plus className="text-indigo-500 mb-2 group-hover:scale-110 transition-transform" />
+                      <Plus className="text-orange-500 mb-2 group-hover:scale-110 transition-transform" />
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Yeni Proje</span>
                     </button>
                   </div>
                 </ModuleCard>
 
                 {/* Notes & Reminders Card */}
-                <ModuleCard title="Notlar & Hatırlatmalar" subtitle="Kişisel İş Listesi" icon={ListTodo} color="#8b5cf6">
+                <ModuleCard title="Notlar & Hatırlatmalar" subtitle="Kişisel İş Listesi" icon={ListTodo} color="#D36A47">
                   <div className="space-y-3 mt-6">
                     {notes.map(note => (
                       <div key={note.id} className="flex items-center gap-3 p-3 bg-slate-50/50 border border-white rounded-2xl">
-                        <div className={`w-2 h-2 rounded-full ${note.type === 'reminder' ? 'bg-amber-400' : 'bg-[#D36A47]'}`} />
+                        <div className={`w-2 h-2 rounded-full ${note.type === 'reminder' ? 'bg-orange-400' : 'bg-[#D36A47]'}`} />
                         <div className="flex-1">
                           <p className="text-[12px] font-bold text-slate-900 leading-tight">{note.content}</p>
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{note.date}</span>
@@ -622,10 +622,10 @@ export default function Dashboard() {
                 <ModuleCard title="Kritik Malzemeler" subtitle="Termin Uyarıları" icon={Package} color="#D36A47">
                   <div className="mt-4 space-y-4">
                     {criticalMaterials.map((mat, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-100 hover:bg-white hover:shadow-lg transition-all group">
+                      <div key={idx} className="flex items-center justify-between p-4 bg-red-50/50 rounded-2xl border border-red-100 hover:bg-white hover:shadow-lg transition-all group">
                         <div>
                           <p className="text-[11px] font-black text-slate-900 uppercase truncate max-w-[150px]">{mat.name || mat.material_name}</p>
-                          <p className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">{mat.warehouse_quantity || mat.warehouse_qty} {mat.unit} MEVCUT</p>
+                          <p className="text-[9px] font-bold text-red-500 uppercase tracking-widest">{mat.warehouse_quantity || mat.warehouse_qty} {mat.unit} MEVCUT</p>
                         </div>
                         <button onClick={() => navigate('/purchasing')} className="text-[9px] font-black text-[#D36A47] uppercase tracking-widest hover:underline">Tedarik Et</button>
                       </div>
@@ -674,7 +674,7 @@ export default function Dashboard() {
 
           {activeTab === 'accounting' && (
             <div className="space-y-10 animate-in fade-in zoom-in duration-500">
-              <ModuleCard title="Kasa & Banka Durumu" subtitle="Nakit Akış Analizi" icon={DollarSign} color="#8b5cf6">
+              <ModuleCard title="Kasa & Banka Durumu" subtitle="Nakit Akış Analizi" icon={DollarSign} color="#D36A47">
                 <div className="h-[300px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={financeHistory}>
@@ -683,7 +683,7 @@ export default function Dashboard() {
                       <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} tickFormatter={v => `₺${Math.round(v / 1000)}k`} />
                       <Tooltip contentStyle={{ borderRadius: '20px' }} />
                       <Line type="monotone" dataKey="income" name="Giriş" stroke="#10b981" strokeWidth={6} dot={{ r: 6, fill: '#10b981', strokeWidth: 4, stroke: '#fff' }} />
-                      <Line type="monotone" dataKey="expense" name="Çıkış" stroke="#f43f5e" strokeWidth={6} dot={{ r: 6, fill: '#f43f5e', strokeWidth: 4, stroke: '#fff' }} />
+                      <Line type="monotone" dataKey="expense" name="Çıkış" stroke="#DC2626" strokeWidth={6} dot={{ r: 6, fill: '#DC2626', strokeWidth: 4, stroke: '#fff' }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -698,7 +698,7 @@ export default function Dashboard() {
                   <h5 className="text-2xl font-black text-slate-900 tracking-tighter w-full text-center truncate" title={formatCurrency(totalReceivable)}>{formatCurrency(totalReceivable)}</h5>
                 </div>
                 <div className="p-8 rounded-[40px] bg-white border border-white shadow-sm flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4">
                     <ArrowDownRight size={24} />
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Toplam Çıkış</p>

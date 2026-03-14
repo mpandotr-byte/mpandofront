@@ -208,7 +208,7 @@ const NewConstructionFileModal = ({ isOpen, onClose, projects, onUpload, initial
 
                     {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-4">
-                        <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-xl">
+                        <div className="flex items-center gap-2 text-orange-600 bg-orange-50 px-4 py-2 rounded-xl">
                             <Info size={16} />
                             <span className="text-[10px] font-black uppercase tracking-tight">Tüm yetkili mühendisler erişebilecektir.</span>
                         </div>
