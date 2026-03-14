@@ -223,34 +223,60 @@ function Customers() {
     setSelectedCustomerForDetails(customer);
     setIsDetailsModalOpen(true);
     try {
-      const [salesData, projectsData] = await Promise.all([
-        api.get('/sales'),
-        api.get('/projects').catch(() => [])
+      const [salesData, customerDetailData] = await Promise.all([
+        api.get('/sales').catch(() => []),
+        api.get(`/customers/${customer.id}`).catch(() => null)
       ]);
 
       const filteredSales = (salesData || []).filter(s => String(s.customer_id) === String(customer.id) || String(s.musteri_id) === String(customer.id));
       setCustomerSales(filteredSales);
 
-      // Sahip olunan mülklerin tespiti (Başarılı satışlar üzerinden)
+      // Sahip olunan mülklerin tespiti — iki kaynaktan birleştir:
+      // 1) units tablosunda customer_id doğrudan eşleşen daireler
+      // 2) sales_leads tablosundaki satış kayıtları üzerinden
       const ownedUnits = [];
+      const addedUnitIds = new Set();
 
+      // Kaynak 1: GET /customers/:id — units ilişkisi (customer_id FK)
+      if (customerDetailData?.units && Array.isArray(customerDetailData.units)) {
+        customerDetailData.units.forEach(unit => {
+          if (!addedUnitIds.has(String(unit.id))) {
+            addedUnitIds.add(String(unit.id));
+            const blockInfo = unit.floors?.blocks || {};
+            ownedUnits.push({
+              id: unit.id,
+              unit_number: unit.unit_number || `No: ${unit.id}`,
+              project_name: blockInfo.name || 'Proje',
+              block_name: blockInfo.name || '',
+              unit_type: unit.unit_type || '',
+              sales_status: unit.sales_status || 'Satıldı',
+              sale_date: unit.updated_at,
+              contract_no: unit.contract_no || '',
+              list_price: unit.list_price,
+              campaign_price: unit.campaign_price
+            });
+          }
+        });
+      }
+
+      // Kaynak 2: sales_leads tablosu — satış kayıtları üzerinden
       filteredSales.forEach(sale => {
-        // Satış onaylanmışsa (Satıldı) mülk listesine ekle
         if (sale.sale_status === 'Satıldı' || sale.status === 'Satıldı' || sale.approval_status === 'Onaylandı') {
           const unit = sale.units || sale.unit;
           const uId = sale.unit_id || sale.unite_id || (unit?.id);
 
-          if (uId && !ownedUnits.find(ou => String(ou.id) === String(uId))) {
-            const project = (projectsData || []).find(p => String(p.id) === String(sale.project_id || sale.proje_id || unit?.project_id || sale.projects?.id));
-
+          if (uId && !addedUnitIds.has(String(uId))) {
+            addedUnitIds.add(String(uId));
             ownedUnits.push({
               id: uId,
               unit_number: unit?.unit_number || unit?.unite_no || sale.interested_product || `No: ${uId}`,
-              project_name: project?.name || sale.projects?.name || 'Bilinmeyen Proje',
+              project_name: sale.projects?.name || 'Bilinmeyen Proje',
               unit_type: unit?.unit_type || unit?.type || '',
               sales_status: sale.sale_status || sale.status || 'Satıldı',
               sale_date: sale.sale_date,
-              contract_no: sale.contract_no || unit?.contract_no
+              contract_no: sale.contract_no || unit?.contract_no,
+              list_price: unit?.list_price,
+              campaign_price: unit?.campaign_price
             });
           }
         }
@@ -512,25 +538,50 @@ function Customers() {
                       <Home size={16} className="text-orange-500" /> Sahip Olduğu Mülkler
                     </h3>
                     <div className="space-y-3 mb-8">
-                      {customerUnits.length > 0 ? customerUnits.map((unit, idx) => (
-                        <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="font-bold text-slate-800 text-sm">{unit.project_name}</p>
-                              <p className="text-xs text-slate-500 font-medium">Birim: {unit.unit_number || 'Bilinmiyor'} {unit.unit_type ? `(${unit.unit_type})` : ''}</p>
+                      {customerUnits.length > 0 ? customerUnits.map((unit, idx) => {
+                        const statusLabel = String(unit.sales_status || '').toUpperCase();
+                        const isSold = ['SOLD', 'SATILDI'].includes(statusLabel);
+                        const isReserved = ['RESERVED', 'REZERVE', 'REZERV'].includes(statusLabel);
+                        const badgeClass = isSold ? 'bg-emerald-50 text-emerald-600' : isReserved ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600';
+                        const badgeText = isSold ? 'TAPULU' : isReserved ? 'REZERVE' : 'ATANMIŞ';
+
+                        return (
+                          <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <p className="font-bold text-slate-800 text-sm">{unit.project_name}</p>
+                                <p className="text-xs text-slate-500 font-medium">
+                                  Daire {unit.unit_number || 'Bilinmiyor'} {unit.unit_type ? `(${unit.unit_type})` : ''}
+                                  {unit.block_name ? ` • ${unit.block_name}` : ''}
+                                </p>
+                              </div>
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${badgeClass}`}>
+                                {badgeText}
+                              </span>
                             </div>
-                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-600">
-                              TAPULU
-                            </span>
+                            {(unit.list_price || unit.campaign_price) && (
+                              <div className="flex items-center gap-3 mt-2 mb-1">
+                                {unit.list_price && (
+                                  <span className="text-xs font-bold text-slate-600">
+                                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.list_price)}
+                                  </span>
+                                )}
+                                {unit.campaign_price && (
+                                  <span className="text-xs font-black text-emerald-600">
+                                    → {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(unit.campaign_price)}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {(unit.contract_no || unit.sale_date) && (
+                              <div className="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                                <span>Sözleşme: {unit.contract_no || '-'}</span>
+                                <span>{unit.sale_date ? new Date(unit.sale_date).toLocaleDateString('tr-TR') : ''}</span>
+                              </div>
+                            )}
                           </div>
-                          {(unit.contract_no || unit.sale_date) && (
-                            <div className="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                              <span>Sözleşme: {unit.contract_no || '-'}</span>
-                              <span>{unit.sale_date ? new Date(unit.sale_date).toLocaleDateString('tr-TR') : ''}</span>
-                            </div>
-                          )}
-                        </div>
-                      )) : (
+                        );
+                      }) : (
                         <div className="text-center py-6 bg-white rounded-2xl border border-slate-100 border-dashed">
                           <p className="text-[10px] font-black text-slate-300 uppercase">Kayıt Bulunmuyor</p>
                         </div>

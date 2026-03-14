@@ -52,8 +52,6 @@ const navigationModules = {
       { name: "Taşeron Yönetimi", icon: icons.Personnel, href: "/subcontractors" },
       { name: "Reçeteler (Analizler)", icon: icons.Dashboard, href: "/recipes" },
       { name: "Metraj Özeti", icon: icons.Dashboard, href: "/quantity-summary" },
-      { name: "İhaleler", icon: icons.Sales, href: "/tenders" },
-      { name: "DWG Yönetimi", icon: icons.Documents, href: "/dwg-manager" },
       { name: "Günlük Puantaj", icon: icons.Settings, href: "/attendance" },
     ],
   },
@@ -109,7 +107,7 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials') || path.startsWith('/construction/files') || path.startsWith('/tenders') || path.startsWith('/dwg-manager') || path.startsWith('/quantity-summary') || path.startsWith('/recipes')) {
+    if (path.startsWith('/projects') || path.startsWith('/engineer') || path.startsWith('/daily-reports') || path.startsWith('/planning') || path.startsWith('/attendance') || path.startsWith('/purchasing') || path.startsWith('/suppliers') || path.startsWith('/stock') || path.startsWith('/materials') || path.startsWith('/construction/files') || path.startsWith('/quantity-summary') || path.startsWith('/recipes')) {
       setActiveModule('construction');
     } else if (path.startsWith('/accounting') || path.startsWith('/documents') || path.startsWith('/finance')) {
       setActiveModule('accounting');

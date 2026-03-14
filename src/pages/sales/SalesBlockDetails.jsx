@@ -776,9 +776,53 @@ function SalesBlockDetails() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-50 rounded-xl p-4 text-center">
-                  <User size={24} className="mx-auto text-slate-300 mb-2" />
-                  <p className="text-xs font-bold text-slate-400">Bu daireye henuz musteri atanmamis</p>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="text-center mb-3">
+                    <UserPlus size={24} className="mx-auto text-slate-300 mb-2" />
+                    <p className="text-xs font-bold text-slate-400 mb-3">Bu daireye henuz musteri atanmamis</p>
+                  </div>
+                  {/* Musteri Atama */}
+                  <div className="border-t border-slate-200 pt-3">
+                    <p className="text-[9px] font-bold text-blue-500 uppercase mb-2">Musteri Ata</p>
+                    <div className="flex gap-2">
+                      <select
+                        id="assignCustomerSelect"
+                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-blue-500"
+                        defaultValue=""
+                      >
+                        <option value="">Musteri Seciniz...</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>{c.full_name} {c.phone ? `(${c.phone})` : ''}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={async () => {
+                          const selectEl = document.getElementById('assignCustomerSelect');
+                          const customerId = selectEl?.value;
+                          if (!customerId) { alert('Lutfen bir musteri seciniz.'); return; }
+                          try {
+                            // Unit tablosunda customer_id guncelle
+                            await api.put(`/projects/units/${unitDetailModal.id}`, {
+                              ...unitDetailModal,
+                              customer_id: parseInt(customerId),
+                              sales_status: unitDetailModal.sales_status === 'AVAILABLE' ? 'RESERVED' : unitDetailModal.sales_status
+                            });
+                            // Musteri bilgisini yeniden cek
+                            const cust = await api.get(`/customers/${customerId}`);
+                            setCustomerDetail(cust);
+                            setUnitDetailModal(prev => ({ ...prev, customer_id: parseInt(customerId) }));
+                            fetchData();
+                          } catch (err) {
+                            console.error('Musteri atama hatasi:', err);
+                            alert('Musteri atanamadi: ' + (err.message || ''));
+                          }
+                        }}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 flex items-center gap-1.5"
+                      >
+                        <UserPlus size={12} /> Ata
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

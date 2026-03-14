@@ -53,8 +53,7 @@ import SuppStock from "./pages/supplier/SuppStock";
 import SuppOffers from "./pages/supplier/SuppOffers";
 import SuppAccounting from "./pages/supplier/SuppAccounting";
 
-import Tenders from "./pages/management/Tenders";
-import DwgManager from "./pages/management/DwgManager";
+// Tenders ve DwgManager kaldırıldı - DWG/PDF yükleme İnşaat Projeler sayfasına taşındı
 import Announcements from "./pages/system/Announcements";
 import UserManagement from "./pages/system/UserManagement";
 import ActivityLogs from "./pages/system/ActivityLogs";
@@ -127,8 +126,7 @@ function App() {
         <Route path="/daily-reports" element={<PrivateRoute><DailyReports /></PrivateRoute>} />
         <Route path="/site-logs" element={<PrivateRoute><SiteLogs /></PrivateRoute>} />
         <Route path="/planning" element={<PrivateRoute><Planning /></PrivateRoute>} />
-        <Route path="/tenders" element={<PrivateRoute><Tenders /></PrivateRoute>} />
-        <Route path="/dwg-manager" element={<PrivateRoute><DwgManager /></PrivateRoute>} />
+        {/* Tenders ve DWG Manager kaldırıldı */}
 
         {/* --- İNSAN KAYNAKLARI (İK) VE PUANTAJ --- */}
         <Route path="/employees" element={<PrivateRoute><Employees /></PrivateRoute>} />

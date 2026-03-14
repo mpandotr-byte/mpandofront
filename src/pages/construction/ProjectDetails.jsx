@@ -24,7 +24,13 @@ import {
     ChevronDown,
     ChevronUp,
     Pencil,
-    Trash2
+    Trash2,
+    Upload,
+    Sparkles,
+    Loader2,
+    X,
+    Save,
+    File
 } from 'lucide-react';
 
 const getStatusClasses = (status) => {
@@ -219,6 +225,13 @@ function ProjectDetails() {
         basement_recipe_id: ''
     });
 
+    // DWG/PDF Upload
+    const [dwgFiles, setDwgFiles] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+    const [aiResult, setAiResult] = useState(null);
+    const fileInputRef = React.useRef(null);
+
     const fetchProjectDetails = async () => {
         setLoading(true);
         try {
@@ -240,6 +253,12 @@ function ProjectDetails() {
             // Reçeteleri de çek (bulk atama için)
             const recipesData = await api.get('/recipes');
             setRecipes(recipesData || []);
+
+            // DWG dosyalarını çek
+            try {
+                const dwgData = await api.get(`/dwg/${id}`);
+                setDwgFiles(dwgData || []);
+            } catch (e) { console.log('DWG dosyaları çekilemedi'); }
         } catch (err) {
             console.error("Proje detayları alınırken hata:", err);
         } finally {
@@ -402,6 +421,128 @@ function ProjectDetails() {
         } catch (err) {
             console.error("Toplu reçete atama hatası:", err);
             alert("Reçeteler atanırken bir hata oluştu.");
+        }
+    };
+
+    // DWG/PDF Dosya Yükleme
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const allowedTypes = ['.dwg', '.pdf', '.png', '.jpg', '.jpeg'];
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!allowedTypes.includes(ext)) {
+            alert('Desteklenen dosya türleri: DWG, PDF, PNG, JPG');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('project_id', id);
+            const result = await api.upload(`/dwg/upload`, formData);
+            setDwgFiles(prev => [...prev, result.file || result]);
+            alert('Dosya başarıyla yüklendi!');
+        } catch (err) {
+            console.error('Dosya yükleme hatası:', err);
+            alert('Dosya yüklenirken hata oluştu: ' + err.message);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    // AI Otomatik Doldurma
+    const handleAiAutoFill = async () => {
+        if (!project) return;
+
+        setIsAiAnalyzing(true);
+        setAiResult(null);
+        try {
+            // AI'dan proje analizi iste
+            const prompt = `Bu bir inşaat projesi. Proje adı: "${project.name}". Açıklama: "${project.description || 'Yok'}". Mevcut bloklar: ${project.blocks?.map(b => b.name + ' (' + b.floor_count + ' kat)').join(', ') || 'Yok'}. Lütfen bu proje için eksik bilgileri tahmin et ve JSON formatında döndür: {"blocks": [{"name": "Blok adı", "floor_count": sayı, "building_type": "Konut/Ticari", "foundation_area_m2": sayı, "elevator_count": sayı}], "floors": [{"block_name": "Blok adı", "floor_number": sayı, "height_cm": sayı, "gross_area_m2": sayı}], "units": [{"block_name": "Blok adı", "floor_number": sayı, "unit_number": "no", "unit_type": "1+1/2+1/3+1", "facade": "yön"}]}. Sadece JSON döndür, açıklama yapma.`;
+
+            const response = await api.post('/ai/test-ai', { prompt, model: 'claude' });
+
+            // AI yanıtını parse et
+            let parsed = null;
+            const text = response.analysis || response.result || response.message || '';
+
+            try {
+                // JSON bloğunu bul
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    parsed = JSON.parse(jsonMatch[0]);
+                }
+            } catch (parseErr) {
+                console.log('JSON parse hatası, metin olarak gösteriliyor');
+            }
+
+            setAiResult({ text, parsed });
+
+            if (parsed) {
+                const confirmApply = window.confirm('AI analiz tamamlandı! Sonuçları projeye uygulamak ister misiniz?');
+                if (confirmApply) {
+                    await applyAiResults(parsed);
+                }
+            }
+        } catch (err) {
+            console.error('AI analiz hatası:', err);
+            alert('AI analiz sırasında hata: ' + err.message);
+        } finally {
+            setIsAiAnalyzing(false);
+        }
+    };
+
+    const applyAiResults = async (parsed) => {
+        try {
+            let updatedCount = 0;
+
+            // Mevcut blokları güncelle
+            if (parsed.blocks && project.blocks) {
+                for (const aiBlock of parsed.blocks) {
+                    const existingBlock = project.blocks.find(b =>
+                        b.name.toLowerCase() === aiBlock.name?.toLowerCase()
+                    );
+                    if (existingBlock) {
+                        const updateData = {};
+                        if (aiBlock.building_type && !existingBlock.building_type) updateData.building_type = aiBlock.building_type;
+                        if (aiBlock.foundation_area_m2 && !existingBlock.foundation_area_m2) updateData.foundation_area_m2 = aiBlock.foundation_area_m2;
+                        if (aiBlock.elevator_count && !existingBlock.elevator_count) updateData.elevator_count = aiBlock.elevator_count;
+
+                        if (Object.keys(updateData).length > 0) {
+                            await api.put(`/projects/blocks/${existingBlock.id}`, updateData);
+                            updatedCount++;
+                        }
+                    }
+                }
+            }
+
+            alert(`AI sonuçları uygulandı! ${updatedCount} blok güncellendi.`);
+            await fetchProjectDetails();
+        } catch (err) {
+            console.error('AI sonuçları uygulama hatası:', err);
+            alert('Sonuçlar uygulanırken hata: ' + err.message);
+        }
+    };
+
+    // AI ile DWG/PDF Dosyası Analizi
+    const handleAiFileAnalysis = async (fileUrl, fileName) => {
+        setIsAiAnalyzing(true);
+        try {
+            const response = await api.post('/ai/test-ai', {
+                prompt: `Bu dosya bir inşaat projesi teknik çizimidir: "${fileName}". Dosya URL: ${fileUrl}. Bu dosyayı analiz et ve proje yapısını (blok sayısı, kat sayısı, daire tipleri, m² bilgileri) çıkar. JSON formatında döndür.`,
+                model: 'claude'
+            });
+
+            const text = response.analysis || response.result || response.message || '';
+            setAiResult({ text, parsed: null });
+            alert('AI dosya analizi tamamlandı! Sonuçları aşağıda görebilirsiniz.');
+        } catch (err) {
+            alert('AI dosya analizi hatası: ' + err.message);
+        } finally {
+            setIsAiAnalyzing(false);
         }
     };
 
@@ -584,21 +725,95 @@ function ProjectDetails() {
                                         </ul>
                                     </div>
 
-                                    {project.dwg_file_url && (
-                                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-sm p-6 text-white text-center">
-                                            <FileText size={32} className="mx-auto mb-3 opacity-90" />
-                                            <h3 className="font-bold text-lg mb-1">Teknik Çizimler</h3>
-                                            <p className="text-blue-100 text-sm mb-4">Bu projenin DWG/CAD dosyalarını indirebilirsiniz.</p>
-                                            <a
-                                                href={project.dwg_file_url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="inline-block w-full py-2.5 bg-white text-blue-700 font-bold rounded-xl shadow-sm hover:shadow-md transition-all text-sm"
-                                            >
-                                                Dosyayı Görüntüle / İndir
+                                        {/* DWG/PDF Dosya Yükleme */}
+                                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                            <File size={18} className="text-blue-600" />
+                                            Proje Dosyaları
+                                        </h3>
+
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept=".dwg,.pdf,.png,.jpg,.jpeg"
+                                            onChange={handleFileUpload}
+                                            className="hidden"
+                                        />
+
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-blue-200 hover:border-blue-400 bg-blue-50/50 hover:bg-blue-50 rounded-xl text-sm font-bold text-blue-600 transition-all mb-3"
+                                        >
+                                            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                                            {isUploading ? 'Yükleniyor...' : 'DWG / PDF Yükle'}
+                                        </button>
+
+                                        {dwgFiles.length > 0 && (
+                                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                                                {dwgFiles.map((f, idx) => (
+                                                    <div key={f.id || idx} className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <FileText size={14} className="text-blue-500 shrink-0" />
+                                                            <span className="text-xs font-medium text-slate-700 truncate">{f.file_name}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            {f.file_url && (
+                                                                <a href={f.file_url} target="_blank" rel="noreferrer"
+                                                                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors" title="Görüntüle">
+                                                                    <ArrowLeft size={12} className="rotate-180" />
+                                                                </a>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleAiFileAnalysis(f.file_url, f.file_name)}
+                                                                disabled={isAiAnalyzing}
+                                                                className="p-1 text-slate-400 hover:text-purple-600 transition-colors" title="AI Analiz">
+                                                                <Sparkles size={12} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {project.dwg_file_url && !dwgFiles.find(f => f.file_url === project.dwg_file_url) && (
+                                            <a href={project.dwg_file_url} target="_blank" rel="noreferrer"
+                                                className="mt-2 block text-center text-xs text-blue-600 font-bold hover:underline">
+                                                Mevcut DWG Dosyasını Görüntüle
                                             </a>
+                                        )}
+                                    </div>
+
+                                    {/* AI Otomatik Doldurma */}
+                                    <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl shadow-sm p-6 text-white">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Sparkles size={20} />
+                                            <h3 className="font-bold text-lg">AI Otomatik Doldurma</h3>
                                         </div>
-                                    )}
+                                        <p className="text-purple-100 text-xs mb-4">
+                                            AI, proje bilgilerini analiz ederek blok, kat ve daire detaylarını otomatik doldurur.
+                                        </p>
+                                        <button
+                                            onClick={handleAiAutoFill}
+                                            disabled={isAiAnalyzing}
+                                            className="w-full py-3 bg-white text-purple-700 font-bold rounded-xl shadow-sm hover:shadow-md transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                        >
+                                            {isAiAnalyzing ? (
+                                                <><Loader2 size={16} className="animate-spin" /> Analiz Ediliyor...</>
+                                            ) : (
+                                                <><Sparkles size={16} /> Projeyi Analiz Et</>
+                                            )}
+                                        </button>
+
+                                        {aiResult && (
+                                            <div className="mt-3 p-3 bg-white/10 rounded-lg max-h-32 overflow-y-auto">
+                                                <p className="text-[10px] font-bold text-white/60 uppercase mb-1">AI Sonucu</p>
+                                                <p className="text-xs text-white/90 whitespace-pre-wrap">
+                                                    {aiResult.parsed ? `${JSON.stringify(aiResult.parsed, null, 2).substring(0, 300)}...` : aiResult.text?.substring(0, 300)}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
 
                                 </div>
                             </div>
