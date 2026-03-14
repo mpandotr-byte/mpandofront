@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Home, LayoutGrid, CheckCircle, Compass, Banknote } from 'lucide-react';
+import { X, Save, Home, LayoutGrid, Compass, Maximize2 } from 'lucide-react';
 
 const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
     const isEdit = !!unitData;
@@ -7,9 +7,9 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
     const [formData, setFormData] = useState({
         unit_number: '',
         unit_type: '2+1',
-        sales_status: 'AVAILABLE',
         facade: '',
-        price: ''
+        gross_area: '',
+        net_area: ''
     });
 
     useEffect(() => {
@@ -18,17 +18,17 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
                 setFormData({
                     unit_number: unitData.unit_number ?? '',
                     unit_type: unitData.unit_type ?? '2+1',
-                    sales_status: unitData.sales_status ?? 'AVAILABLE',
                     facade: unitData.facade ?? '',
-                    price: unitData.price ?? ''
+                    gross_area: unitData.gross_area ?? '',
+                    net_area: unitData.net_area ?? ''
                 });
             } else {
                 setFormData({
                     unit_number: '',
                     unit_type: '2+1',
-                    sales_status: 'AVAILABLE',
                     facade: '',
-                    price: ''
+                    gross_area: '',
+                    net_area: ''
                 });
             }
         }
@@ -118,26 +118,6 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
                                 </div>
                             </div>
 
-                            {/* Satış Durumu */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Satış Durumu</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <CheckCircle size={16} />
-                                    </div>
-                                    <select
-                                        name="sales_status"
-                                        value={formData.sales_status}
-                                        onChange={handleChange}
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm font-semibold"
-                                    >
-                                        <option value="AVAILABLE" className="text-green-600">Satılık (Müsait)</option>
-                                        <option value="RESERVED" className="text-yellow-600">Rezerve</option>
-                                        <option value="SOLD" className="text-red-600">Satıldı</option>
-                                    </select>
-                                </div>
-                            </div>
-
                             {/* Cephe */}
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium text-slate-700">Cephe</label>
@@ -156,20 +136,38 @@ const NewUnitModal = ({ isOpen, onClose, onAdd, floorId, unitData = null }) => {
                                 </div>
                             </div>
 
-                            {/* Fiyat */}
+                            {/* Brüt Alan */}
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Fiyat (₺)</label>
+                                <label className="text-sm font-medium text-slate-700">Brüt Alan (m²)</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <Banknote size={16} />
+                                        <Maximize2 size={16} />
                                     </div>
                                     <input
                                         type="number"
-                                        name="price"
-                                        value={formData.price}
+                                        name="gross_area"
+                                        value={formData.gross_area}
                                         onChange={handleChange}
-                                        placeholder="Satış Fiyatı"
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400 font-bold text-emerald-600"
+                                        placeholder="Örn: 120"
+                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Net Alan */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium text-slate-700">Net Alan (m²)</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                        <Maximize2 size={16} />
+                                    </div>
+                                    <input
+                                        type="number"
+                                        name="net_area"
+                                        value={formData.net_area}
+                                        onChange={handleChange}
+                                        placeholder="Örn: 100"
+                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-sm placeholder:text-slate-400"
                                     />
                                 </div>
                             </div>

@@ -13,30 +13,6 @@ import NewFloorModal from '../../modals/blocks/NewFloorModal';
 import NewUnitModal from '../../modals/units/NewUnitModal';
 import NewRoomModal from '../../modals/units/NewRoomModal';
 
-const getUnitStatusDetails = (status) => {
-    switch (String(status).toUpperCase()) {
-        case 'SOLD':
-        case 'SATILDI':
-            return { label: 'Satıldı', classes: 'bg-red-50 text-red-700 border-red-100' };
-        case 'RESERVED':
-        case 'REZERVE':
-        case 'REZERV':
-            return { label: 'Rezerve', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
-        case 'BARTER':
-            return { label: 'Barter', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
-        case 'ARSA SAHIBI':
-        case 'ARSA SAHİBİ':
-            return { label: 'Arsa Sahibi', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
-        case 'AVAILABLE':
-        case 'SATILIK':
-        case 'MÜSAİT':
-        case 'BOŞ':
-        default:
-            return { label: 'Satılık', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
-    }
-};
-
-
 function BlockDetails() {
     const { projectId, blockId } = useParams();
     const navigate = useNavigate();
