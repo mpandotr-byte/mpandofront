@@ -135,7 +135,7 @@ export default function DwgManager() {
     const columns = [
         { key: 'file_name', label: 'Dosya Adi', render: (val, row) => (
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500"><Layers size={18} /></div>
+                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500"><Layers size={18} /></div>
                 <div className="flex flex-col gap-0.5">
                     <span className="font-semibold text-slate-800 text-[13px]">{val || '-'}</span>
                     <span className="text-[11px] text-slate-400">{row.description || ''}</span>
@@ -156,11 +156,11 @@ export default function DwgManager() {
                     </a>
                 )}
                 <button onClick={(e) => { e.stopPropagation(); setShowAiModal(row); setAiResult(null); setAiPrompt(''); }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded-lg transition-all">
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 hover:bg-orange-100 rounded-lg transition-all">
                     {aiAnalyzing === row.id ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />} AI
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); setEditItem(row); }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 rounded-lg transition-all">
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-orange-600 hover:border-orange-200 rounded-lg transition-all">
                     <Pencil size={13} />
                 </button>
             </div>
@@ -176,7 +176,7 @@ export default function DwgManager() {
                 <div className="px-4 sm:px-6 md:px-8 pb-12 pt-4 md:pt-6 space-y-8">
                     {/* Header Banner */}
                     <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0A1128] to-[#1E293B] rounded-[40px] p-10 text-white shadow-2xl">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-[80px]" />
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-[80px]" />
                         <div className="relative flex flex-col md:flex-row justify-between items-center gap-6">
                             <div>
                                 <h1 className="text-3xl font-black uppercase tracking-tight mb-2">CAD / DWG Arsivi</h1>
@@ -207,7 +207,7 @@ export default function DwgManager() {
                         </div>
                         <div className="bg-white rounded-2xl border border-slate-200 p-5">
                             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Secili Proje</p>
-                            <p className="text-2xl font-bold text-indigo-600">{selectedProject?.name || '-'}</p>
+                            <p className="text-2xl font-bold text-orange-600">{selectedProject?.name || '-'}</p>
                         </div>
                         <div className="bg-white rounded-2xl border border-slate-200 p-5">
                             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Son Yukleme</p>
@@ -217,8 +217,8 @@ export default function DwgManager() {
 
                     {/* Selection Bar */}
                     {selectedFiles.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl">
-                            <span className="text-sm font-semibold text-indigo-800">{selectedFiles.length} dosya secildi</span>
+                        <div className="flex flex-wrap items-center justify-between bg-orange-50 border border-orange-200 p-3.5 rounded-xl">
+                            <span className="text-sm font-semibold text-orange-800">{selectedFiles.length} dosya secildi</span>
                             <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200">
                                 <Trash2 size={15} /> Sil
                             </button>
@@ -248,7 +248,7 @@ export default function DwgManager() {
                                     <div className="space-y-2">
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Dosya Sec *</label>
                                         <div
-                                            className={`relative w-full border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50 hover:border-indigo-300 hover:bg-indigo-50'}`}
+                                            className={`relative w-full border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50 hover:border-orange-300 hover:bg-orange-50'}`}
                                             onClick={() => document.getElementById('dwg-file-input').click()}
                                         >
                                             <input
@@ -318,9 +318,9 @@ export default function DwgManager() {
                         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
                             <div className="bg-white rounded-[40px] w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
                                 {/* Modal Header */}
-                                <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-purple-50 to-white">
+                                <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-orange-50 to-white">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-purple-100 text-purple-700 rounded-2xl">
+                                        <div className="p-3 bg-orange-100 text-orange-700 rounded-2xl">
                                             <Sparkles size={24} />
                                         </div>
                                         <div>
@@ -337,13 +337,13 @@ export default function DwgManager() {
                                 <div className="flex-1 overflow-y-auto p-8 space-y-6">
                                     {/* DWG Format Warning */}
                                     {showAiModal.file_name?.toLowerCase().endsWith('.dwg') && (
-                                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                                            <div className="p-2 bg-amber-100 rounded-xl text-amber-600 mt-0.5">
+                                        <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl flex items-start gap-3">
+                                            <div className="p-2 bg-orange-100 rounded-xl text-orange-600 mt-0.5">
                                                 <FileText size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-amber-800">DWG Dosyasi Tespit Edildi</p>
-                                                <p className="text-xs text-amber-700 mt-1">
+                                                <p className="text-sm font-bold text-orange-800">DWG Dosyasi Tespit Edildi</p>
+                                                <p className="text-xs text-orange-700 mt-1">
                                                     AI, DWG binary formatini dogrudan okuyamaz. Analiz verilen parametreler uzerinden tahmin ile yapilacaktir.
                                                     <strong> Daha dogru sonuc icin dosyanizi PDF veya PNG formatina cevirip tekrar yukleyin.</strong>
                                                 </p>
@@ -385,13 +385,13 @@ export default function DwgManager() {
                                                 value={aiPrompt}
                                                 onChange={(e) => setAiPrompt(e.target.value)}
                                                 placeholder="Ornegin: Toplam insaat alani nedir?"
-                                                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:border-purple-300"
+                                                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:border-orange-300"
                                                 onKeyDown={(e) => e.key === 'Enter' && handleAiAnalyze()}
                                             />
                                             <button
                                                 onClick={handleAiAnalyze}
                                                 disabled={!!aiAnalyzing}
-                                                className="px-6 py-3 bg-purple-600 text-white rounded-2xl text-sm font-bold hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
+                                                className="px-6 py-3 bg-orange-600 text-white rounded-2xl text-sm font-bold hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
                                             >
                                                 {aiAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                                                 Analiz Et
@@ -401,9 +401,9 @@ export default function DwgManager() {
 
                                     {/* Result */}
                                     {aiAnalyzing && (
-                                        <div className="flex items-center justify-center p-8 bg-purple-50 rounded-2xl border border-purple-100">
-                                            <Loader2 size={24} className="animate-spin text-purple-500 mr-3" />
-                                            <span className="text-sm font-semibold text-purple-700">AI analiz ediyor...</span>
+                                        <div className="flex items-center justify-center p-8 bg-orange-50 rounded-2xl border border-orange-100">
+                                            <Loader2 size={24} className="animate-spin text-orange-500 mr-3" />
+                                            <span className="text-sm font-semibold text-orange-700">AI analiz ediyor...</span>
                                         </div>
                                     )}
 

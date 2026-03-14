@@ -94,7 +94,7 @@ export default function FinanceAdvanced() {
                             </div>
                             <div className="p-6 rounded-[32px] bg-white border border-slate-100 shadow-sm">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aylik Odeme</span>
-                                <div className="text-xl font-black text-rose-600 mt-2">{fmt(summary.monthly_payment || summary.monthlyPayment)} TL</div>
+                                <div className="text-xl font-black text-red-600 mt-2">{fmt(summary.monthly_payment || summary.monthlyPayment)} TL</div>
                             </div>
                             <div className="p-6 rounded-[32px] bg-[#0A1128] border border-transparent shadow-xl">
                                 <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Net Nakit</span>
@@ -102,11 +102,11 @@ export default function FinanceAdvanced() {
                             </div>
                             <div className="p-6 rounded-[32px] bg-white border border-slate-100 shadow-sm">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alinan Cekler</span>
-                                <div className="text-xl font-black text-indigo-600 mt-2">{fmt(summary.received_cheques || summary.totalChecks)} TL</div>
+                                <div className="text-xl font-black text-orange-600 mt-2">{fmt(summary.received_cheques || summary.totalChecks)} TL</div>
                             </div>
                             <div className="p-6 rounded-[32px] bg-white border border-slate-100 shadow-sm">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Toplam Borc</span>
-                                <div className="text-xl font-black text-amber-600 mt-2">{fmt(summary.total_debt || summary.totalDebt)} TL</div>
+                                <div className="text-xl font-black text-orange-600 mt-2">{fmt(summary.total_debt || summary.totalDebt)} TL</div>
                             </div>
                         </div>
                     )}
@@ -114,12 +114,12 @@ export default function FinanceAdvanced() {
                     {/* Action Buttons */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <button onClick={() => setIsBarterModalOpen(true)} className="group bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all text-left">
-                            <div className="w-16 h-16 rounded-[24px] bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-6"><Repeat size={28} /></div>
+                            <div className="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-6"><Repeat size={28} /></div>
                             <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-2">Takas (Barter)</h3>
                             <p className="text-slate-400 text-xs font-medium">Gayrimenkul takas islemleri kaydin</p>
                         </button>
                         <button onClick={() => setIsChequeModalOpen(true)} className="group bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all text-left">
-                            <div className="w-16 h-16 rounded-[24px] bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-6"><CreditCard size={28} /></div>
+                            <div className="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-500 to-blue-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-6"><CreditCard size={28} /></div>
                             <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-2">Cek Ciro</h3>
                             <p className="text-slate-400 text-xs font-medium">Cek cirola tedarikci ve taserona</p>
                         </button>
@@ -171,7 +171,7 @@ export default function FinanceAdvanced() {
                                                     <td className="p-6 text-sm font-bold text-slate-800">{pp.company_name || pp.customer_name || '-'}</td>
                                                     <td className="p-6 text-sm font-bold text-slate-800">{fmt(pp.amount)} TL</td>
                                                     <td className="p-6 text-sm text-slate-600">{pp.due_date ? new Date(pp.due_date).toLocaleDateString('tr-TR') : '-'}</td>
-                                                    <td className="p-6"><span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${pp.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>{pp.status || 'PENDING'}</span></td>
+                                                    <td className="p-6"><span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${pp.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>{pp.status || 'PENDING'}</span></td>
                                                 </tr>
                                             ))}
                                         </tbody>

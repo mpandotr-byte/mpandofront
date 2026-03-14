@@ -470,7 +470,7 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
             </section>
 
             <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
-              <div className="flex items-center gap-2 mb-4 text-purple-700 font-semibold border-b border-slate-200 pb-2">
+              <div className="flex items-center gap-2 mb-4 text-orange-700 font-semibold border-b border-slate-200 pb-2">
                 <Users size={18} />
                 <h3>Taraf Bilgileri</h3>
               </div>

@@ -38,13 +38,13 @@ export default function SubcontractorPersonnel() {
                         <div className="bg-white p-1.5 rounded-[28px] border border-slate-100 shadow-sm flex grow max-w-sm">
                             <button
                                 onClick={() => { setView('subcontractors'); setSelectedEntity(null); }}
-                                className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${view === 'subcontractors' ? 'bg-amber-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${view === 'subcontractors' ? 'bg-orange-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 <Users size={18} /> TAŞERONLAR
                             </button>
                             <button
                                 onClick={() => { setView('personnel'); setSelectedEntity(null); }}
-                                className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${view === 'personnel' ? 'bg-amber-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${view === 'personnel' ? 'bg-orange-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 <Hammer size={18} /> PERSONEL
                             </button>
@@ -78,7 +78,7 @@ export default function SubcontractorPersonnel() {
                     {/* Detail Console */}
                     {selectedEntity && (
                         <div className="bg-white rounded-[40px] border border-slate-200 shadow-2xl overflow-hidden animate-scale-in">
-                            <div className="bg-amber-500 p-10 text-white flex flex-col md:flex-row justify-between items-center gap-8 shadow-xl">
+                            <div className="bg-orange-500 p-10 text-white flex flex-col md:flex-row justify-between items-center gap-8 shadow-xl">
                                 <div className="flex items-center gap-8">
                                     <div className="w-20 h-20 rounded-[28px] bg-white/10 flex items-center justify-center backdrop-blur-md">
                                         {view === 'subcontractors' ? <Users size={40} /> : <Hammer size={40} />}
@@ -95,15 +95,15 @@ export default function SubcontractorPersonnel() {
 
                             {/* Details Tabs */}
                             <div className="flex bg-slate-50 p-2 border-b border-slate-200">
-                                <button onClick={() => setActiveTab('progress')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'progress' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <button onClick={() => setActiveTab('progress')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'progress' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <FileText size={18} /> {view === 'subcontractors' ? 'Hakediş Raporları' : 'Hesap Özeti'}
                                 </button>
                                 {view === 'subcontractors' && (
-                                    <button onClick={() => setActiveTab('personnel_list')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'personnel_list' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                    <button onClick={() => setActiveTab('personnel_list')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'personnel_list' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                                         <Users size={18} /> Bağlı Personel
                                     </button>
                                 )}
-                                <button onClick={() => setActiveTab('payments')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payments' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <button onClick={() => setActiveTab('payments')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[22px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payments' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                                     <CreditCard size={18} /> Ödeme Kayıtları
                                 </button>
                             </div>
@@ -113,7 +113,7 @@ export default function SubcontractorPersonnel() {
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between mb-8">
                                             <h4 className="text-lg font-black text-slate-800 uppercase tracking-tight">{view === 'subcontractors' ? 'Tasdikli Metraj ve Hakediş' : 'Maaş ve Puantaj Detayı'}</h4>
-                                            <button className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-4 py-2 rounded-xl">
+                                            <button className="flex items-center gap-2 text-[10px] font-black text-orange-600 uppercase tracking-widest bg-orange-50 px-4 py-2 rounded-xl">
                                                 {view === 'subcontractors' ? '+ HAKEDİŞ OLUŞTUR' : 'EK ÖDEME EKLE'}
                                             </button>
                                         </div>
@@ -138,7 +138,7 @@ export default function SubcontractorPersonnel() {
                                                             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hakediş Tutarı</div>
                                                             <div className="text-lg font-black text-slate-800">1.450.000 ₺</div>
                                                         </div>
-                                                        <button className="p-4 bg-white rounded-2xl border border-slate-100 text-slate-400 hover:text-amber-500 transition-all shadow-sm">
+                                                        <button className="p-4 bg-white rounded-2xl border border-slate-100 text-slate-400 hover:text-orange-500 transition-all shadow-sm">
                                                             <ArrowRight size={20} />
                                                         </button>
                                                     </div>
@@ -150,7 +150,7 @@ export default function SubcontractorPersonnel() {
 
                                 {activeTab === 'payments' && (
                                     <div className="flex flex-col items-center justify-center py-20 bg-slate-50 border border-dashed border-slate-200 rounded-[40px]">
-                                        <div className="w-20 h-20 rounded-[32px] bg-amber-50 text-amber-600 flex items-center justify-center mb-6">
+                                        <div className="w-20 h-20 rounded-[32px] bg-orange-50 text-orange-600 flex items-center justify-center mb-6">
                                             <CreditCard size={40} />
                                         </div>
                                         <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Ödeme Geçmişi</h3>
@@ -189,15 +189,15 @@ function EntityCard({ entity, type, onClick, isSelected }) {
     return (
         <div
             onClick={onClick}
-            className={`p-8 bg-white rounded-[40px] border shadow-sm transition-all cursor-pointer hover:shadow-2xl ${isSelected ? 'border-amber-500 ring-4 ring-amber-50' : 'border-slate-100 hover:border-slate-200'}`}
+            className={`p-8 bg-white rounded-[40px] border shadow-sm transition-all cursor-pointer hover:shadow-2xl ${isSelected ? 'border-orange-500 ring-4 ring-orange-50' : 'border-slate-100 hover:border-slate-200'}`}
         >
             <div className="flex items-start justify-between mb-8">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isSelected ? 'bg-amber-500 text-white' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isSelected ? 'bg-orange-500 text-white' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
                     {type === 'sub' ? <Users size={28} /> : <Hammer size={28} />}
                 </div>
                 <div className="text-right">
                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kalan Borç</div>
-                    <div className="text-xl font-black text-rose-500">{entity.balance.toLocaleString('tr-TR')} ₺</div>
+                    <div className="text-xl font-black text-red-500">{entity.balance.toLocaleString('tr-TR')} ₺</div>
                 </div>
             </div>
 

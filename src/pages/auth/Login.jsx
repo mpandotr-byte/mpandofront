@@ -104,8 +104,8 @@ const Login = () => {
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/50 via-[#0a0a1a] to-purple-950/30" />
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px] animate-float" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px]" style={{ animation: 'float 4s ease-in-out infinite reverse' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-orange-600/10 blur-[120px] animate-float" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-orange-600/10 blur-[120px]" style={{ animation: 'float 4s ease-in-out infinite reverse' }} />
         <div className="absolute top-[50%] left-[50%] w-[300px] h-[300px] rounded-full bg-blue-600/5 blur-[80px]" />
 
         {/* Grid Pattern */}
@@ -129,7 +129,7 @@ const Login = () => {
 
         {/* Hero Content */}
         <div className="max-w-xl animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs font-medium mb-6">
             <Zap size={14} />
             İnşaat Yönetim Platformu
           </div>
@@ -137,7 +137,7 @@ const Login = () => {
           <h1 className="text-5xl font-bold text-white leading-[1.15] mb-6">
             Şantiye Yönetimi
             <br />
-            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+            <span className="bg-gradient-to-r from-orange-400 via-orange-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
               Yeni Nesil
             </span>
             {' '}Çözüm
@@ -155,7 +155,7 @@ const Login = () => {
                 className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm hover:bg-white/[0.06] transition-all duration-300 group animate-slide-in-left"
                 style={{ animationDelay: `${0.4 + i * 0.1}s`, animationFillMode: 'both' }}
               >
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 group-hover:bg-orange-500/20 transition-colors">
                   {feature.icon}
                 </div>
                 <div>
@@ -178,7 +178,7 @@ const Login = () => {
               {i > 0 && <div className="w-px h-10 bg-white/10" />}
               <div className="group">
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="text-indigo-400/70">{stat.icon}</div>
+                  <div className="text-orange-400/70">{stat.icon}</div>
                   <p className="text-2xl font-extrabold text-white tracking-tight">
                     {stats.loadingStats ? (
                       <span className="inline-block w-10 h-6 bg-white/10 rounded animate-pulse" />
@@ -233,7 +233,7 @@ const Login = () => {
                 <input
                   type="email"
                   placeholder="ornek@mail.com"
-                  className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm"
+                  className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all text-sm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -247,7 +247,7 @@ const Login = () => {
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Şifre
                   </label>
-                  <button type="button" onClick={() => navigate("/forgot-password")} className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+                  <button type="button" onClick={() => navigate("/forgot-password")} className="text-xs text-orange-400 hover:text-orange-300 transition-colors font-medium">
                     Şifremi Unuttum
                   </button>
                 </div>
@@ -255,7 +255,7 @@ const Login = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm pr-11"
+                    className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all text-sm pr-11"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -276,7 +276,7 @@ const Login = () => {
                 <input
                   type="checkbox"
                   id="remember"
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/30 cursor-pointer accent-indigo-500"
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-orange-500 focus:ring-orange-500/30 cursor-pointer accent-orange-500"
                 />
                 <label htmlFor="remember" className="text-sm text-slate-400 cursor-pointer select-none">
                   Beni hatırla
@@ -287,7 +287,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-semibold py-3.5 rounded-xl hover:from-indigo-500 hover:to-indigo-400 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                className="w-full relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold py-3.5 rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all transform active:scale-[0.98] shadow-lg shadow-orange-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
               >
                 {loading ? (
                   <>
@@ -315,7 +315,7 @@ const Login = () => {
 
             <p className="text-center text-xs text-slate-500">
               Hesabınız yok mu?{' '}
-              <a href="#" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+              <a href="#" className="text-orange-400 hover:text-orange-300 font-semibold transition-colors">
                 İletişime Geçin
               </a>
             </p>

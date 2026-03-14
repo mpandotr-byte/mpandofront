@@ -223,7 +223,7 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                 <div className="p-8 overflow-y-auto custom-scrollbar">
                     {/* ═════════════════ AI DWG ANALYZER SECTION ═════════════════ */}
                     {!isEdit && (
-                        <div className="mb-10 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2rem] p-6 border border-blue-100 relative overflow-hidden group">
+                        <div className="mb-10 bg-gradient-to-br from-orange-50 to-blue-50 rounded-[2rem] p-6 border border-blue-100 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-blue-500/10 transition-colors" />
                             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
@@ -314,7 +314,7 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                                 <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3"><span className="w-8 h-px bg-slate-200" /> TESİSAT METRAJ VE ÜNİTE VERİLERİ</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                     <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
-                                        <div className="flex items-center gap-2 text-amber-600"><Zap size={16} /> <span className="text-[10px] font-black uppercase">Elektrik (Priz/Sorti)</span></div>
+                                        <div className="flex items-center gap-2 text-orange-600"><Zap size={16} /> <span className="text-[10px] font-black uppercase">Elektrik (Priz/Sorti)</span></div>
                                         <div className="relative">
                                             <input type="number" name="elec_points" value={formData.elec_points} onChange={handleChange} placeholder="0" className="w-full bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400">ADET</span>
@@ -328,7 +328,7 @@ const BlockModal = ({ isOpen, onClose, onSave, projectId, blockData = null }) =>
                                         </div>
                                     </div>
                                     <div className="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-3">
-                                        <div className="flex items-center gap-2 text-rose-600"><Flame size={16} /> <span className="text-[10px] font-black uppercase">Doğalgaz (HAT MT)</span></div>
+                                        <div className="flex items-center gap-2 text-red-600"><Flame size={16} /> <span className="text-[10px] font-black uppercase">Doğalgaz (HAT MT)</span></div>
                                         <div className="relative">
                                             <input type="number" name="gas_line_mt" value={formData.gas_line_mt} onChange={handleChange} placeholder="0" className="w-full bg-white px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold outline-none" />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400">METRE</span>

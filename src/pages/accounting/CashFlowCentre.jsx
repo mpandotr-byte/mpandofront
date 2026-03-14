@@ -34,8 +34,8 @@ export default function CashFlowCentre() {
         switch (status) {
             case 'PORTFOLIO': return 'bg-blue-50 text-blue-600 border-blue-100';
             case 'COLLECTED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'ENDORSED': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-            case 'OVERDUE': return 'bg-rose-50 text-rose-600 border-rose-100';
+            case 'ENDORSED': return 'bg-orange-50 text-orange-600 border-orange-100';
+            case 'OVERDUE': return 'bg-red-50 text-red-600 border-red-100';
             default: return 'bg-slate-50 text-slate-400';
         }
     };
@@ -106,7 +106,7 @@ export default function CashFlowCentre() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {cheques.map(cheque => (
                                 <div key={cheque.id} className="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
-                                    {cheque.status === 'ENDORSED' && <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-12 -mt-12 group-hover:bg-indigo-100 transition-colors" />}
+                                    {cheque.status === 'ENDORSED' && <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-12 -mt-12 group-hover:bg-orange-100 transition-colors" />}
 
                                     <div className="flex items-start justify-between mb-8 relative z-10">
                                         <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-[#0A1128] group-hover:text-white transition-all">
@@ -132,13 +132,13 @@ export default function CashFlowCentre() {
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Vade Tarihi</div>
-                                                <div className="text-[12px] font-black text-indigo-600 uppercase italic tracking-tighter">{cheque.date}</div>
+                                                <div className="text-[12px] font-black text-orange-600 uppercase italic tracking-tighter">{cheque.date}</div>
                                             </div>
                                         </div>
                                         {cheque.status === 'ENDORSED' && (
-                                            <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-center gap-3">
-                                                <ArrowRightLeft size={14} className="text-indigo-500" />
-                                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter italic">Ciro Edildi: {cheque.supplier}</span>
+                                            <div className="p-3 bg-orange-50/50 rounded-xl border border-orange-100 flex items-center gap-3">
+                                                <ArrowRightLeft size={14} className="text-orange-500" />
+                                                <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter italic">Ciro Edildi: {cheque.supplier}</span>
                                             </div>
                                         )}
                                     </div>
@@ -159,7 +159,7 @@ export default function CashFlowCentre() {
                                                 DETAYLARI GÖR <ChevronRight size={14} />
                                             </button>
                                         )}
-                                        <button className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 hover:bg-white hover:text-indigo-500 hover:border-indigo-100 border border-transparent transition-all">
+                                        <button className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 hover:bg-white hover:text-orange-500 hover:border-orange-100 border border-transparent transition-all">
                                             <Camera size={18} />
                                         </button>
                                     </div>
@@ -170,7 +170,7 @@ export default function CashFlowCentre() {
 
                     {activeTab === 'projection' && (
                         <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center py-32 space-y-8">
-                            <div className="w-24 h-24 rounded-[36px] bg-indigo-50 text-indigo-500 flex items-center justify-center animate-bounce shadow-xl border-4 border-white">
+                            <div className="w-24 h-24 rounded-[36px] bg-orange-50 text-orange-500 flex items-center justify-center animate-bounce shadow-xl border-4 border-white">
                                 <Activity size={48} />
                             </div>
                             <div>
@@ -186,7 +186,7 @@ export default function CashFlowCentre() {
                                 </div>
                                 <div className="p-8 bg-slate-50 rounded-[32px] border border-slate-100 flex flex-col items-center">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">30 GÜNLÜK ÇIKIŞ</span>
-                                    <span className="text-2xl font-black text-rose-600">2.850.000 ₺</span>
+                                    <span className="text-2xl font-black text-red-600">2.850.000 ₺</span>
                                 </div>
                                 <div className="p-8 bg-[#0A1128] rounded-[32px] flex flex-col items-center shadow-xl">
                                     <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">TAHMİNİ KASA (NET)</span>

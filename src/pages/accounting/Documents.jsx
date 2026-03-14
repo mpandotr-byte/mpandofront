@@ -40,9 +40,9 @@ export default function Documents() {
         project: [
             { id: 1, name: 'Ruhsat & Belediye Evrakları', count: 12, icon: <Building2 />, color: 'bg-blue-500' },
             { id: 2, name: 'Kat Karşılığı Sözleşmeleri', count: 4, icon: <BadgeCheck />, color: 'bg-emerald-500' },
-            { id: 3, name: 'Satış Sözleşmeleri / Tapu', count: 42, icon: <User />, color: 'bg-indigo-500' },
-            { id: 4, name: 'Tedarikçi Anlaşmaları', count: 18, icon: <Truck />, color: 'bg-amber-500' },
-            { id: 5, name: 'Taşeron Sözleşmeleri', count: 24, icon: <Hammer />, color: 'bg-rose-500' }
+            { id: 3, name: 'Satış Sözleşmeleri / Tapu', count: 42, icon: <User />, color: 'bg-orange-500' },
+            { id: 4, name: 'Tedarikçi Anlaşmaları', count: 18, icon: <Truck />, color: 'bg-orange-500' },
+            { id: 5, name: 'Taşeron Sözleşmeleri', count: 24, icon: <Hammer />, color: 'bg-red-500' }
         ],
         corporate: [
             { id: 1, name: 'Sicil Gazetesi & İmza Sirküleri', count: 5, icon: <ShieldCheck />, color: 'bg-slate-700' },
@@ -124,17 +124,17 @@ export default function Documents() {
                     {(files.length > 0 ? files : []).map(file => (
                         <div key={file.id} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all group cursor-pointer text-left">
                             <div className="flex items-start justify-between mb-4">
-                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
+                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-orange-50 group-hover:text-orange-600 transition-all">
                                     <FileText size={24} />
                                 </div>
                                 <div className="text-[10px] font-black px-2 py-1 bg-slate-100 rounded-lg text-slate-400 uppercase tracking-widest">
                                     {file.type}
                                 </div>
                             </div>
-                            <h3 className="text-sm font-black text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors truncate">{file.title || file.name || 'Belge'}</h3>
+                            <h3 className="text-sm font-black text-slate-800 mb-1 group-hover:text-orange-600 transition-colors truncate">{file.title || file.name || 'Belge'}</h3>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{file.size || ''} {file.created_at ? new Date(file.created_at).toLocaleDateString('tr-TR') : file.date || ''}</p>
                             <div className="mt-6 flex items-center gap-2">
-                                <button className="flex-1 py-3 bg-slate-50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all scale-95 hover:scale-100 uppercase">Görüntüle</button>
+                                <button className="flex-1 py-3 bg-slate-50 hover:bg-orange-50 text-slate-400 hover:text-orange-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all scale-95 hover:scale-100 uppercase">Görüntüle</button>
                                 <button className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-xl transition-all scale-95 hover:scale-100"><Download size={16} /></button>
                             </div>
                         </div>
@@ -212,7 +212,7 @@ export default function Documents() {
                                             <button
                                                 key={i}
                                                 onClick={() => setSelectedProject(p)}
-                                                className={`px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${selectedProject === p ? 'bg-[#0A1128] text-white shadow-lg shadow-indigo-200 ring-4 ring-indigo-50' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                className={`px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${selectedProject === p ? 'bg-[#0A1128] text-white shadow-lg shadow-orange-200 ring-4 ring-orange-50' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
                                             >
                                                 {p}
                                             </button>
@@ -269,7 +269,7 @@ export default function Documents() {
                                             {['Mustafa Dağlı', 'Ahmet Yılmaz', 'Mehmet Aksoy', 'Zeynep Güneş', 'Ali Vural', 'Ece Doğan'].map((name, i) => (
                                                 <div
                                                     key={i}
-                                                    onClick={() => setSelectedFolder({ id: 100 + i, name: `${name} Belgeleri`, count: 12, icon: <User />, color: 'bg-indigo-500' })}
+                                                    onClick={() => setSelectedFolder({ id: 100 + i, name: `${name} Belgeleri`, count: 12, icon: <User />, color: 'bg-orange-500' })}
                                                     className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-2xl transition-all group flex flex-col gap-6 cursor-pointer"
                                                 >
                                                     <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#0A1128] group-hover:text-white transition-all border border-slate-100">

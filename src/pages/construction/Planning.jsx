@@ -123,9 +123,9 @@ export default function Planning() {
 
                             <div className="space-y-4">
                                 {[
-                                    { branch: 'Kalıp Ekibi', project: 'Blok A', color: 'bg-indigo-500' },
+                                    { branch: 'Kalıp Ekibi', project: 'Blok A', color: 'bg-orange-500' },
                                     { branch: 'Demir Ekibi', project: 'Blok A', color: 'bg-emerald-500' },
-                                    { branch: 'Sıva Ekibi', project: 'Blok B', color: 'bg-amber-500' }
+                                    { branch: 'Sıva Ekibi', project: 'Blok B', color: 'bg-orange-500' }
                                 ].map((task, i) => (
                                     <div key={i} className="grid grid-cols-8 gap-4 items-center">
                                         <div className="col-span-1">

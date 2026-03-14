@@ -80,8 +80,8 @@ export default function SuppAccounting() {
                                     { title: 'Bekleyen Ödeme', desc: 'Ege Yapı’ya kesilen 12 numaralı fatura gecikmede.', type: 'alert', date: '3 GÜN' },
                                     { title: 'Vergi Ödemesi', desc: 'KDV beyannamesi ödeme günü yaklaşıyor.', type: 'info', date: '12 MAR' }
                                 ].map((alert, i) => (
-                                    <div key={i} className={`p-6 rounded-[32px] border flex items-center gap-6 group cursor-pointer transition-all hover:bg-white overflow-hidden relative ${alert.type === 'urgent' ? 'bg-rose-50/50 border-rose-100 shadow-rose-100 hover:shadow-xl' : alert.type === 'alert' ? 'bg-amber-50/50 border-amber-100 shadow-amber-100 hover:shadow-xl' : 'bg-slate-50 border-slate-100 shadow-slate-100 hover:shadow-xl'}`}>
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${alert.type === 'urgent' ? 'bg-rose-200 text-rose-700' : alert.type === 'alert' ? 'bg-amber-200 text-amber-700' : 'bg-slate-200 text-slate-700'}`}>
+                                    <div key={i} className={`p-6 rounded-[32px] border flex items-center gap-6 group cursor-pointer transition-all hover:bg-white overflow-hidden relative ${alert.type === 'urgent' ? 'bg-red-50/50 border-red-100 shadow-red-100 hover:shadow-xl' : alert.type === 'alert' ? 'bg-orange-50/50 border-orange-100 shadow-orange-100 hover:shadow-xl' : 'bg-slate-50 border-slate-100 shadow-slate-100 hover:shadow-xl'}`}>
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${alert.type === 'urgent' ? 'bg-red-200 text-red-700' : alert.type === 'alert' ? 'bg-orange-200 text-orange-700' : 'bg-slate-200 text-slate-700'}`}>
                                             <Calendar size={20} />
                                         </div>
                                         <div className="flex-1">
@@ -112,7 +112,7 @@ export default function SuppAccounting() {
                                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Firma / Evrak</th>
                                             <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tür</th>
                                             <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Vade / Tarih</th>
-                                            <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center text-indigo-500">Tutar</th>
+                                            <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center text-orange-500">Tutar</th>
                                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Durum</th>
                                         </tr>
                                     </thead>
@@ -133,9 +133,9 @@ export default function SuppAccounting() {
                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest py-1.5 px-3 bg-slate-50 rounded-lg">{item.type}</span>
                                                 </td>
                                                 <td className="px-6 py-7 text-center text-xs font-bold text-slate-400">{item.date}</td>
-                                                <td className="px-6 py-7 text-center text-sm font-black text-indigo-600">{item.amount.toLocaleString('tr-TR')} ₺</td>
+                                                <td className="px-6 py-7 text-center text-sm font-black text-orange-600">{item.amount.toLocaleString('tr-TR')} ₺</td>
                                                 <td className="px-8 py-7 text-center">
-                                                    <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${item.status === 'TAHSİL' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                                                    <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${item.status === 'TAHSİL' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
                                                         {item.status}
                                                     </span>
                                                 </td>

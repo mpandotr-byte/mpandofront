@@ -63,7 +63,7 @@ export default function SiteLogs() {
 
     const getTypeStyles = (type) => {
         switch (type) {
-            case 'ERROR': return 'bg-rose-50 text-rose-600 border-rose-100';
+            case 'ERROR': return 'bg-red-50 text-red-600 border-red-100';
             case 'CHECK': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
             default: return 'bg-blue-50 text-blue-600 border-blue-100';
         }
@@ -110,8 +110,8 @@ export default function SiteLogs() {
                                 <div className="space-y-4">
                                     {logs.filter(l => l.is_reminder).length > 0 ? (
                                         logs.filter(l => l.is_reminder).map(rem => (
-                                            <div key={rem.id} className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
-                                                <div className="text-[10px] font-black text-amber-600 uppercase tracking-tighter mb-1">{new Date(rem.reminder_date).toLocaleDateString()}</div>
+                                            <div key={rem.id} className="p-4 bg-orange-50 rounded-2xl border border-orange-100/50">
+                                                <div className="text-[10px] font-black text-orange-600 uppercase tracking-tighter mb-1">{new Date(rem.reminder_date).toLocaleDateString()}</div>
                                                 <div className="text-sm font-bold text-slate-700 leading-tight">{rem.title}</div>
                                             </div>
                                         ))

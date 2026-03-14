@@ -201,17 +201,17 @@ function SalesProjects() {
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center"><CheckCircle size={16} className="text-rose-600" /></div>
+                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center"><CheckCircle size={16} className="text-red-600" /></div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Satilan</span>
               </div>
-              <p className="text-2xl font-black text-rose-600">{projects.reduce((a, p) => a + (p.sold || 0), 0)}</p>
+              <p className="text-2xl font-black text-red-600">{projects.reduce((a, p) => a + (p.sold || 0), 0)}</p>
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center"><Clock size={16} className="text-amber-600" /></div>
+                <div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center"><Clock size={16} className="text-orange-600" /></div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Rezerve</span>
               </div>
-              <p className="text-2xl font-black text-amber-600">{projects.reduce((a, p) => a + (p.reserved || 0), 0)}</p>
+              <p className="text-2xl font-black text-orange-600">{projects.reduce((a, p) => a + (p.reserved || 0), 0)}</p>
             </div>
           </div>
 
@@ -276,13 +276,13 @@ function SalesProjects() {
                       <p className="text-lg font-black text-emerald-600">{project.available}</p>
                       <p className="text-[9px] font-bold text-emerald-500 uppercase">Satilik</p>
                     </div>
-                    <div className="text-center bg-rose-50 rounded-xl p-2">
-                      <p className="text-lg font-black text-rose-600">{project.sold}</p>
-                      <p className="text-[9px] font-bold text-rose-500 uppercase">Satilan</p>
+                    <div className="text-center bg-red-50 rounded-xl p-2">
+                      <p className="text-lg font-black text-red-600">{project.sold}</p>
+                      <p className="text-[9px] font-bold text-red-500 uppercase">Satilan</p>
                     </div>
-                    <div className="text-center bg-amber-50 rounded-xl p-2">
-                      <p className="text-lg font-black text-amber-600">{project.reserved}</p>
-                      <p className="text-[9px] font-bold text-amber-500 uppercase">Rezerve</p>
+                    <div className="text-center bg-orange-50 rounded-xl p-2">
+                      <p className="text-lg font-black text-orange-600">{project.reserved}</p>
+                      <p className="text-[9px] font-bold text-orange-500 uppercase">Rezerve</p>
                     </div>
                   </div>
 

@@ -178,39 +178,39 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                 <div className="p-8 overflow-y-auto custom-scrollbar">
                     {/* ═════════════════ AI DWG ANALYZER SECTION ═════════════════ */}
                     {!isEdit && (
-                        <div className="mb-10 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-[2rem] p-6 border border-violet-100 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-violet-500/10 transition-colors" />
+                        <div className="mb-10 bg-gradient-to-br from-orange-50 to-orange-50 rounded-[2rem] p-6 border border-orange-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-orange-500/10 transition-colors" />
                             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-violet-600 border border-violet-100">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-xl flex items-center justify-center text-orange-600 border border-orange-100">
                                         <BrainCircuit size={28} className={isAnalyzing ? 'animate-pulse' : ''} />
                                     </div>
                                     <div className="space-y-1">
-                                        <h3 className="text-sm font-black text-violet-900 uppercase tracking-tight">AI DESTEKLİ KAT ANALİZİ (BETA)</h3>
-                                        <p className="text-[10px] text-violet-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek kat metrajlarını AI ile doldurun</p>
+                                        <h3 className="text-sm font-black text-orange-900 uppercase tracking-tight">AI DESTEKLİ KAT ANALİZİ (BETA)</h3>
+                                        <p className="text-[10px] text-orange-600/70 font-bold uppercase tracking-widest">DWG dosyasını seçerek kat metrajlarını AI ile doldurun</p>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-1 w-full max-w-md gap-3">
                                     <div className="relative flex-1">
-                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-400" size={16} />
+                                        <FileSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400" size={16} />
                                         <select
                                             value={selectedDwgId}
                                             onChange={(e) => setSelectedDwgId(e.target.value)}
-                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-violet-100 rounded-2xl text-[11px] font-black uppercase text-violet-900 outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-400 transition-all appearance-none shadow-sm"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-white border-2 border-orange-100 rounded-2xl text-[11px] font-black uppercase text-orange-900 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all appearance-none shadow-sm"
                                         >
                                             <option value="">Analiz İçin DWG Seçin</option>
                                             {constructionFiles.map(file => (
                                                 <option key={file.id} value={file.id}>{file.file_name.toUpperCase()}</option>
                                             ))}
                                         </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-violet-300 pointer-events-none" size={16} />
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-orange-300 pointer-events-none" size={16} />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={handleAIAnalysis}
                                         disabled={!selectedDwgId || isAnalyzing}
-                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-600/20 active:scale-95 whitespace-nowrap"
+                                        className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-600/20 active:scale-95 whitespace-nowrap"
                                     >
                                         {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                                         {isAnalyzing ? 'ANALİZ EDİLİYOR...' : 'ASİSTANI ÇALIŞTIR'}
@@ -237,11 +237,11 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
 
                         {/* ── Bölüm 2: AI Metraj Alanları ── */}
                         <div>
-                            <h3 className="text-sm font-black text-violet-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-3">
-                                <span className="w-8 h-px bg-violet-200" />
+                            <h3 className="text-sm font-black text-orange-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-3">
+                                <span className="w-8 h-px bg-orange-200" />
                                 <BrainCircuit size={16} className={isAnalyzing ? 'animate-pulse' : ''} />
                                 AI MİMARİ METRAJLAR
-                                <span className="text-[9px] bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full font-black tracking-widest">OTOMATİK</span>
+                                <span className="text-[9px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-black tracking-widest">OTOMATİK</span>
                             </h3>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6 ml-1">
                                 Yukarıdan DWG seçip asistanı çalıştırın — bu alanlar otomatik dolacak
@@ -255,20 +255,20 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
 
                         {/* ── Bölüm 3: AI Strüktürel Veriler ── */}
                         <div>
-                            <h3 className="text-sm font-black text-violet-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-3">
-                                <span className="w-8 h-px bg-violet-200" />
+                            <h3 className="text-sm font-black text-orange-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-3">
+                                <span className="w-8 h-px bg-orange-200" />
                                 <BrainCircuit size={16} className={isAnalyzing ? 'animate-pulse' : ''} />
                                 AI STATİK VERİLERİ (STRÜKTÜREL)
-                                <span className="text-[9px] bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full font-black tracking-widest">OTOMATİK</span>
+                                <span className="text-[9px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-black tracking-widest">OTOMATİK</span>
                             </h3>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6 ml-1">
                                 DWG analizinden kolon / kiriş / merdiven / donatı verileri çekilecek
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {/* KOLONLAR */}
-                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                <div className="p-5 rounded-[2rem] border border-orange-100/70 bg-orange-50/20 space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-violet-600">
+                                        <div className="flex items-center gap-2 text-orange-600">
                                             <Grid3X3 size={16} />
                                             <span className="text-[10px] font-black uppercase tracking-widest">Kolonlar</span>
                                         </div>
@@ -280,9 +280,9 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                                     </div>
                                 </div>
                                 {/* KİRİŞLER */}
-                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                <div className="p-5 rounded-[2rem] border border-orange-100/70 bg-orange-50/20 space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-violet-600">
+                                        <div className="flex items-center gap-2 text-orange-600">
                                             <Hash size={16} />
                                             <span className="text-[10px] font-black uppercase tracking-widest">Kirişler</span>
                                         </div>
@@ -294,9 +294,9 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                                     </div>
                                 </div>
                                 {/* MERDİVEN */}
-                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                <div className="p-5 rounded-[2rem] border border-orange-100/70 bg-orange-50/20 space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-violet-600">
+                                        <div className="flex items-center gap-2 text-orange-600">
                                             <Maximize size={16} />
                                             <span className="text-[10px] font-black uppercase tracking-widest">Merdiven</span>
                                         </div>
@@ -309,9 +309,9 @@ const NewFloorModal = ({ isOpen, onClose, onAdd, blockId, projectId, floorData =
                                     </div>
                                 </div>
                                 {/* DONATI */}
-                                <div className="p-5 rounded-[2rem] border border-violet-100/70 bg-violet-50/20 space-y-3">
+                                <div className="p-5 rounded-[2rem] border border-orange-100/70 bg-orange-50/20 space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-violet-600">
+                                        <div className="flex items-center gap-2 text-orange-600">
                                             <Pi size={16} />
                                             <span className="text-[10px] font-black uppercase tracking-widest">Donatı</span>
                                         </div>
@@ -376,25 +376,25 @@ const AIReadonlyInput = ({ value, placeholder, isAnalyzing }) => (
             readOnly
             value={value || ''}
             placeholder={isAnalyzing ? '' : `— ${placeholder} —`}
-            className={`w-full bg-white/80 px-4 py-2.5 rounded-xl border border-violet-100 text-xs font-black outline-none text-violet-700 placeholder:text-slate-300 placeholder:font-normal cursor-default select-none transition-all ${isAnalyzing ? 'animate-pulse' : ''}`}
+            className={`w-full bg-white/80 px-4 py-2.5 rounded-xl border border-orange-100 text-xs font-black outline-none text-orange-700 placeholder:text-slate-300 placeholder:font-normal cursor-default select-none transition-all ${isAnalyzing ? 'animate-pulse' : ''}`}
         />
         {isAnalyzing && (
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-100/0 via-violet-200/60 to-violet-100/0 animate-[shimmer_1.5s_infinite]" />
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-100/0 via-orange-200/60 to-orange-100/0 animate-[shimmer_1.5s_infinite]" />
         )}
     </div>
 );
 
 /* AI değer kutucuğu — büyük tek değer gösterimi */
 const AIField = ({ label, value, unit, isAnalyzing }) => (
-    <div className={`relative p-5 rounded-[2rem] border transition-all overflow-hidden ${value ? 'bg-violet-50 border-violet-200' : 'bg-violet-50/20 border-violet-100/70'}`}>
+    <div className={`relative p-5 rounded-[2rem] border transition-all overflow-hidden ${value ? 'bg-orange-50 border-orange-200' : 'bg-orange-50/20 border-orange-100/70'}`}>
         {isAnalyzing && (
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-100/0 via-violet-100/80 to-violet-100/0 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-100/0 via-orange-100/80 to-orange-100/0 animate-pulse" />
         )}
         <div className="relative">
-            <p className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-2">{label}</p>
+            <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">{label}</p>
             {value ? (
-                <p className="text-2xl font-black text-violet-700 tracking-tight">
-                    {value} <span className="text-sm font-bold text-violet-400">{unit}</span>
+                <p className="text-2xl font-black text-orange-700 tracking-tight">
+                    {value} <span className="text-sm font-bold text-orange-400">{unit}</span>
                 </p>
             ) : (
                 <p className={`text-sm font-bold text-slate-300 italic ${isAnalyzing ? 'animate-pulse' : ''}`}>
@@ -407,7 +407,7 @@ const AIField = ({ label, value, unit, isAnalyzing }) => (
 
 /* Küçük AI rozeti */
 const AIBadge = ({ isAnalyzing }) => (
-    <span className={`inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${isAnalyzing ? 'bg-violet-200 text-violet-700 border-violet-300 animate-pulse' : 'bg-violet-50 text-violet-400 border-violet-100'}`}>
+    <span className={`inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${isAnalyzing ? 'bg-orange-200 text-orange-700 border-orange-300 animate-pulse' : 'bg-orange-50 text-orange-400 border-orange-100'}`}>
         {isAnalyzing ? '⟳ İŞLENİYOR' : '✦ AI'}
     </span>
 );

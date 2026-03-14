@@ -48,7 +48,7 @@ const getStatusIcon = (status) => {
 const getTypeIcon = (type) => {
   switch (type) {
     case 'Daire': return <Building2 size={13} className="text-blue-500" />;
-    case 'Villa': return <Home size={13} className="text-purple-500" />;
+    case 'Villa': return <Home size={13} className="text-orange-500" />;
     case 'Arsa': return <MapPin size={13} className="text-emerald-500" />;
     default: return <Tag size={13} className="text-slate-500" />;
   }
@@ -179,7 +179,7 @@ function SecondHandListings() {
       label: 'Proje',
       render: (val, row) => (
         <div className="flex flex-col gap-0.5">
-          <span className="font-semibold text-slate-800 text-[13px] group-hover:text-indigo-600 transition-colors">{val}</span>
+          <span className="font-semibold text-slate-800 text-[13px] group-hover:text-orange-600 transition-colors">{val}</span>
           <span className="text-[11px] text-slate-400">İlan No: #{1000 + row.id}</span>
         </div>
       )
@@ -246,7 +246,7 @@ function SecondHandListings() {
       render: (_, row) => (
         <button
           onClick={(e) => { e.stopPropagation(); openEditModal(row); }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-lg transition-all shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 rounded-lg transition-all shadow-sm"
         >
           <Pencil size={13} /> Düzenle
         </button>
@@ -270,7 +270,7 @@ function SecondHandListings() {
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Toplam İlan</p>
                   <p className="text-2xl font-bold text-slate-800">{listings.length}</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
                   <LayoutList size={22} />
                 </div>
               </div>
@@ -310,7 +310,7 @@ function SecondHandListings() {
                 >
                   <Filter size={14} />
                   {selectedStatusFilter !== 'Hepsi' && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
                       {selectedStatusFilter}
                     </span>
                   )}
@@ -323,10 +323,10 @@ function SecondHandListings() {
                         <button
                           key={option}
                           onClick={() => handleFilterChange(option)}
-                          className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-all ${selectedStatusFilter === option ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
+                          className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-all ${selectedStatusFilter === option ? 'bg-orange-50 text-orange-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
                         >
                           <span>{option}</span>
-                          {selectedStatusFilter === option && <CheckCircle2 size={16} className="text-indigo-600" />}
+                          {selectedStatusFilter === option && <CheckCircle2 size={16} className="text-orange-600" />}
                         </button>
                       ))}
                     </div>
@@ -341,13 +341,13 @@ function SecondHandListings() {
 
           {/* Selection */}
           {selectedListings.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl animate-fade-in">
+            <div className="flex flex-wrap items-center justify-between bg-orange-50 border border-orange-200 p-3.5 rounded-xl animate-fade-in">
               <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                <span className="flex items-center justify-center bg-indigo-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedListings.length}</span>
-                <span className="text-sm font-semibold text-indigo-800">ilan seçildi</span>
+                <span className="flex items-center justify-center bg-orange-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedListings.length}</span>
+                <span className="text-sm font-semibold text-orange-800">ilan seçildi</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-100 transition-colors px-3 py-1.5 rounded-lg border border-indigo-200">
+                <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-orange-700 bg-white hover:bg-orange-100 transition-colors px-3 py-1.5 rounded-lg border border-orange-200">
                   <CheckSquare size={15} />
                   <span className="hidden sm:inline">{selectedListings.length === filteredListings.length ? 'Seçimi Temizle' : 'Tümünü Seç'}</span>
                 </button>

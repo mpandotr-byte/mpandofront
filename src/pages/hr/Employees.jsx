@@ -121,7 +121,7 @@ export default function Employees() {
                         <Star
                             key={star}
                             size={12}
-                            className={star <= (val || 0) ? "fill-amber-400 text-amber-400" : "text-slate-200"}
+                            className={star <= (val || 0) ? "fill-orange-400 text-orange-400" : "text-slate-200"}
                         />
                     ))}
                     <span className="ml-1 text-[11px] font-black text-slate-400">{val || 0}.0</span>

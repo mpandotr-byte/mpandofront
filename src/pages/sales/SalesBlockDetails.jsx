@@ -41,16 +41,16 @@ const getUnitStatusDetails = (status) => {
   switch (String(status).toUpperCase()) {
     case 'SOLD':
     case 'SATILDI':
-      return { label: 'Satildi', classes: 'bg-rose-50 text-rose-700 border-rose-100', dotColor: 'bg-rose-500' };
+      return { label: 'Satildi', classes: 'bg-red-50 text-red-700 border-red-100', dotColor: 'bg-red-500' };
     case 'RESERVED':
     case 'REZERVE':
     case 'REZERV':
-      return { label: 'Rezerve', classes: 'bg-amber-50 text-amber-700 border-amber-100', dotColor: 'bg-amber-500' };
+      return { label: 'Rezerve', classes: 'bg-orange-50 text-orange-700 border-orange-100', dotColor: 'bg-orange-500' };
     case 'BARTER':
-      return { label: 'Barter', classes: 'bg-purple-50 text-purple-700 border-purple-100', dotColor: 'bg-purple-500' };
+      return { label: 'Barter', classes: 'bg-orange-50 text-orange-700 border-orange-100', dotColor: 'bg-orange-500' };
     case 'ARSA SAHIBI':
     case 'ARSA SAHİBİ':
-      return { label: 'Arsa Sahibi', classes: 'bg-indigo-50 text-indigo-700 border-indigo-100', dotColor: 'bg-indigo-500' };
+      return { label: 'Arsa Sahibi', classes: 'bg-orange-50 text-orange-700 border-orange-100', dotColor: 'bg-orange-500' };
     case 'AVAILABLE':
     case 'SATILIK':
     case 'MÜSAİT':
@@ -539,13 +539,13 @@ function SalesBlockDetails() {
                   <p className="text-xl font-black text-emerald-600">{stats.available}</p>
                   <p className="text-[9px] font-bold text-emerald-500 uppercase">Satilik</p>
                 </div>
-                <div className="bg-rose-50 rounded-xl border border-rose-100 p-3 text-center">
-                  <p className="text-xl font-black text-rose-600">{stats.sold}</p>
-                  <p className="text-[9px] font-bold text-rose-500 uppercase">Satilan</p>
+                <div className="bg-red-50 rounded-xl border border-red-100 p-3 text-center">
+                  <p className="text-xl font-black text-red-600">{stats.sold}</p>
+                  <p className="text-[9px] font-bold text-red-500 uppercase">Satilan</p>
                 </div>
-                <div className="bg-amber-50 rounded-xl border border-amber-100 p-3 text-center">
-                  <p className="text-xl font-black text-amber-600">{stats.reserved}</p>
-                  <p className="text-[9px] font-bold text-amber-500 uppercase">Rezerve</p>
+                <div className="bg-orange-50 rounded-xl border border-orange-100 p-3 text-center">
+                  <p className="text-xl font-black text-orange-600">{stats.reserved}</p>
+                  <p className="text-[9px] font-bold text-orange-500 uppercase">Rezerve</p>
                 </div>
                 <div className="bg-white rounded-xl border border-slate-200 p-3 text-center">
                   <p className="text-sm font-black text-slate-700">{formatCurrency(totalListPrice)}</p>

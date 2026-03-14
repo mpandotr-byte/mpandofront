@@ -343,7 +343,7 @@ function Navbar({ title = "Genel Bakış", toggleMobileMenu }) {
             </div>
 
             <div className="p-6">
-              <p className="text-sm text-slate-600 leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100/50">
+              <p className="text-sm text-slate-600 leading-relaxed bg-orange-50/40 p-4 rounded-xl border border-orange-100/50">
                 {selectedNotification.text}
               </p>
 

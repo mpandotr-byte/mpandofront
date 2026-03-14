@@ -29,7 +29,7 @@ export default function SuppOrders() {
         switch (status) {
             case 'DELIVERED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
             case 'ON_THE_WAY': return 'bg-blue-50 text-blue-600 border-blue-100 animate-pulse';
-            case 'WAITING': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'WAITING': return 'bg-orange-50 text-orange-600 border-orange-100';
             default: return 'bg-slate-50 text-slate-400';
         }
     };
@@ -58,7 +58,7 @@ export default function SuppOrders() {
                             <input
                                 type="text"
                                 placeholder="Sipariş no, firma veya proje ara..."
-                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-indigo-400 focus:bg-white outline-none transition-all"
+                                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-[32px] text-sm font-bold shadow-sm focus:border-orange-400 focus:bg-white outline-none transition-all"
                             />
                         </div>
                         <div className="flex gap-4">
@@ -88,8 +88,8 @@ export default function SuppOrders() {
                                                 <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
                                                     <Building2 size={14} className="text-slate-300" /> {order.client}
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest text-indigo-500">
-                                                    <MapPin size={14} className="text-indigo-300" /> {order.project}
+                                                <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest text-orange-500">
+                                                    <MapPin size={14} className="text-orange-300" /> {order.project}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest italic">
                                                     <Calendar size={14} className="text-slate-300" /> {order.date}

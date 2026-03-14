@@ -412,7 +412,7 @@ function RecipeConsole({ isSubPage = false }) {
                                                 {room.is_assigned ? (
                                                     <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Atandı" />
                                                 ) : (
-                                                    <div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" title="Atama Bekliyor" />
+                                                    <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" title="Atama Bekliyor" />
                                                 )}
                                             </div>
                                         </td>

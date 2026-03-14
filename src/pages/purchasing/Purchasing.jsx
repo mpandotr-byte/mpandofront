@@ -291,7 +291,7 @@ export default function Purchasing() {
                     <div className="relative overflow-hidden bg-[#0A1128] rounded-[32px] p-8 md:p-12 text-white shadow-2xl animate-fade-in">
                         {/* Animated background highlights */}
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D36A47]/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-[120px] animate-pulse" />
-                        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-[100px]" />
+                        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-orange-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-[100px]" />
 
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
                             <div className="space-y-4">
@@ -504,12 +504,12 @@ export default function Purchasing() {
                                                 </div>
 
                                                 {/* Stock Warning */}
-                                                <div className="flex items-start gap-4 p-6 bg-amber-50 rounded-3xl border border-amber-100 text-amber-900">
+                                                <div className="flex items-start gap-4 p-6 bg-orange-50 rounded-3xl border border-orange-100 text-orange-900">
                                                     <AlertCircle className="shrink-0 mt-1" size={20} />
                                                     <div className="space-y-1">
                                                         <p className="text-sm font-black uppercase tracking-tight">Mevcut Stok Durumu</p>
                                                         <p className="text-sm font-medium">Depoda halihazırda <span className="font-black underline">{calculationResult.stockRecommendation} {calculationResult.unit}</span> bulunuyor. Talep miktarından düşülsün mü?</p>
-                                                        <button className="text-[10px] font-black text-amber-700 uppercase tracking-widest flex items-center gap-1 mt-2 hover:underline">
+                                                        <button className="text-[10px] font-black text-orange-700 uppercase tracking-widest flex items-center gap-1 mt-2 hover:underline">
                                                             EVET, STOKTAN DÜŞÜLSÜN <ChevronRight size={12} />
                                                         </button>
                                                     </div>
@@ -573,7 +573,7 @@ export default function Purchasing() {
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase">{req.unit}</span>
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-2xl font-black text-indigo-600">{req.offers?.length || 0}</span>
+                                                        <span className="text-2xl font-black text-orange-600">{req.offers?.length || 0}</span>
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase">Teklif</span>
                                                     </div>
                                                 </div>
@@ -652,7 +652,7 @@ export default function Purchasing() {
                                                             <div className="flex gap-8">
                                                                 <div className="space-y-1 flex-1">
                                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vade / Şartlar</p>
-                                                                    <p className="text-sm font-bold text-indigo-600">{offer.payment_terms || 'Belirtilmedi'}</p>
+                                                                    <p className="text-sm font-bold text-orange-600">{offer.payment_terms || 'Belirtilmedi'}</p>
                                                                 </div>
                                                                 <div className="space-y-1 flex-1">
                                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Doküman</p>

@@ -41,7 +41,7 @@ export default function SubAttendance() {
 
                     {/* Attendance Header */}
                     <div className="bg-[#0A1128] rounded-[40px] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]" />
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px]" />
                         <div className="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
                             <div className="flex flex-col md:flex-row items-center gap-8">
                                 <div className="w-20 h-20 rounded-[28px] bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-xl">
@@ -52,13 +52,13 @@ export default function SubAttendance() {
                                     <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight">{selectedJob}</h2>
                                     <div className="flex items-center justify-center md:justify-start gap-4 mt-2">
                                         <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 border border-emerald-400/20 px-3 py-1 rounded-lg uppercase tracking-widest"><CheckCircle2 size={12} /> 3 VAR</div>
-                                        <div className="flex items-center gap-2 text-[10px] font-black text-rose-400 border border-rose-400/20 px-3 py-1 rounded-lg uppercase tracking-widest"><XCircle size={12} /> 1 YOK</div>
+                                        <div className="flex items-center gap-2 text-[10px] font-black text-red-400 border border-red-400/20 px-3 py-1 rounded-lg uppercase tracking-widest"><XCircle size={12} /> 1 YOK</div>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <button className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">TARİH DEĞİŞTİR</button>
-                                <button className="px-10 py-5 bg-indigo-500 text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2">
+                                <button className="px-10 py-5 bg-orange-500 text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2">
                                     <UserPlus size={20} /> PERSONEL EKLE
                                 </button>
                             </div>
@@ -66,15 +66,15 @@ export default function SubAttendance() {
                     </div>
 
                     {/* Comparison Alert */}
-                    <div className="bg-amber-50 border border-amber-100 p-6 rounded-[32px] flex items-center gap-6 shadow-sm animate-pulse">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-200 text-amber-700 flex items-center justify-center shrink-0">
+                    <div className="bg-orange-50 border border-orange-100 p-6 rounded-[32px] flex items-center gap-6 shadow-sm animate-pulse">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-200 text-orange-700 flex items-center justify-center shrink-0">
                             <AlertTriangle size={24} />
                         </div>
                         <div className="flex-1">
-                            <h4 className="text-[12px] font-black uppercase tracking-tight text-amber-900 leading-tight">ŞİRKET PUANTAJI İLE FARK TESPİT EDİLDİ</h4>
-                            <p className="text-[11px] font-medium text-amber-700/70 mt-1 uppercase tracking-tighter italic">Şirket kayıtlarına göre bugün şantiyede 3 değil 5 personel görünüyor. Lütfen verilerinizi kontrol edin.</p>
+                            <h4 className="text-[12px] font-black uppercase tracking-tight text-orange-900 leading-tight">ŞİRKET PUANTAJI İLE FARK TESPİT EDİLDİ</h4>
+                            <p className="text-[11px] font-medium text-orange-700/70 mt-1 uppercase tracking-tighter italic">Şirket kayıtlarına göre bugün şantiyede 3 değil 5 personel görünüyor. Lütfen verilerinizi kontrol edin.</p>
                         </div>
-                        <button className="px-6 py-3 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest text-amber-700 shadow-sm">UYUŞMAZLIĞA BAK</button>
+                        <button className="px-6 py-3 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest text-orange-700 shadow-sm">UYUŞMAZLIĞA BAK</button>
                     </div>
 
                     {/* Attendance List */}
@@ -82,14 +82,14 @@ export default function SubAttendance() {
                         <div className="p-8 border-b border-slate-50 flex items-center justify-between">
                             <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Günlük Yoklama Listesi</h3>
                             <div className="flex gap-2">
-                                <button className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all"><ChevronLeft size={20} /></button>
-                                <button className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all"><ChevronRight size={20} /></button>
+                                <button className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:bg-orange-50 hover:text-orange-600 transition-all"><ChevronLeft size={20} /></button>
+                                <button className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:bg-orange-50 hover:text-orange-600 transition-all"><ChevronRight size={20} /></button>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-8 bg-slate-50/50">
                             {personnel.map(p => (
                                 <div key={p.id} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col items-center text-center group">
-                                    <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4 group-hover:bg-[#0A1128] group-hover:text-white transition-all shadow-inner border-2 border-transparent group-hover:border-indigo-100 ring-4 ring-transparent group-hover:ring-indigo-50">
+                                    <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4 group-hover:bg-[#0A1128] group-hover:text-white transition-all shadow-inner border-2 border-transparent group-hover:border-orange-100 ring-4 ring-transparent group-hover:ring-orange-50">
                                         <UserCircle size={40} />
                                     </div>
                                     <h4 className="text-sm font-black text-slate-800 uppercase leading-none mb-1">{p.name}</h4>
@@ -104,7 +104,7 @@ export default function SubAttendance() {
                                         </button>
                                         <button
                                             onClick={() => toggleStatus(p.id, 'ABSENT')}
-                                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${p.status === 'ABSENT' ? 'bg-rose-500 text-white shadow-lg shadow-rose-200' : 'bg-slate-50 text-slate-300 hover:bg-slate-100'}`}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${p.status === 'ABSENT' ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-slate-50 text-slate-300 hover:bg-slate-100'}`}
                                         >
                                             <XCircle size={14} /> YOK
                                         </button>

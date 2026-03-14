@@ -13,6 +13,30 @@ import NewFloorModal from '../../modals/blocks/NewFloorModal';
 import NewUnitModal from '../../modals/units/NewUnitModal';
 import NewRoomModal from '../../modals/units/NewRoomModal';
 
+const getUnitStatusDetails = (status) => {
+    switch (String(status).toUpperCase()) {
+        case 'SOLD':
+        case 'SATILDI':
+            return { label: 'Satıldı', classes: 'bg-red-50 text-red-700 border-red-100' };
+        case 'RESERVED':
+        case 'REZERVE':
+        case 'REZERV':
+            return { label: 'Rezerve', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
+        case 'BARTER':
+            return { label: 'Barter', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
+        case 'ARSA SAHIBI':
+        case 'ARSA SAHİBİ':
+            return { label: 'Arsa Sahibi', classes: 'bg-orange-50 text-orange-700 border-orange-100' };
+        case 'AVAILABLE':
+        case 'SATILIK':
+        case 'MÜSAİT':
+        case 'BOŞ':
+        default:
+            return { label: 'Satılık', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
+    }
+};
+
+
 function BlockDetails() {
     const { projectId, blockId } = useParams();
     const navigate = useNavigate();
@@ -496,5 +520,71 @@ const RecipeBadge = ({ label, name, small }) => (
         <Package size={small ? 8 : 10} /> {label}: {name}
     </span>
 );
+
+const BulkFloorRecipeModal = ({ isOpen, onClose, onSave, recipes, formData, onChange, selectedCount }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A1128]/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden p-8 md:p-10 animate-in zoom-in-95 duration-500">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600">
+                        <Layers size={28} />
+                    </div>
+                    <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="mb-8">
+                    <h3 className="text-2xl font-black text-slate-900 mb-2">Toplu Kat Reçete Atama</h3>
+                    <p className="text-sm font-bold text-slate-500">Seçili {selectedCount} kata aynı anda malzeme/işçilik reçeteleri atayabilirsiniz.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[50vh] overflow-y-auto custom-scrollbar pr-2 mb-8">
+                    {[
+                        { label: 'Beton Reçetesi', name: 'beton_recipe_id' },
+                        { label: 'Demir Reçetesi', name: 'demir_recipe_id' },
+                        { label: 'Koridor Zemin', name: 'hall_floor_recipe_id' },
+                        { label: 'Koridor Duvar', name: 'hall_wall_recipe_id' },
+                        { label: 'Koridor Tavan', name: 'hall_ceiling_recipe_id' },
+                        { label: 'Merdiven', name: 'stairs_recipe_id' },
+                        { label: 'Ekstra', name: 'extra_recipe_id' }
+                    ].map((field) => (
+                        <div key={field.name} className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{field.label}</label>
+                            <select
+                                name={field.name}
+                                value={formData[field.name]}
+                                onChange={onChange}
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-[#D36A47] transition-all appearance-none"
+                            >
+                                <option value="">Seçiniz...</option>
+                                {recipes.map(recipe => (
+                                    <option key={recipe.id} value={recipe.id}>{recipe.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                    >
+                        İPTAL
+                    </button>
+                    <button
+                        onClick={onSave}
+                        className="flex-1 bg-[#D36A47] hover:bg-[#B95839] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-200"
+                    >
+                        REÇETELERİ ATA
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default BlockDetails;

@@ -74,8 +74,8 @@ const ForgotPassword = () => {
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/50 via-[#0a0a1a] to-purple-950/30" />
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px] animate-float" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px]" style={{ animation: 'float 4s ease-in-out infinite reverse' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-orange-600/10 blur-[120px] animate-float" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-orange-600/10 blur-[120px]" style={{ animation: 'float 4s ease-in-out infinite reverse' }} />
         <div className="absolute top-[50%] left-[50%] w-[300px] h-[300px] rounded-full bg-blue-600/5 blur-[80px]" />
 
         {/* Grid Pattern */}
@@ -104,8 +104,8 @@ const ForgotPassword = () => {
           {step === 1 && (
             <>
               <div className="mb-8 text-center">
-                <div className="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <Mail size={24} className="text-indigo-400" />
+                <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <Mail size={24} className="text-orange-400" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">
                   Şifremi Unuttum
@@ -130,7 +130,7 @@ const ForgotPassword = () => {
                   <input
                     type="email"
                     placeholder="ornek@mail.com"
-                    className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm"
+                    className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all text-sm"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -141,7 +141,7 @@ const ForgotPassword = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-semibold py-3.5 rounded-xl hover:from-indigo-500 hover:to-indigo-400 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                  className="w-full relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold py-3.5 rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all transform active:scale-[0.98] shadow-lg shadow-orange-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
                   {loading ? (
                     <>
@@ -160,7 +160,7 @@ const ForgotPassword = () => {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => navigate("/")}
-                  className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                  className="inline-flex items-center gap-2 text-sm text-orange-400 hover:text-orange-300 font-medium transition-colors"
                 >
                   <ArrowLeft size={16} />
                   Giriş sayfasına dön
@@ -173,8 +173,8 @@ const ForgotPassword = () => {
           {step === 2 && (
             <>
               <div className="mb-8 text-center">
-                <div className="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <KeyRound size={24} className="text-indigo-400" />
+                <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <KeyRound size={24} className="text-orange-400" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">
                   Yeni Şifre Belirle
@@ -201,7 +201,7 @@ const ForgotPassword = () => {
                     <input
                       type="text"
                       placeholder="E-postanıza gelen kodu girin"
-                      className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm pl-11"
+                      className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all text-sm pl-11"
                       value={token}
                       onChange={(e) => setToken(e.target.value)}
                       required
@@ -219,7 +219,7 @@ const ForgotPassword = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm pl-11 pr-11"
+                      className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all text-sm pl-11 pr-11"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
@@ -245,7 +245,7 @@ const ForgotPassword = () => {
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all text-sm pl-11 pr-11"
+                      className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all text-sm pl-11 pr-11"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -265,7 +265,7 @@ const ForgotPassword = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-semibold py-3.5 rounded-xl hover:from-indigo-500 hover:to-indigo-400 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                  className="w-full relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold py-3.5 rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all transform active:scale-[0.98] shadow-lg shadow-orange-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
                   {loading ? (
                     <>
@@ -281,7 +281,7 @@ const ForgotPassword = () => {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => { setStep(1); setError(""); }}
-                  className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                  className="inline-flex items-center gap-2 text-sm text-orange-400 hover:text-orange-300 font-medium transition-colors"
                 >
                   <ArrowLeft size={16} />
                   Geri dön
@@ -304,7 +304,7 @@ const ForgotPassword = () => {
               </p>
               <button
                 onClick={() => navigate("/")}
-                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-semibold py-3.5 rounded-xl hover:from-indigo-500 hover:to-indigo-400 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold py-3.5 rounded-xl hover:from-orange-500 hover:to-orange-400 transition-all transform active:scale-[0.98] shadow-lg shadow-orange-600/25 flex items-center justify-center gap-2"
               >
                 Giriş Yap
               </button>

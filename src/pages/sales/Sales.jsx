@@ -30,9 +30,9 @@ import {
 const getStatusClasses = (status) => {
   switch (status) {
     case 'Satıldı': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    case 'Rezerv': return 'bg-amber-50 text-amber-700 border-amber-200';
-    case 'Barter': return 'bg-purple-50 text-purple-700 border-purple-200';
-    case 'Arsa Sahibi': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'Rezerv': return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'Barter': return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'Arsa Sahibi': return 'bg-orange-50 text-orange-700 border-orange-200';
     case 'Beklemede': return 'bg-blue-50 text-blue-700 border-blue-200';
     case 'İptal':
     case 'Reddedildi': return 'bg-red-50 text-red-600 border-red-200';
@@ -163,6 +163,8 @@ function Sales() {
     try {
       const dataToSend = {
         ...newSaleData,
+        proje_id: Number(newSaleData.proje_id),
+        musteri_id: Number(newSaleData.musteri_id),
         project_id: Number(newSaleData.proje_id),
         customer_id: Number(newSaleData.musteri_id),
         unit_id: newSaleData.unit_id ? Number(newSaleData.unit_id) : null,
@@ -170,10 +172,6 @@ function Sales() {
         company_id: user.company_id,
         employee_id: user.id
       };
-
-      // Remove the old names before sending
-      delete dataToSend.proje_id;
-      delete dataToSend.musteri_id;
 
       let addedSale;
       if (newSaleData.contract_file) {
@@ -216,14 +214,13 @@ function Sales() {
     try {
       const dataToSend = {
         ...editFormData,
+        proje_id: Number(editFormData.proje_id),
+        musteri_id: Number(editFormData.musteri_id),
         project_id: Number(editFormData.proje_id),
         customer_id: Number(editFormData.musteri_id),
         unit_id: editFormData.unit_id ? Number(editFormData.unit_id) : null,
         offered_price: editFormData.offered_price ? Number(editFormData.offered_price) : 0
       };
-
-      delete dataToSend.proje_id;
-      delete dataToSend.musteri_id;
 
       if (editFormData.contract_file) {
         const formData = new FormData();
@@ -284,7 +281,7 @@ function Sales() {
       render: (_, row) => (
         <div className="flex flex-col gap-1">
           <span className="font-medium text-slate-700 flex items-center gap-1.5 text-[13px]">
-            <Building2 size={13} className="text-indigo-500" /> {row.projects?.name || '-'}
+            <Building2 size={13} className="text-orange-500" /> {row.projects?.name || '-'}
           </span>
           {row.interested_product && (
             <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block w-max font-medium">
@@ -357,7 +354,7 @@ function Sales() {
           {(row.contract_file || row.units?.contract_file) && (
             <div className="flex items-center gap-1">
               <a href={row.contract_file || row.units?.contract_file} target="_blank" rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()} className="p-1 text-indigo-500 hover:bg-indigo-50 rounded transition-all" title="Görüntüle">
+                onClick={(e) => e.stopPropagation()} className="p-1 text-orange-500 hover:bg-orange-50 rounded transition-all" title="Görüntüle">
                 <Eye size={13} />
               </a>
               <a href={row.contract_file || row.units?.contract_file} download
@@ -378,7 +375,7 @@ function Sales() {
       render: (_, row) => (
         <button
           onClick={(e) => { e.stopPropagation(); openEditModal(row); }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-lg transition-all shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 rounded-lg transition-all shadow-sm"
         >
           <Pencil size={13} /> Düzenle
         </button>
@@ -402,7 +399,7 @@ function Sales() {
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Toplam Satış</p>
                   <p className="text-2xl font-bold text-slate-800">{sales.length}</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
                   <ShoppingCart size={22} />
                 </div>
               </div>
@@ -422,9 +419,9 @@ function Sales() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Beklemede</p>
-                  <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
+                  <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
                   <Clock size={22} />
                 </div>
               </div>
@@ -442,7 +439,7 @@ function Sales() {
                 >
                   <Filter size={14} />
                   {selectedStatusFilter !== 'Hepsi' && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
                       {selectedStatusFilter}
                     </span>
                   )}
@@ -455,10 +452,10 @@ function Sales() {
                         <button
                           key={option}
                           onClick={() => handleFilterChange(option)}
-                          className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-all ${selectedStatusFilter === option ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
+                          className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-all ${selectedStatusFilter === option ? 'bg-orange-50 text-orange-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
                         >
                           <span>{option}</span>
-                          {selectedStatusFilter === option && <CheckCircle2 size={16} className="text-indigo-600" />}
+                          {selectedStatusFilter === option && <CheckCircle2 size={16} className="text-orange-600" />}
                         </button>
                       ))}
                     </div>
@@ -473,13 +470,13 @@ function Sales() {
 
           {/* Selection */}
           {selectedSales.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between bg-indigo-50 border border-indigo-200 p-3.5 rounded-xl animate-fade-in">
+            <div className="flex flex-wrap items-center justify-between bg-orange-50 border border-orange-200 p-3.5 rounded-xl animate-fade-in">
               <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                <span className="flex items-center justify-center bg-indigo-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedSales.length}</span>
-                <span className="text-sm font-semibold text-indigo-800">kayıt seçildi</span>
+                <span className="flex items-center justify-center bg-orange-600 text-white w-7 h-7 rounded-lg text-xs font-bold">{selectedSales.length}</span>
+                <span className="text-sm font-semibold text-orange-800">kayıt seçildi</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-100 transition-colors px-3 py-1.5 rounded-lg border border-indigo-200">
+                <button onClick={handleSelectAll} className="flex items-center gap-1.5 text-sm font-semibold text-orange-700 bg-white hover:bg-orange-100 transition-colors px-3 py-1.5 rounded-lg border border-orange-200">
                   <CheckSquare size={15} />
                   <span className="hidden sm:inline">{selectedSales.length === filteredSales.length ? 'Seçimi Temizle' : 'Tümünü Seç'}</span>
                 </button>
@@ -513,10 +510,14 @@ function Sales() {
         <NewSaleModal isOpen={isAddModalOpen} formData={newSaleData} onClose={closeAddModal} onChange={handleNewSaleChange} onAdd={handleAddNewSale}
           customers={customers.filter(c => String(c.company_id) === String(user?.company_id))}
           projects={projects.filter(p => String(p.contractor_id) === String(user?.company_id))}
-          onCustomerAdded={(newCustomer) => {
+          onCustomerAdded={async (newCustomer) => {
             if (newCustomer) {
               setCustomers(prev => [...prev, newCustomer]);
             }
+            try {
+              const customersData = await api.get('/customers');
+              setCustomers(Array.isArray(customersData) ? customersData : []);
+            } catch (e) { console.error(e); }
           }} />
       </main>
     </div>

@@ -66,8 +66,8 @@ export default function SuppStock() {
                             {stocks.map(mat => (
                                 <div key={mat.id} className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden flex flex-col justify-between h-[420px]">
                                     {mat.status === 'CRITICAL' && (
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-bl-full -mr-16 -mt-16 flex items-center justify-center pt-8 pl-8">
-                                            <AlertTriangle size={24} className="text-rose-500 animate-bounce" />
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-full -mr-16 -mt-16 flex items-center justify-center pt-8 pl-8">
+                                            <AlertTriangle size={24} className="text-red-500 animate-bounce" />
                                         </div>
                                     )}
 
@@ -78,7 +78,7 @@ export default function SuppStock() {
                                         <div>
                                             <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2 leading-none">{mat.name}</h4>
                                             <div className="flex items-center gap-2">
-                                                <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${mat.status === 'SAFE' ? 'bg-emerald-50 text-emerald-600' : mat.status === 'WARNING' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${mat.status === 'SAFE' ? 'bg-emerald-50 text-emerald-600' : mat.status === 'WARNING' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'}`}>
                                                     {mat.status === 'SAFE' ? 'GÜVENLİ' : mat.status === 'WARNING' ? 'YAKIN TAKİP' : 'KRİTİK SEVİYE'}
                                                 </div>
                                             </div>
@@ -91,7 +91,7 @@ export default function SuppStock() {
                                             </div>
                                             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                                 <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Rezerv</div>
-                                                <div className="text-lg font-black text-rose-500">{mat.reservoir.toLocaleString('tr-TR')}</div>
+                                                <div className="text-lg font-black text-red-500">{mat.reservoir.toLocaleString('tr-TR')}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -106,7 +106,7 @@ export default function SuppStock() {
                                         </div>
                                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full rounded-full ${mat.status === 'SAFE' ? 'bg-emerald-500' : mat.status === 'WARNING' ? 'bg-amber-500' : 'bg-rose-500'}`}
+                                                className={`h-full rounded-full ${mat.status === 'SAFE' ? 'bg-emerald-500' : mat.status === 'WARNING' ? 'bg-orange-500' : 'bg-red-500'}`}
                                                 style={{ width: `${(mat.available / mat.current) * 100}%` }}
                                             ></div>
                                         </div>

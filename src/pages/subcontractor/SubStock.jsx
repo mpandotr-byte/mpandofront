@@ -102,7 +102,7 @@ export default function SubStock() {
                                                     <td className="px-6 py-8 text-center text-sm font-black text-slate-800">{mat.received}</td>
                                                     <td className="px-6 py-8 text-center text-sm font-black text-slate-800">{mat.used}</td>
                                                     <td className="px-6 py-8 text-center">
-                                                        <span className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest ${mat.balance > 0 ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-300'}`}>
+                                                        <span className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest ${mat.balance > 0 ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-300'}`}>
                                                             {mat.balance}
                                                         </span>
                                                     </td>
@@ -132,7 +132,7 @@ export default function SubStock() {
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic pb-8">Alış: {mat.price.toLocaleString('tr-TR')} ₺ / {mat.unit}</p>
 
                                         <div className="pt-8 border-t border-slate-50 flex gap-2">
-                                            <button className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
+                                            <button className="flex-1 py-4 bg-orange-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
                                                 <ArrowRight size={14} /> İŞE ATA
                                             </button>
                                             <button className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 hover:text-slate-800 transition-all border border-transparent">
@@ -141,8 +141,8 @@ export default function SubStock() {
                                         </div>
                                     </div>
                                 ))}
-                                <div className="border-4 border-dashed border-slate-100 rounded-[40px] flex flex-col items-center justify-center p-8 opacity-40 hover:opacity-100 transition-all cursor-pointer group hover:bg-white hover:border-indigo-100">
-                                    <Plus size={32} className="text-slate-300 group-hover:text-indigo-600 mb-4" />
+                                <div className="border-4 border-dashed border-slate-100 rounded-[40px] flex flex-col items-center justify-center p-8 opacity-40 hover:opacity-100 transition-all cursor-pointer group hover:bg-white hover:border-orange-100">
+                                    <Plus size={32} className="text-slate-300 group-hover:text-orange-600 mb-4" />
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">YENİ STOK KALEMİ</span>
                                 </div>
                             </div>

@@ -21,12 +21,12 @@ export default function SuppDashboard() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const stats = [
-        { label: 'Aktif Sipariş', value: '12', icon: <ShoppingBag />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-        { label: 'Yoldaki Malzeme', value: '8 Sevk', icon: <Truck />, color: 'text-amber-600', bg: 'bg-amber-50' },
+        { label: 'Aktif Sipariş', value: '12', icon: <ShoppingBag />, color: 'text-orange-600', bg: 'bg-orange-50' },
+        { label: 'Yoldaki Malzeme', value: '8 Sevk', icon: <Truck />, color: 'text-orange-600', bg: 'bg-orange-50' },
         { label: 'Teslim Edilen', value: '450 Ton', icon: <CheckCircle2 />, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-        { label: 'Bekleyen Fatura', value: '125K ₺', icon: <Wallet />, color: 'text-rose-600', bg: 'bg-rose-50' },
+        { label: 'Bekleyen Fatura', value: '125K ₺', icon: <Wallet />, color: 'text-red-600', bg: 'bg-red-50' },
         { label: 'Toplam Alacak', value: '1.2M ₺', icon: <TrendingUp />, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { label: 'Düşük Stok', value: '3 Kalem', icon: <AlertTriangle />, color: 'text-rose-500', bg: 'bg-rose-50' }
+        { label: 'Düşük Stok', value: '3 Kalem', icon: <AlertTriangle />, color: 'text-red-500', bg: 'bg-red-50' }
     ];
 
     const alerts = [
@@ -81,13 +81,13 @@ export default function SuppDashboard() {
                             <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Kritik Bildirimler</h2>
                             <div className="space-y-4">
                                 {alerts.map(alert => (
-                                    <div key={alert.id} className={`p-6 rounded-[32px] border flex items-start gap-6 transition-all hover:translate-x-1 ${alert.type === 'error' ? 'bg-rose-50 border-rose-100' : alert.type === 'warning' ? 'bg-amber-50 border-amber-100' : 'bg-indigo-50 border-indigo-100'}`}>
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${alert.type === 'error' ? 'bg-rose-200 text-rose-700' : alert.type === 'warning' ? 'bg-amber-200 text-amber-700' : 'bg-indigo-200 text-indigo-700'}`}>
+                                    <div key={alert.id} className={`p-6 rounded-[32px] border flex items-start gap-6 transition-all hover:translate-x-1 ${alert.type === 'error' ? 'bg-red-50 border-red-100' : alert.type === 'warning' ? 'bg-orange-50 border-orange-100' : 'bg-orange-50 border-orange-100'}`}>
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${alert.type === 'error' ? 'bg-red-200 text-red-700' : alert.type === 'warning' ? 'bg-orange-200 text-orange-700' : 'bg-orange-200 text-orange-700'}`}>
                                             <AlertTriangle size={24} />
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${alert.type === 'error' ? 'text-rose-900' : alert.type === 'warning' ? 'text-amber-900' : 'text-indigo-900'}`}>{alert.title}</h4>
-                                            <p className={`text-[11px] font-medium leading-relaxed ${alert.type === 'error' ? 'text-rose-700/70' : alert.type === 'warning' ? 'text-amber-700/70' : 'text-indigo-700/70'}`}>{alert.desc}</p>
+                                            <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${alert.type === 'error' ? 'text-red-900' : alert.type === 'warning' ? 'text-orange-900' : 'text-orange-900'}`}>{alert.title}</h4>
+                                            <p className={`text-[11px] font-medium leading-relaxed ${alert.type === 'error' ? 'text-red-700/70' : alert.type === 'warning' ? 'text-orange-700/70' : 'text-orange-700/70'}`}>{alert.desc}</p>
                                         </div>
                                         <button className="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
                                             <ArrowRight size={16} className="text-slate-400" />
@@ -111,7 +111,7 @@ export default function SuppDashboard() {
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Batı Vista Rezidans</div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <div className="text-[10px] font-black text-amber-500 uppercase tracking-widest">BEKLİYOR</div>
+                                            <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest">BEKLİYOR</div>
                                             <div className="text-[9px] font-bold text-slate-300 mt-0.5 italic">14:30 Teslim</div>
                                         </div>
                                     </div>

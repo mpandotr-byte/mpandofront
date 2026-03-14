@@ -11,8 +11,8 @@ const ROLES = [
   { value: 'CORP_ADMIN', label: 'Sirket Yoneticisi', color: 'bg-red-50 text-red-700 border-red-200' },
   { value: 'PROJECT_MANAGER', label: 'Proje Muduru', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'SITE_ENGINEER', label: 'Saha Muhendisi', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'ACCOUNTANT', label: 'Muhasebeci', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'SALES_REP', label: 'Satis Temsilcisi', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { value: 'ACCOUNTANT', label: 'Muhasebeci', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { value: 'SALES_REP', label: 'Satis Temsilcisi', color: 'bg-orange-50 text-orange-700 border-orange-200' },
   { value: 'SUB_OWNER', label: 'Taseron Sahibi', color: 'bg-slate-50 text-slate-700 border-slate-200' },
   { value: 'SUB_SUPERVISOR', label: 'Taseron Amiri', color: 'bg-slate-50 text-slate-600 border-slate-200' },
   { value: 'SUPP_MANAGER', label: 'Tedarikci Muduru', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
@@ -202,7 +202,7 @@ export default function UserManagement() {
                       {!u.email_verified && (
                         <button
                           onClick={() => sendVerificationEmail(u.email)}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold border bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold border bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 transition-colors flex items-center gap-1"
                         >
                           <Mail size={10} /> Dogrulama Gonder
                         </button>

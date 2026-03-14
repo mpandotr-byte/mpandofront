@@ -12,8 +12,8 @@ const ROLES = [
   { value: 'CORP_ADMIN', label: 'Sirket Yoneticisi', color: 'bg-red-50 text-red-700 border-red-200' },
   { value: 'PROJECT_MANAGER', label: 'Proje Muduru', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'SITE_ENGINEER', label: 'Saha Muhendisi', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'ACCOUNTANT', label: 'Muhasebeci', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'SALES_REP', label: 'Satis Temsilcisi', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { value: 'ACCOUNTANT', label: 'Muhasebeci', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { value: 'SALES_REP', label: 'Satis Temsilcisi', color: 'bg-orange-50 text-orange-700 border-orange-200' },
   { value: 'SUB_OWNER', label: 'Taseron Sahibi', color: 'bg-slate-50 text-slate-700 border-slate-200' },
   { value: 'SUB_SUPERVISOR', label: 'Taseron Amiri', color: 'bg-slate-50 text-slate-600 border-slate-200' },
   { value: 'SUPP_MANAGER', label: 'Tedarikci Muduru', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
@@ -193,7 +193,7 @@ export default function Profile() {
           {/* Profile Header */}
           <div className="relative overflow-hidden bg-gradient-to-r from-[#0A1128] via-[#0D1630] to-[#0A1128] rounded-2xl p-6 md:p-8 text-white shadow-xl mb-6">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/10 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl" />
             <div className="relative flex flex-col md:flex-row md:items-center gap-5">
               {/* Avatar */}
               <div className="relative">
@@ -204,7 +204,7 @@ export default function Profile() {
                     className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20"
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white/20 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-orange-600 border-2 border-white/20 flex items-center justify-center">
                     <span className="text-3xl font-black text-white">{avatarLetter}</span>
                   </div>
                 )}
@@ -348,7 +348,7 @@ export default function Profile() {
                 {/* Password Change Card */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                   <h2 className="text-lg font-black text-slate-800 mb-5 flex items-center gap-2">
-                    <KeyRound size={20} className="text-amber-500" />
+                    <KeyRound size={20} className="text-orange-500" />
                     Sifre Degistir
                   </h2>
 
@@ -435,7 +435,7 @@ export default function Profile() {
                   <button
                     onClick={handlePasswordChange}
                     disabled={passwordSaving}
-                    className="mt-5 w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg"
+                    className="mt-5 w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg"
                   >
                     {passwordSaving ? <Loader2 size={18} className="animate-spin" /> : <KeyRound size={18} />}
                     {passwordSaving ? 'Degistiriliyor...' : 'Sifreyi Degistir'}
@@ -445,7 +445,7 @@ export default function Profile() {
                 {/* Email Verification Card */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                   <h2 className="text-lg font-black text-slate-800 mb-5 flex items-center gap-2">
-                    <Mail size={20} className="text-purple-500" />
+                    <Mail size={20} className="text-orange-500" />
                     E-posta Dogrulama
                   </h2>
 
@@ -453,7 +453,7 @@ export default function Profile() {
                     <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border ${
                       emailVerified
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                        : 'bg-orange-50 text-orange-700 border-orange-200'
                     }`}>
                       {emailVerified ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
                       {emailVerified ? 'E-posta Dogrulandi' : 'E-posta Dogrulanmadi'}
@@ -466,7 +466,7 @@ export default function Profile() {
                         <button
                           onClick={handleSendVerification}
                           disabled={verificationSending}
-                          className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg"
+                          className="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg"
                         >
                           {verificationSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                           {verificationSending ? 'Gonderiliyor...' : 'Dogrulama Kodu Gonder'}
@@ -479,7 +479,7 @@ export default function Profile() {
                               type="text"
                               value={verificationCode}
                               onChange={(e) => setVerificationCode(e.target.value)}
-                              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 transition-colors text-center tracking-widest font-bold"
+                              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-orange-400 transition-colors text-center tracking-widest font-bold"
                               placeholder="Kodu giriniz"
                               maxLength={6}
                             />
@@ -488,7 +488,7 @@ export default function Profile() {
                             <button
                               onClick={handleVerifyCode}
                               disabled={verifyingCode}
-                              className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg"
+                              className="flex-1 flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-lg"
                             >
                               {verifyingCode ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                               {verifyingCode ? 'Dogrulaniyor...' : 'Dogrula'}
