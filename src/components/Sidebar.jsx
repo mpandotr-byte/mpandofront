@@ -420,6 +420,20 @@ export default function Sidebar({ isMobileMenuOpen, closeMobileMenu }) {
               </Link>
             </li>
             )}
+            <li>
+              <Link
+                to="/activity-logs"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-white/[0.04] hover:text-slate-300 transition-all
+                  ${isSidebarCollapsed ? "justify-center" : ""}
+                  ${isActivePath("/activity-logs") ? "bg-[#D36A47]/10 text-white" : ""}`}
+                onClick={closeMobileMenu}
+              >
+                <span className={isActivePath("/activity-logs") ? "text-[#D36A47]" : ""}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                </span>
+                {!isSidebarCollapsed && <span className="text-sm font-medium">Aktivite Kayitlari</span>}
+              </Link>
+            </li>
           </ul>
 
           {/* User Card */}

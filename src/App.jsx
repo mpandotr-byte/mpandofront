@@ -57,6 +57,7 @@ import Tenders from "./pages/management/Tenders";
 import DwgManager from "./pages/management/DwgManager";
 import Announcements from "./pages/system/Announcements";
 import UserManagement from "./pages/system/UserManagement";
+import ActivityLogs from "./pages/system/ActivityLogs";
 import FinanceAdvanced from "./pages/accounting/FinanceAdvanced";
 import QuantitySummary from "./pages/construction/QuantitySummary";
 import SalesProjects from "./pages/sales/SalesProjects";
@@ -109,6 +110,7 @@ function App() {
         <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
         <Route path="/announcements" element={<PrivateRoute><Announcements /></PrivateRoute>} />
         <Route path="/user-management" element={<PrivateRoute><UserManagement /></PrivateRoute>} />
+        <Route path="/activity-logs" element={<PrivateRoute><ActivityLogs /></PrivateRoute>} />
 
         {/* --- ÜRETİM, MALZEME VE TEKNİK --- */}
         <Route path="/materials" element={<PrivateRoute><Materials /></PrivateRoute>} />
