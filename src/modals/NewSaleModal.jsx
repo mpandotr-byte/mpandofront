@@ -81,8 +81,11 @@ export default function NewSaleModal({
         const allUnits = [];
         block.floors.forEach(floor => {
           if (floor.units) {
-            // Sadece boş olan daireleri ekle veya hepsini göster ama filtreli kalsın derseniz:
-            allUnits.push(...floor.units);
+            const availableUnits = floor.units.filter(u => {
+              const status = String(u.sales_status || 'AVAILABLE').toUpperCase();
+              return ['AVAILABLE', 'SATILIK', 'MÜSAİT', 'BOŞ', ''].includes(status);
+            });
+            allUnits.push(...availableUnits);
           }
         });
         setUnits(allUnits.sort((a, b) => String(a.unit_number).localeCompare(String(b.unit_number), undefined, { numeric: true })));
@@ -325,7 +328,7 @@ export default function NewSaleModal({
                         >
                           <option value="">Daire Seçiniz</option>
                           {units.map(u => (
-                            <option key={u.id} value={u.id}>No: {u.unit_number} ({u.unit_type}) - {u.sales_status}</option>
+                            <option key={u.id} value={u.id}>No: {u.unit_number} ({u.unit_type})</option>
                           ))}
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
