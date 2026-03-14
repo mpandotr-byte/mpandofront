@@ -205,7 +205,7 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
     // customAgentName mantığına gerek kalmaz, direkt formData.agentName kullanılır.
     const finalAgentName = formData.agentName;
 
-    if (!finalProjectName || !finalBlock || !formData.ownerName || !formData.type || !formData.price || !finalAgentName) {
+    if (!finalProjectName || !formData.ownerName || !formData.type || !formData.price || !finalAgentName) {
       alert("Lütfen zorunlu (*) alanları doldurunuz.");
       return;
     }
@@ -277,33 +277,34 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
                     <input type="text" name="customProjectName" value={formData.customProjectName} onChange={handleChange} placeholder="Proje Adı Giriniz" className="w-full mt-2 px-3 py-2 border border-blue-300 bg-blue-50/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required />
                   )}
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
-                    <span>Blok / Yapı <span className="text-red-500">*</span></span>
-                    {loadingDetails && <span className="text-[10px] text-blue-500 animate-pulse">Yükleniyor...</span>}
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="blockInfo"
-                      value={formData.blockInfo}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none cursor-pointer"
-                      required
-                      disabled={!formData.projectName || formData.projectName === 'Diğer'}
-                    >
-                      <option value="">Seçiniz</option>
-                      {blocks.length > 0 ? (
-                        blocks.map(b => <option key={b.id} value={b.name}>{b.name}</option>)
-                      ) : (
-                        defaultBlocks.map(b => <option key={b} value={b}>{b}</option>)
-                      )}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                {formData.projectName !== 'Diğer' && (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
+                      <span>Blok / Yapı</span>
+                      {loadingDetails && <span className="text-[10px] text-blue-500 animate-pulse">Yükleniyor...</span>}
+                    </label>
+                    <div className="relative">
+                      <select
+                        name="blockInfo"
+                        value={formData.blockInfo}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none cursor-pointer"
+                        disabled={!formData.projectName}
+                      >
+                        <option value="">Seçiniz</option>
+                        {blocks.length > 0 ? (
+                          blocks.map(b => <option key={b.id} value={b.name}>{b.name}</option>)
+                        ) : (
+                          defaultBlocks.map(b => <option key={b} value={b}>{b}</option>)
+                        )}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                    </div>
+                    {formData.blockInfo === 'Diğer' && (
+                      <input type="text" name="customBlockInfo" value={formData.customBlockInfo} onChange={handleChange} placeholder="Blok Adı Giriniz" className="w-full mt-2 px-3 py-2 border border-blue-300 bg-blue-50/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required />
+                    )}
                   </div>
-                  {formData.blockInfo === 'Diğer' && (
-                    <input type="text" name="customBlockInfo" value={formData.customBlockInfo} onChange={handleChange} placeholder="Blok Adı Giriniz" className="w-full mt-2 px-3 py-2 border border-blue-300 bg-blue-50/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required />
-                  )}
-                </div>
+                )}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
                     <span>Daire / No <span className="text-red-500">*</span></span>

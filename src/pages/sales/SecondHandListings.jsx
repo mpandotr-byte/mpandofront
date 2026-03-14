@@ -374,7 +374,7 @@ function SecondHandListings() {
           />
         </div>
 
-        <NewSecondHandModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAdd={handleAddListing} />
+        <NewSecondHandModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAdd={handleAddListing} loggedInAgentName={user?.full_name || user?.email || ''} />
         <SecondHandEditModal isOpen={isEditModalOpen} data={selectedListingForEdit} onClose={() => setIsEditModalOpen(false)} onSave={handleUpdateListing} />
         <SecondHandDetailsModal
           isOpen={isDetailsModalOpen}
