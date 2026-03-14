@@ -103,7 +103,17 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
       const blockUnits = [];
       (data.floors || []).forEach(f => {
         (f.units || []).forEach(u => {
-          blockUnits.push({ ...u, floor_number: f.floor_number });
+          // Sadece satılmış, barter veya arsa sahibi olan daireleri göster
+          const status = String(u.sales_status || '').toUpperCase();
+          const isSoldOrOwned = ['SOLD', 'SATILDI', 'BARTER', 'ARSA SAHIBI', 'ARSA SAHİBİ'].includes(status);
+          // Ayrıca satış kaydı üzerinden de kontrol et
+          const hasSale = sales.some(s =>
+            String(s.unit_id) === String(u.id) &&
+            ['Satıldı', 'Barter', 'Arsa Sahibi'].includes(s.sale_status)
+          );
+          if (isSoldOrOwned || hasSale) {
+            blockUnits.push({ ...u, floor_number: f.floor_number });
+          }
         });
       });
       setUnits(blockUnits);
@@ -154,7 +164,7 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
         if (selectedUnit) {
           const sale = sales.find(s =>
             String(s.unit_id) === String(selectedUnit.id) &&
-            (s.sale_status === 'Satıldı' || s.approval_status === 'Onaylandı')
+            ['Satıldı', 'Barter', 'Arsa Sahibi'].includes(s.sale_status)
           );
 
           newData.ownerName = sale?.customers?.full_name || 'Şirket Envanteri';
