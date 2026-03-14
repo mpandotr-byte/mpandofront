@@ -9,9 +9,12 @@ import {
   ChevronDown,
   User,
   FileText,
-  Upload
+  Upload,
+  Search,
+  PlusCircle
 } from 'lucide-react';
 import { api } from '../../api/client';
+import NewCostumerModal from '../customers/NewCostumerModal';
 
 // loggedInAgentName prop'u eklendi
 export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAgentName, agents = [] }) {
@@ -19,7 +22,13 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
   const [blocks, setBlocks] = useState([]);
   const [units, setUnits] = useState([]);
   const [sales, setSales] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [ownerSource, setOwnerSource] = useState('auto'); // 'auto' | 'manual'
+  const [ownerSearch, setOwnerSearch] = useState('');
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState({ full_name: '', identity_number: '', phone: '', email: '', address: '' });
+  const [customerSaving, setCustomerSaving] = useState(false);
 
   const defaultBlocks = ['A Blok', 'B Blok', 'C Blok', 'Bağımsız', 'Diğer'];
   // availableAgents artık bu modalda kullanılmadığı için sadeleştirilebilir
@@ -60,8 +69,11 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
         ...initialData,
         agentName: loggedInAgentName || '',
       });
+      setOwnerSource('auto');
+      setOwnerSearch('');
       fetchProjects();
       fetchSales();
+      fetchCustomers();
     }
   }, [isOpen, loggedInAgentName]);
 
@@ -80,6 +92,15 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
       setSales(data || []);
     } catch (err) {
       console.error("Satışlar çekilemedi:", err);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const data = await api.get('/customers');
+      setCustomers(Array.isArray(data) ? data.filter(c => !c.is_deleted) : []);
+    } catch (err) {
+      console.error("Müşteriler çekilemedi:", err);
     }
   };
 
@@ -167,8 +188,15 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
             ['Satıldı', 'Barter', 'Arsa Sahibi'].includes(s.sale_status)
           );
 
-          newData.ownerName = sale?.customers?.full_name || 'Şirket Envanteri';
-          newData.ownerPhone = sale?.customers?.phone || '';
+          if (sale?.customers?.full_name) {
+            newData.ownerName = sale.customers.full_name;
+            newData.ownerPhone = sale.customers.phone || '';
+            setOwnerSource('auto');
+          } else {
+            newData.ownerName = 'Şirket Envanteri';
+            newData.ownerPhone = '';
+            setOwnerSource('manual');
+          }
 
           // Mülk Tipi'ni (Daire/Villa vb.) akıllıca seç
           if (selectedUnit.unit_type) {
@@ -247,6 +275,62 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
     onAdd(newListing);
     onClose();
   };
+
+  const handleNewCustomerChange = (e) => {
+    const { name, value } = e.target;
+    setNewCustomerData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddNewCustomer = async () => {
+    if (!newCustomerData.full_name || !newCustomerData.phone) {
+      alert('Müşteri adı ve telefon numarası zorunludur.');
+      return;
+    }
+    setCustomerSaving(true);
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const createData = {
+        ...newCustomerData,
+        company_id: user.company_id,
+        employee_id: user.id,
+        contractor_id: user.company_id,
+        is_deleted: false
+      };
+      const created = await api.post('/customers', createData);
+      setIsNewCustomerModalOpen(false);
+      setNewCustomerData({ full_name: '', identity_number: '', phone: '', email: '', address: '' });
+      if (created) {
+        setCustomers(prev => [...prev, created]);
+        setFormData(prev => ({
+          ...prev,
+          ownerName: created.full_name,
+          ownerPhone: created.phone || ''
+        }));
+        setOwnerSource('auto');
+      }
+    } catch (err) {
+      console.error('Müşteri eklenirken hata:', err);
+      alert('Müşteri eklenirken bir hata oluştu.');
+    } finally {
+      setCustomerSaving(false);
+    }
+  };
+
+  const handleSelectCustomer = (customer) => {
+    setFormData(prev => ({
+      ...prev,
+      ownerName: customer.full_name,
+      ownerPhone: customer.phone || ''
+    }));
+    setOwnerSource('auto');
+    setOwnerSearch('');
+  };
+
+  const filteredOwnerCustomers = customers.filter(c =>
+    c.full_name?.toLowerCase().includes(ownerSearch.toLowerCase()) ||
+    c.phone?.includes(ownerSearch) ||
+    String(c.id).includes(ownerSearch)
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
@@ -392,15 +476,84 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">Ev Sahibi</h4>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Ad Soyad <span className="text-red-500">*</span></label>
-                    <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} placeholder="Ad Soyad Giriniz" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" required />
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">Ev Sahibi</h4>
+                    {ownerSource === 'auto' && formData.ownerName && formData.ownerName !== 'Şirket Envanteri' && (
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Otomatik dolduruldu</span>
+                    )}
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Telefon</label>
-                    <input type="tel" name="ownerPhone" value={formData.ownerPhone} onChange={handleChange} placeholder="+90" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
-                  </div>
+
+                  {/* Ev sahibi otomatik doldurulduysa sadece göster */}
+                  {ownerSource === 'auto' && formData.ownerName && formData.ownerName !== 'Şirket Envanteri' ? (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Ad Soyad <span className="text-red-500">*</span></label>
+                        <input type="text" name="ownerName" value={formData.ownerName} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 outline-none" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Telefon</label>
+                        <input type="tel" name="ownerPhone" value={formData.ownerPhone} readOnly className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 outline-none" />
+                      </div>
+                      <button type="button" onClick={() => setOwnerSource('manual')} className="text-[11px] text-blue-600 hover:text-blue-700 font-medium">
+                        Farklı müşteri seç
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Müşteri arama ve seçme */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium text-slate-700">Müşteri Seç <span className="text-red-500">*</span></label>
+                          <button
+                            type="button"
+                            onClick={() => setIsNewCustomerModalOpen(true)}
+                            className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                          >
+                            <PlusCircle size={12} /> Yeni Müşteri Ekle
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Search size={14} />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Müşteri ara (ad, tel, id)..."
+                            value={ownerSearch}
+                            onChange={(e) => setOwnerSearch(e.target.value)}
+                            className="block w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-200"
+                          />
+                        </div>
+                        {ownerSearch && (
+                          <div className="max-h-32 overflow-y-auto border border-slate-200 rounded-lg bg-white shadow-sm">
+                            {filteredOwnerCustomers.length > 0 ? (
+                              filteredOwnerCustomers.slice(0, 8).map(c => (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onClick={() => handleSelectCustomer(c)}
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-purple-50 border-b border-slate-100 last:border-0 flex justify-between items-center"
+                                >
+                                  <span className="font-medium text-slate-700">{c.full_name}</span>
+                                  <span className="text-xs text-slate-400">{c.phone}</span>
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-3 py-2 text-xs text-slate-400">Sonuç bulunamadı</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Seçilen Ev Sahibi</label>
+                        <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} placeholder="Yukarıdan müşteri seçin veya manuel girin" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" required />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Telefon</label>
+                        <input type="tel" name="ownerPhone" value={formData.ownerPhone} onChange={handleChange} placeholder="+90" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="space-y-4 md:border-l md:border-slate-300 md:pl-6">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kiracı / Alıcı</h4>
@@ -569,6 +722,17 @@ export default function NewSecondHandModal({ isOpen, onClose, onAdd, loggedInAge
             Kaydet
           </button>
         </div>
+        {/* Yeni Müşteri Ekleme Modalı */}
+        <NewCostumerModal
+          isOpen={isNewCustomerModalOpen}
+          onClose={() => {
+            setIsNewCustomerModalOpen(false);
+            setNewCustomerData({ full_name: '', identity_number: '', phone: '', email: '', address: '' });
+          }}
+          newCustomerData={newCustomerData}
+          onChange={handleNewCustomerChange}
+          onAdd={handleAddNewCustomer}
+        />
       </div >
     </div >
   );
