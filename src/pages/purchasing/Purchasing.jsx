@@ -187,6 +187,88 @@ export default function Purchasing() {
         }
     };
 
+    // Malzeme lojistik hesaplama (paket/torba/palet)
+    const calculateLogistics = (material, totalNeed) => {
+        if (!material) return null;
+        const unit = (material.unit || '').toLowerCase();
+        const name = (material.name || '').toLowerCase();
+        const cat = (material.category || '').toLowerCase();
+
+        // Malzeme tipine göre lojistik birim belirleme
+        let items = [];
+
+        if (name.includes('çimento') || name.includes('cimento')) {
+            const bagWeight = 50; // kg
+            const bags = Math.ceil(totalNeed * 1000 / bagWeight); // Ton -> kg -> torba
+            const palletsOf40 = Math.ceil(bags / 40);
+            items = [
+                { label: 'Torba (50kg)', value: bags, icon: '🏷️' },
+                { label: 'Palet (40 torba)', value: palletsOf40, icon: '📦' }
+            ];
+        } else if (name.includes('seramik') || name.includes('fayans') || name.includes('karo')) {
+            const boxM2 = material.box_content_m2 || 1.44;
+            const boxes = Math.ceil(totalNeed / boxM2);
+            const palletBoxes = material.pallet_box_count || 48;
+            const pallets = Math.ceil(boxes / palletBoxes);
+            items = [
+                { label: `Kutu (${boxM2} m²)`, value: boxes, icon: '📦' },
+                { label: `Palet (${palletBoxes} kutu)`, value: pallets, icon: '🏗️' }
+            ];
+        } else if (name.includes('boya') || name.includes('astar')) {
+            const coverage = 12; // m²/lt
+            const liters = Math.ceil(totalNeed / coverage);
+            const buckets = Math.ceil(liters / 15); // 15lt kova
+            items = [
+                { label: 'Litre', value: liters, icon: '💧' },
+                { label: 'Kova (15lt)', value: buckets, icon: '🪣' }
+            ];
+        } else if (name.includes('alçı') || name.includes('sıva') || name.includes('macun')) {
+            const bagWeight = 25;
+            const bags = Math.ceil(totalNeed * (unit.includes('ton') ? 1000 : 1) / bagWeight);
+            const pallets = Math.ceil(bags / 56);
+            items = [
+                { label: 'Torba (25kg)', value: bags, icon: '🏷️' },
+                { label: 'Palet (56 torba)', value: pallets, icon: '📦' }
+            ];
+        } else if (name.includes('demir') || name.includes('nervür')) {
+            const barWeight = unit.includes('ton') ? 1 : 0.00089; // 12mm demir ~0.89 kg/m
+            const totalKg = totalNeed * (unit.includes('ton') ? 1000 : barWeight * 1000);
+            const bundles = Math.ceil(totalKg / 2000); // ~2 ton demet
+            items = [
+                { label: 'Toplam (kg)', value: Math.round(totalKg), icon: '⚖️' },
+                { label: 'Demet (~2 ton)', value: bundles, icon: '🔩' }
+            ];
+        } else if (unit.includes('m²') || unit.includes('m2')) {
+            const boxM2 = material.box_content_m2 || 2.0;
+            const boxes = Math.ceil(totalNeed / boxM2);
+            items = [
+                { label: `Paket (${boxM2} m²)`, value: boxes, icon: '📦' }
+            ];
+        } else if (unit.includes('m3') || unit.includes('m³')) {
+            const trucks = Math.ceil(totalNeed / 10); // 10 m3 kamyon
+            items = [
+                { label: 'Kamyon (10 m³)', value: trucks, icon: '🚛' }
+            ];
+        } else if (unit.includes('ton')) {
+            const trucks = Math.ceil(totalNeed / 25); // 25 ton TIR
+            items = [
+                { label: 'TIR (25 ton)', value: trucks, icon: '🚛' }
+            ];
+        } else {
+            // Genel: adet bazlı
+            const packages = Math.ceil(totalNeed / 10);
+            items = [
+                { label: 'Paket (10 adet)', value: packages, icon: '📦' }
+            ];
+        }
+
+        // Tahmini ağırlık
+        const weightPerUnit = material.weight_per_unit || null;
+        const estimatedWeight = weightPerUnit ? Math.round(totalNeed * weightPerUnit) : null;
+
+        return { items, estimatedWeight };
+    };
+
     const runAnalysis = () => {
         if (!selection.materialId) return;
         const selectedMat = materials.find(m => m.id === parseInt(selection.materialId));
@@ -211,13 +293,17 @@ export default function Purchasing() {
         const coefficient = 1.1; // %10 fire payı vb.
         const totalNeed = Math.round(area * coefficient);
 
+        // Lojistik hesaplama (paket/torba/palet)
+        const logistics = calculateLogistics(selectedMat, totalNeed);
+
         setCalculationResult({
             item: selectedMat?.name || 'Seçili Malzeme',
             analysisArea: info,
             requirement: "Genel Saha Sarfiyat Hesabı",
             totalNeed: totalNeed,
             unit: selectedMat?.unit || 'm²',
-            stockRecommendation: stockWarningInfo || 0
+            stockRecommendation: stockWarningInfo || 0,
+            logistics
         });
         setRequestedAmount(totalNeed);
     };
@@ -474,6 +560,34 @@ export default function Purchasing() {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Lojistik Detay Kartı */}
+                                            {calculationResult.logistics && calculationResult.logistics.items.length > 0 && (
+                                                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[32px] p-8 shadow-sm border border-indigo-100 space-y-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                            <Truck size={20} />
+                                                        </div>
+                                                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">LOJİSTİK HESAPLAMA</h2>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                        {calculationResult.logistics.items.map((item, idx) => (
+                                                            <div key={idx} className="bg-white rounded-2xl p-5 border border-indigo-100 text-center shadow-sm">
+                                                                <span className="text-2xl">{item.icon}</span>
+                                                                <p className="text-2xl font-black text-indigo-700 mt-2">{item.value.toLocaleString('tr-TR')}</p>
+                                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">{item.label}</p>
+                                                            </div>
+                                                        ))}
+                                                        {calculationResult.logistics.estimatedWeight && (
+                                                            <div className="bg-white rounded-2xl p-5 border border-indigo-100 text-center shadow-sm">
+                                                                <span className="text-2xl">⚖️</span>
+                                                                <p className="text-2xl font-black text-indigo-700 mt-2">{calculationResult.logistics.estimatedWeight.toLocaleString('tr-TR')} kg</p>
+                                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Tahmini Ağırlık</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* Conversion Form */}
                                             <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 space-y-8">
