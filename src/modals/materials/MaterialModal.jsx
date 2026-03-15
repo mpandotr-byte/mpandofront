@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Package, Ruler, Truck, Info, Building2, Clock, Weight, Box, Layers, MoveRight, History } from 'lucide-react';
+import { X, Save, Package, Ruler, Truck, Info, Building2, Clock, Weight, Box, Layers, MoveRight, History, MapPin, Check } from 'lucide-react';
 import { api } from '../../api/client';
 import AddSupplierOfferModal from '../purchasing/AddSupplierOfferModal';
+
+const APPLICATION_AREAS = [
+    'Duvar', 'Zemin', 'Tavan', 'Dış Cephe', 'Kaba Yapı', 'Temel', 'Çatı', 'Bodrum',
+    'İç Mekan', 'Tesisat', 'Bina Ortak Alanı', 'Kat Holü', 'Merdiven', 'Balkon',
+    'Banyo', 'Mutfak', 'Asansör', 'Elektrik', 'Isı Yalıtım', 'Su Yalıtım', 'Ses Yalıtım'
+];
 
 const initialFormState = {
     code: '', // Handle automatically on backend but maybe show if editing
@@ -9,6 +15,7 @@ const initialFormState = {
     category: 'Kaba',
     supplier_id: '',
     unit: 'm²',
+    application_areas: [],
     width_cm: '',
     length_cm: '',
     thickness_mm: '',
@@ -33,7 +40,8 @@ export default function MaterialModal({ isOpen, onClose, material, onSave, suppl
             setFormData({
                 ...material,
                 supplier_id: material.supplier_id || '',
-                lead_time_days: material.lead_time_days || '7'
+                lead_time_days: material.lead_time_days || '7',
+                application_areas: material.application_areas || []
             });
             fetchMaterialDetails(material.id);
         } else {
@@ -69,6 +77,15 @@ export default function MaterialModal({ isOpen, onClose, material, onSave, suppl
             processedValue = value === '' ? '' : parseInt(value);
         }
         setFormData(prev => ({ ...prev, [name]: processedValue }));
+    };
+
+    const toggleApplicationArea = (area) => {
+        setFormData(prev => ({
+            ...prev,
+            application_areas: prev.application_areas.includes(area)
+                ? prev.application_areas.filter(a => a !== area)
+                : [...prev.application_areas, area]
+        }));
     };
 
     const handleSubmit = (e) => {
@@ -190,6 +207,39 @@ export default function MaterialModal({ isOpen, onClose, material, onSave, suppl
                                                 {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                             </select>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Uygulama Alanları */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 ml-1">
+                                        <MapPin size={14} className="text-[#D36A47]" />
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Uygulama Alanları</label>
+                                        {formData.application_areas.length > 0 && (
+                                            <span className="text-[10px] bg-[#D36A47]/10 text-[#D36A47] px-2 py-0.5 rounded-full font-bold">
+                                                {formData.application_areas.length} seçili
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {APPLICATION_AREAS.map(area => {
+                                            const isSelected = formData.application_areas.includes(area);
+                                            return (
+                                                <button
+                                                    key={area}
+                                                    type="button"
+                                                    onClick={() => toggleApplicationArea(area)}
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold border transition-all active:scale-95 ${
+                                                        isSelected
+                                                            ? 'bg-[#D36A47] text-white border-[#D36A47] shadow-sm shadow-[#D36A47]/20'
+                                                            : 'bg-white text-slate-500 border-slate-200 hover:border-[#D36A47]/30 hover:text-[#D36A47]'
+                                                    }`}
+                                                >
+                                                    {isSelected && <Check size={12} />}
+                                                    {area}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

@@ -269,43 +269,100 @@ export default function Purchasing() {
         return { items, estimatedWeight };
     };
 
-    const runAnalysis = () => {
+    const runAnalysis = async () => {
         if (!selection.materialId) return;
         const selectedMat = materials.find(m => m.id === parseInt(selection.materialId));
+        setLoading(true);
 
-        // Eğer belirli bir ünite seçildiyse onun m2 bilgisini kullan
-        let area = 0;
-        let info = "Tüm Blok / Kat Geneli";
+        try {
+            // Akıllı hesaplama API'sini çağır
+            const smartResult = await api.post('/inventory/smart-calculate', {
+                material_id: parseInt(selection.materialId),
+                block_id: selection.blockId ? parseInt(selection.blockId) : null,
+                floor_id: selection.floorId ? parseInt(selection.floorId) : null,
+                unit_id: selection.unitId ? parseInt(selection.unitId) : null
+            });
 
-        if (selection.unitId) {
-            const unit = units.find(u => String(u.id) === String(selection.unitId));
-            area = unit?.gross_m2 || unit?.area_m2 || 85; // Fallback to 85 if not found
-            info = `No: ${unit?.unit_number || unit?.name} (${area} m2)`;
-        } else if (selection.floorId) {
-            const floor = floors.find(f => String(f.id) === String(selection.floorId));
-            area = (floor?.units || []).reduce((acc, u) => acc + (u.gross_m2 || u.area_m2 || 85), 0);
-            info = `${floor?.floor_number}. Kat Toplam (${area} m2)`;
-        } else {
-            area = units.reduce((acc, u) => acc + (u.gross_m2 || u.area_m2 || 85), 0);
+            // Analiz alanı bilgisi
+            let info = "Tüm Blok / Kat Geneli";
+            if (selection.unitId) {
+                const unit = units.find(u => String(u.id) === String(selection.unitId));
+                info = `No: ${unit?.unit_number || unit?.name}`;
+            } else if (selection.floorId) {
+                const floor = floors.find(f => String(f.id) === String(selection.floorId));
+                info = `${floor?.floor_number}. Kat Toplam`;
+            }
+
+            // Katman kırılımı bilgisi
+            const layerInfo = smartResult.layer_breakdown
+                ? Object.entries(smartResult.layer_breakdown).map(([k, v]) => `${k}: ${v.total_m2} m²`).join(' | ')
+                : '';
+
+            // Lojistik items oluştur
+            const logisticsItems = [];
+            const pkg = smartResult.packaging || {};
+            if (pkg.bucket_count) logisticsItems.push({ label: pkg.bucket_label || 'Kova', value: pkg.bucket_count, icon: '🪣' });
+            if (pkg.liter_count) logisticsItems.push({ label: 'Litre', value: pkg.liter_count, icon: '💧' });
+            if (pkg.bag_count) logisticsItems.push({ label: pkg.bag_label || 'Torba', value: pkg.bag_count, icon: '🏷️' });
+            if (pkg.box_count) logisticsItems.push({ label: pkg.box_label || 'Kutu', value: pkg.box_count, icon: '📦' });
+            if (pkg.pallet_count) logisticsItems.push({ label: pkg.pallet_label || 'Palet', value: pkg.pallet_count, icon: '🏗️' });
+            if (pkg.total_units && !pkg.bucket_count && !pkg.bag_count && !pkg.box_count) {
+                logisticsItems.push({ label: pkg.unit_label || 'Birim', value: pkg.total_units, icon: '📦' });
+            }
+
+            const totalNeed = smartResult.calculation?.gross_need || 0;
+
+            setCalculationResult({
+                item: smartResult.material?.name || selectedMat?.name || 'Seçili Malzeme',
+                analysisArea: `${info} (${smartResult.total_target_area_m2} m²)`,
+                requirement: smartResult.recipe
+                    ? `${smartResult.recipe.name}: ${smartResult.recipe.description}`
+                    : "Reçete atanmamış – brüt alan hesabı",
+                totalNeed: totalNeed,
+                unit: smartResult.material?.unit || selectedMat?.unit || 'm²',
+                stockRecommendation: smartResult.stock?.current || 0,
+                stockDeficit: smartResult.stock?.deficit || 0,
+                logistics: { items: logisticsItems, estimatedWeight: null },
+                // Akıllı detaylar
+                applicationAreas: smartResult.application_areas || [],
+                layerBreakdown: smartResult.layer_breakdown || {},
+                layerInfo,
+                recipe: smartResult.recipe,
+                calculation: smartResult.calculation,
+                roomCount: smartResult.scope?.room_count || 0
+            });
+            setRequestedAmount(Math.ceil(totalNeed));
+        } catch (err) {
+            console.error('Smart calculate error:', err);
+            // Fallback: eski hesaplama yöntemi
+            let area = 0;
+            let info = "Tüm Blok / Kat Geneli";
+            if (selection.unitId) {
+                const unit = units.find(u => String(u.id) === String(selection.unitId));
+                area = unit?.gross_m2 || unit?.area_m2 || 85;
+                info = `No: ${unit?.unit_number || unit?.name} (${area} m2)`;
+            } else if (selection.floorId) {
+                const floor = floors.find(f => String(f.id) === String(selection.floorId));
+                area = (floor?.units || []).reduce((acc, u) => acc + (u.gross_m2 || u.area_m2 || 85), 0);
+                info = `${floor?.floor_number}. Kat Toplam (${area} m2)`;
+            } else {
+                area = units.reduce((acc, u) => acc + (u.gross_m2 || u.area_m2 || 85), 0);
+            }
+            const coefficient = 1.1;
+            const totalNeed = Math.round(area * coefficient);
+            const logistics = calculateLogistics(selectedMat, totalNeed);
+            setCalculationResult({
+                item: selectedMat?.name || 'Seçili Malzeme',
+                analysisArea: info,
+                requirement: "Genel Saha Sarfiyat Hesabı (fallback)",
+                totalNeed, unit: selectedMat?.unit || 'm²',
+                stockRecommendation: stockWarningInfo || 0,
+                logistics
+            });
+            setRequestedAmount(totalNeed);
+        } finally {
+            setLoading(false);
         }
-
-        // Basit bir katsayı hesabı (İleride reçetelerden gelecek)
-        const coefficient = 1.1; // %10 fire payı vb.
-        const totalNeed = Math.round(area * coefficient);
-
-        // Lojistik hesaplama (paket/torba/palet)
-        const logistics = calculateLogistics(selectedMat, totalNeed);
-
-        setCalculationResult({
-            item: selectedMat?.name || 'Seçili Malzeme',
-            analysisArea: info,
-            requirement: "Genel Saha Sarfiyat Hesabı",
-            totalNeed: totalNeed,
-            unit: selectedMat?.unit || 'm²',
-            stockRecommendation: stockWarningInfo || 0,
-            logistics
-        });
-        setRequestedAmount(totalNeed);
     };
 
     const createPurchaseRequest = async () => {
@@ -531,12 +588,40 @@ export default function Purchasing() {
                                                 <div className="absolute top-0 right-0 p-8 opacity-10">
                                                     <TrendingUp size={120} />
                                                 </div>
-                                                <div className="flex items-center gap-3 mb-8">
+                                                <div className="flex items-center gap-3 mb-6">
                                                     <div className="w-10 h-10 rounded-xl bg-[#D36A47] flex items-center justify-center text-white font-black text-sm">02</div>
-                                                    <h2 className="text-lg font-black uppercase tracking-tight">SİSTEM OTOMATİK HESAPLAMASI</h2>
+                                                    <h2 className="text-lg font-black uppercase tracking-tight">AKILLI HESAPLAMA SONUCU</h2>
+                                                    {calculationResult.roomCount > 0 && (
+                                                        <span className="text-[9px] bg-white/10 text-slate-300 px-2 py-1 rounded-full font-bold">{calculationResult.roomCount} oda analiz edildi</span>
+                                                    )}
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                                                {/* Uygulama Alanları */}
+                                                {calculationResult.applicationAreas && calculationResult.applicationAreas.length > 0 && (
+                                                    <div className="mb-6">
+                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Uygulama Alanları</span>
+                                                        <div className="flex flex-wrap gap-2 mt-2">
+                                                            {calculationResult.applicationAreas.map(area => (
+                                                                <span key={area} className="px-3 py-1 bg-[#D36A47]/20 text-[#D36A47] rounded-full text-xs font-bold border border-[#D36A47]/30">{area}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Katman Kırılımı */}
+                                                {calculationResult.layerBreakdown && Object.keys(calculationResult.layerBreakdown).length > 0 && (
+                                                    <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                        {Object.entries(calculationResult.layerBreakdown).map(([layer, data]) => (
+                                                            <div key={layer} className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase">{layer}</span>
+                                                                <p className="text-lg font-black text-white">{data.total_m2} <span className="text-xs text-slate-400">m²</span></p>
+                                                                <span className="text-[9px] text-slate-500">{data.room_count} oda</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2 text-slate-400 mb-1">
                                                             <Maximize2 size={14} className="text-[#D36A47]" />
@@ -547,14 +632,17 @@ export default function Purchasing() {
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2 text-slate-400 mb-1">
                                                             <FileText size={14} className="text-blue-400" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">Reçete Gereksinimi</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">Reçete / Tüketim</span>
                                                         </div>
-                                                        <p className="text-lg font-black">{calculationResult.requirement}</p>
+                                                        <p className="text-sm font-bold">{calculationResult.requirement}</p>
+                                                        {calculationResult.calculation && (
+                                                            <p className="text-[10px] text-slate-500 mt-1">Net: {calculationResult.calculation.net_need} | Fire: %{calculationResult.calculation.waste_pct}</p>
+                                                        )}
                                                     </div>
                                                     <div className="bg-white/5 rounded-3xl p-6 border border-white/10 shadow-inner">
                                                         <div className="flex items-center gap-2 text-slate-400 mb-1">
                                                             <TrendingUp size={14} className="text-emerald-400" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">Toplam Saf İhtiyaç</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">Brüt İhtiyaç (Fire Dahil)</span>
                                                         </div>
                                                         <p className="text-3xl font-black text-[#D36A47]">{calculationResult.totalNeed} <span className="text-sm uppercase">{calculationResult.unit}</span></p>
                                                     </div>
@@ -622,10 +710,23 @@ export default function Purchasing() {
                                                     <AlertCircle className="shrink-0 mt-1" size={20} />
                                                     <div className="space-y-1">
                                                         <p className="text-sm font-black uppercase tracking-tight">Mevcut Stok Durumu</p>
-                                                        <p className="text-sm font-medium">Depoda halihazırda <span className="font-black underline">{calculationResult.stockRecommendation} {calculationResult.unit}</span> bulunuyor. Talep miktarından düşülsün mü?</p>
-                                                        <button className="text-[10px] font-black text-orange-700 uppercase tracking-widest flex items-center gap-1 mt-2 hover:underline">
-                                                            EVET, STOKTAN DÜŞÜLSÜN <ChevronRight size={12} />
-                                                        </button>
+                                                        <p className="text-sm font-medium">
+                                                            Depoda halihazırda <span className="font-black underline">{calculationResult.stockRecommendation} {calculationResult.unit}</span> bulunuyor.
+                                                            {calculationResult.stockDeficit > 0 && (
+                                                                <> Eksik: <span className="font-black text-red-600">{calculationResult.stockDeficit} {calculationResult.unit}</span></>
+                                                            )}
+                                                            {calculationResult.stockRecommendation >= calculationResult.totalNeed && (
+                                                                <span className="ml-2 text-emerald-600 font-black">Stok yeterli!</span>
+                                                            )}
+                                                        </p>
+                                                        {calculationResult.stockRecommendation > 0 && calculationResult.stockRecommendation < calculationResult.totalNeed && (
+                                                            <button
+                                                                onClick={() => setRequestedAmount(Math.ceil(calculationResult.stockDeficit || calculationResult.totalNeed - calculationResult.stockRecommendation))}
+                                                                className="text-[10px] font-black text-orange-700 uppercase tracking-widest flex items-center gap-1 mt-2 hover:underline"
+                                                            >
+                                                                STOKTAN DÜŞ ({Math.ceil(calculationResult.totalNeed - calculationResult.stockRecommendation)} {calculationResult.unit} TALEP ET) <ChevronRight size={12} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
 
