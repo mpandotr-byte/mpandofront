@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../api/client";
 import { Mail, Lock, ArrowLeft, CheckCircle, Eye, EyeOff, KeyRound } from "lucide-react";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // 1 = email input, 2 = token + new password, 3 = success
   const [step, setStep] = useState(1);
@@ -20,6 +21,14 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    const urlToken = searchParams.get("token");
+    if (urlToken) {
+      setToken(urlToken);
+      setStep(2);
+    }
+  }, [searchParams]);
 
   const handleSendReset = async (e) => {
     e.preventDefault();
@@ -314,7 +323,7 @@ const ForgotPassword = () => {
 
         {/* Footer */}
         <p className="text-center text-xs text-slate-600 mt-6">
-          © 2024 Mpando. Tüm hakları saklıdır.
+          © 2026 Mpando. Tüm hakları saklıdır.
         </p>
       </div>
     </div>

@@ -80,6 +80,7 @@ function App() {
         {/* --- KİMLİK DOĞRULAMA (Login) --- */}
         <Route path="/" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
         {/* --- ANA KOMUTA MERKEZİ --- */}
