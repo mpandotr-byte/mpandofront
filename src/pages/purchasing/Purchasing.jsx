@@ -298,16 +298,40 @@ export default function Purchasing() {
                 ? Object.entries(smartResult.layer_breakdown).map(([k, v]) => `${k}: ${v.total_m2} m²`).join(' | ')
                 : '';
 
-            // Lojistik items oluştur
+            // Lojistik items oluştur (genel - tüm malzeme tipleri)
             const logisticsItems = [];
             const pkg = smartResult.packaging || {};
-            if (pkg.bucket_count) logisticsItems.push({ label: pkg.bucket_label || 'Kova', value: pkg.bucket_count, icon: '🪣' });
-            if (pkg.liter_count) logisticsItems.push({ label: 'Litre', value: pkg.liter_count, icon: '💧' });
-            if (pkg.bag_count) logisticsItems.push({ label: pkg.bag_label || 'Torba', value: pkg.bag_count, icon: '🏷️' });
-            if (pkg.box_count) logisticsItems.push({ label: pkg.box_label || 'Kutu', value: pkg.box_count, icon: '📦' });
-            if (pkg.pallet_count) logisticsItems.push({ label: pkg.pallet_label || 'Palet', value: pkg.pallet_count, icon: '🏗️' });
-            if (pkg.total_units && !pkg.bucket_count && !pkg.bag_count && !pkg.box_count) {
+
+            // Ton dönüşümü varsa göster
+            if (pkg.converted_amount) {
+                logisticsItems.push({ label: `Toplam (${pkg.converted_unit})`, value: pkg.converted_amount, icon: '⚖️' });
+            }
+
+            // Paket bilgisi (Kova, Torba, Kutu, Demet vb.)
+            if (pkg.package_count) {
+                logisticsItems.push({ label: pkg.package_label || pkg.package_unit || 'Paket', value: pkg.package_count, icon: '📦' });
+            }
+
+            // Paketleme bilgisi yoksa ham birim
+            if (pkg.total_units && !pkg.package_count) {
                 logisticsItems.push({ label: pkg.unit_label || 'Birim', value: pkg.total_units, icon: '📦' });
+            }
+
+            // Palet
+            if (pkg.pallet_count) {
+                logisticsItems.push({ label: pkg.pallet_label || 'Palet', value: pkg.pallet_count, icon: '🏗️' });
+            }
+
+            // Ağırlık
+            if (pkg.total_weight_ton) {
+                logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_ton} ton`, icon: '⚖️' });
+            } else if (pkg.total_weight_kg) {
+                logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_kg} kg`, icon: '⚖️' });
+            }
+
+            // Tedarik süresi
+            if (pkg.lead_time_days) {
+                logisticsItems.push({ label: 'Tedarik Süresi', value: `${pkg.lead_time_days} gün`, icon: '🚚' });
             }
 
             const totalNeed = smartResult.calculation?.gross_need || 0;
@@ -322,7 +346,7 @@ export default function Purchasing() {
                 unit: smartResult.material?.unit || selectedMat?.unit || 'm²',
                 stockRecommendation: smartResult.stock?.current || 0,
                 stockDeficit: smartResult.stock?.deficit || 0,
-                logistics: { items: logisticsItems, estimatedWeight: null },
+                logistics: { items: logisticsItems, estimatedWeight: pkg.total_weight_kg || null },
                 // Akıllı detaylar
                 applicationAreas: smartResult.application_areas || [],
                 layerBreakdown: smartResult.layer_breakdown || {},
