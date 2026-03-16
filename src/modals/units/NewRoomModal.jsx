@@ -94,12 +94,13 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                 analysis_type: "room_full_metrics"
             });
 
-            const result = response.ai_response || response;
+            const result = response.ai_room_data || response.ai_response || response;
 
             if (result) {
+                const areaVal = result.area_m2 ?? result.area ?? null;
                 setFormData(prev => ({
                     ...prev,
-                    area_m2: result.area_m2 ?? result.area ?? prev.area_m2,
+                    area_m2: areaVal ?? prev.area_m2,
                     wall_area_m2: result.wall_area_m2 ?? result.wall_area ?? prev.wall_area_m2,
                     door_count: result.door_count ?? prev.door_count,
                     door_width_cm: result.door_width_cm ?? prev.door_width_cm,
@@ -107,7 +108,8 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                     window_count: result.window_count ?? prev.window_count,
                     window_width_cm: result.window_width_cm ?? prev.window_width_cm,
                     window_height_cm: result.window_height_cm ?? prev.window_height_cm,
-                    ceiling_area_m2: result.ceiling_area_m2 ?? prev.ceiling_area_m2,
+                    // Tavan alanı: AI'dan gelirse kullan, yoksa zemin alanıyla aynı (düz tavan)
+                    ceiling_area_m2: result.ceiling_area_m2 ?? areaVal ?? prev.ceiling_area_m2,
                     perimeter_m: result.perimeter_m ?? prev.perimeter_m,
                     floor_height_m: result.floor_height_m ?? prev.floor_height_m
                 }));
@@ -233,6 +235,14 @@ const NewRoomModal = ({ isOpen, onClose, onAdd, unitId, projectId, roomData = nu
                                     <input readOnly value={formData.wall_area_m2} placeholder={isAnalyzing ? '' : "AI Dolduracak"} className={`block w-full px-5 py-4 bg-teal-50/20 border border-teal-100 rounded-2xl font-black text-teal-900 outline-none transition-all cursor-default placeholder:text-slate-300 placeholder:italic ${isAnalyzing ? 'animate-pulse' : ''}`} />
                                     {isAnalyzing && <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-100/0 via-teal-200/60 to-teal-100/0 animate-[shimmer_1.5s_infinite]" />}
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-teal-300">m²</span>
+                                </div>
+                            </div>
+                            <div className="md:col-span-1 lg:col-span-3 space-y-2">
+                                <label className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] ml-1">TAVAN ALANI <span className="text-[9px] bg-purple-50 px-1.5 py-0.5 rounded uppercase">AI</span></label>
+                                <div className="relative">
+                                    <input readOnly value={formData.ceiling_area_m2} placeholder={isAnalyzing ? '' : "AI Dolduracak"} className={`block w-full px-5 py-4 bg-purple-50/20 border border-purple-100 rounded-2xl font-black text-purple-900 outline-none transition-all cursor-default placeholder:text-slate-300 placeholder:italic ${isAnalyzing ? 'animate-pulse' : ''}`} />
+                                    {isAnalyzing && <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-100/0 via-purple-200/60 to-purple-100/0 animate-[shimmer_1.5s_infinite]" />}
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-purple-300">m²</span>
                                 </div>
                             </div>
                             <div className="md:col-span-1 lg:col-span-3 space-y-2">
