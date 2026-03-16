@@ -61,6 +61,18 @@ export default function Purchasing() {
     const [stockWarningInfo, setStockWarningInfo] = useState(null);
     const [usageArea, setUsageArea] = useState('');
 
+    // Kapı/pencere malzeme kontrolü
+    const isDoorWindowMaterial = useMemo(() => {
+        if (!selection.materialId) return false;
+        const mat = materials.find(m => m.id === parseInt(selection.materialId));
+        if (!mat) return false;
+        const name = (mat.name || '').toLowerCase();
+        return (mat.unit || '').toLowerCase() === 'adet' && (
+            name.includes('kapı') || name.includes('kapi') ||
+            name.includes('pencere') || name.includes('cam') || name.includes('doğrama')
+        );
+    }, [selection.materialId, materials]);
+
     // Initial Fetch
     useEffect(() => {
         fetchInitialData();
@@ -302,69 +314,105 @@ export default function Purchasing() {
                 ? Object.entries(smartResult.layer_breakdown).map(([k, v]) => `${k}: ${v.total_m2} m²`).join(' | ')
                 : '';
 
-            // Lojistik items oluştur (genel - tüm malzeme tipleri)
+            // Lojistik items oluştur
             const logisticsItems = [];
             const pkg = smartResult.packaging || {};
             const matName = smartResult.material?.name || selectedMat?.name || '';
-
-            // Brüt ihtiyaç (ana birim)
-            const grossVal = smartResult.calculation?.gross_need || 0;
-            const matUnit = smartResult.material?.unit || selectedMat?.unit || 'm²';
-            logisticsItems.push({ label: `Toplam ${matUnit}`, value: Math.ceil(grossVal), icon: '📐', subtitle: matName });
-
-            // Ton dönüşümü varsa göster
-            if (pkg.converted_amount) {
-                logisticsItems.push({ label: `Toplam (${pkg.converted_unit})`, value: pkg.converted_amount, icon: '⚖️' });
-            }
-
-            // Paket bilgisi (Kova, Torba, Kutu, Demet vb.)
-            if (pkg.package_count) {
-                logisticsItems.push({ label: pkg.package_unit || 'Paket', value: pkg.package_count, icon: '📦', subtitle: pkg.package_label });
-            }
-
-            // Paketleme bilgisi yoksa ham birim
-            if (pkg.total_units && !pkg.package_count) {
-                logisticsItems.push({ label: pkg.unit_label || 'Birim', value: pkg.total_units, icon: '📦' });
-            }
-
-            // Palet
-            if (pkg.pallet_count) {
-                logisticsItems.push({ label: 'Palet', value: pkg.pallet_count, icon: '🏗️', subtitle: pkg.pallet_label });
-            }
-
-            // Ağırlık
-            if (pkg.total_weight_ton) {
-                logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_ton} ton`, icon: '⚖️' });
-            } else if (pkg.total_weight_kg) {
-                logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_kg} kg`, icon: '⚖️' });
-            }
-
-            // Tedarik süresi
-            if (pkg.lead_time_days) {
-                logisticsItems.push({ label: 'Tedarik Süresi', value: `${pkg.lead_time_days} gün`, icon: '🚚' });
-            }
-
             const totalNeed = smartResult.calculation?.gross_need || 0;
 
-            setCalculationResult({
-                item: smartResult.material?.name || selectedMat?.name || 'Seçili Malzeme',
-                analysisArea: `${info} (${smartResult.total_target_area_m2} m²)`,
-                requirement: smartResult.recipe
-                    ? `${smartResult.recipe.name}: ${smartResult.recipe.description}`
-                    : "Reçete atanmamış – brüt alan hesabı",
-                totalNeed: totalNeed,
-                unit: smartResult.material?.unit || selectedMat?.unit || 'm²',
-                stockRecommendation: smartResult.stock?.current || 0,
-                stockDeficit: smartResult.stock?.deficit || 0,
-                logistics: { items: logisticsItems },
-                // Akıllı detaylar
-                applicationAreas: smartResult.application_areas || [],
-                layerBreakdown: smartResult.layer_breakdown || {},
-                layerInfo,
-                recipe: smartResult.recipe,
-                calculation: smartResult.calculation,
-                roomCount: smartResult.scope?.room_count || 0
-            });
+            // ═══ KAPI/PENCERE MODU ═══
+            if (smartResult.is_door_window) {
+                const doorIcon = matName.toLowerCase().includes('pencere') ? '🪟' : '🚪';
+                logisticsItems.push({
+                    label: 'Toplam Adet',
+                    value: smartResult.calculation?.gross_need || 0,
+                    icon: doorIcon,
+                    subtitle: smartResult.count_type
+                });
+
+                // Ağırlık
+                if (pkg.total_weight_ton) {
+                    logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_ton} ton`, icon: '⚖️' });
+                } else if (pkg.total_weight_kg) {
+                    logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_kg} kg`, icon: '⚖️' });
+                }
+
+                if (pkg.lead_time_days) {
+                    logisticsItems.push({ label: 'Tedarik Süresi', value: `${pkg.lead_time_days} gün`, icon: '🚚' });
+                }
+
+                const scopeInfo = smartResult.scope || {};
+                setCalculationResult({
+                    item: matName,
+                    analysisArea: `${scopeInfo.room_count || 0} oda / ${scopeInfo.unit_count || 0} daire analiz edildi`,
+                    requirement: smartResult.count_detail || smartResult.count_type,
+                    totalNeed: totalNeed,
+                    unit: 'Adet',
+                    stockRecommendation: smartResult.stock?.current || 0,
+                    stockDeficit: smartResult.stock?.deficit || 0,
+                    logistics: { items: logisticsItems },
+                    applicationAreas: [],
+                    layerBreakdown: {},
+                    layerInfo: smartResult.count_detail || '',
+                    recipe: null,
+                    calculation: smartResult.calculation,
+                    roomCount: scopeInfo.room_count || 0,
+                    isDoorWindow: true,
+                    countType: smartResult.count_type,
+                    countDetail: smartResult.count_detail,
+                    totalCount: smartResult.total_count
+                });
+            } else {
+                // ═══ NORMAL M² BAZLI HESAPLAMA ═══
+                const grossVal = smartResult.calculation?.gross_need || 0;
+                const matUnit = smartResult.material?.unit || selectedMat?.unit || 'm²';
+                logisticsItems.push({ label: `Toplam ${matUnit}`, value: Math.ceil(grossVal), icon: '📐', subtitle: matName });
+
+                if (pkg.converted_amount) {
+                    logisticsItems.push({ label: `Toplam (${pkg.converted_unit})`, value: pkg.converted_amount, icon: '⚖️' });
+                }
+
+                if (pkg.package_count) {
+                    logisticsItems.push({ label: pkg.package_unit || 'Paket', value: pkg.package_count, icon: '📦', subtitle: pkg.package_label });
+                }
+
+                if (pkg.total_units && !pkg.package_count) {
+                    logisticsItems.push({ label: pkg.unit_label || 'Birim', value: pkg.total_units, icon: '📦' });
+                }
+
+                if (pkg.pallet_count) {
+                    logisticsItems.push({ label: 'Palet', value: pkg.pallet_count, icon: '🏗️', subtitle: pkg.pallet_label });
+                }
+
+                if (pkg.total_weight_ton) {
+                    logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_ton} ton`, icon: '⚖️' });
+                } else if (pkg.total_weight_kg) {
+                    logisticsItems.push({ label: 'Toplam Ağırlık', value: `${pkg.total_weight_kg} kg`, icon: '⚖️' });
+                }
+
+                if (pkg.lead_time_days) {
+                    logisticsItems.push({ label: 'Tedarik Süresi', value: `${pkg.lead_time_days} gün`, icon: '🚚' });
+                }
+
+                setCalculationResult({
+                    item: smartResult.material?.name || selectedMat?.name || 'Seçili Malzeme',
+                    analysisArea: `${info} (${smartResult.total_target_area_m2} m²)`,
+                    requirement: smartResult.recipe
+                        ? `${smartResult.recipe.name}: ${smartResult.recipe.description}`
+                        : "Reçete atanmamış – brüt alan hesabı",
+                    totalNeed: totalNeed,
+                    unit: smartResult.material?.unit || selectedMat?.unit || 'm²',
+                    stockRecommendation: smartResult.stock?.current || 0,
+                    stockDeficit: smartResult.stock?.deficit || 0,
+                    logistics: { items: logisticsItems },
+                    applicationAreas: smartResult.application_areas || [],
+                    layerBreakdown: smartResult.layer_breakdown || {},
+                    layerInfo,
+                    recipe: smartResult.recipe,
+                    calculation: smartResult.calculation,
+                    roomCount: smartResult.scope?.room_count || 0
+                });
+            }
             setRequestedAmount(Math.ceil(totalNeed));
         } catch (err) {
             console.error('Smart calculate error:', err);
@@ -603,36 +651,44 @@ export default function Purchasing() {
                                                 </div>
                                             </div>
 
-                                            {/* Kullanım Alanı Seçimi - Analiz öncesi */}
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kullanım Alanı</label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {[
-                                                        { value: 'Zemin', icon: '🟫' },
-                                                        { value: 'Duvar', icon: '🧱' },
-                                                        { value: 'Tavan', icon: '⬜' },
-                                                        { value: 'Cephe', icon: '🏢' }
-                                                    ].map(area => (
-                                                        <button
-                                                            key={area.value}
-                                                            type="button"
-                                                            onClick={() => setUsageArea(area.value)}
-                                                            className={`px-3 py-3 rounded-2xl text-xs font-black uppercase tracking-tight transition-all flex items-center justify-center gap-2 border-2 ${
-                                                                usageArea === area.value
-                                                                    ? 'bg-[#D36A47] text-white border-[#D36A47] scale-[1.02] shadow-lg'
-                                                                    : 'bg-white text-slate-500 border-slate-200 hover:border-[#D36A47]/40 hover:bg-orange-50/50'
-                                                            }`}
-                                                        >
-                                                            <span>{area.icon}</span>
-                                                            {area.value}
-                                                        </button>
-                                                    ))}
+                                            {/* Kullanım Alanı Seçimi - Kapı/Pencere için gizle */}
+                                            {isDoorWindowMaterial ? (
+                                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 text-center">
+                                                    <span className="text-2xl">{(materials.find(m => m.id === parseInt(selection.materialId))?.name || '').toLowerCase().includes('pencere') ? '🪟' : '🚪'}</span>
+                                                    <p className="text-xs font-black text-amber-700 mt-2">Kapı/Pencere Otomatik Sayım</p>
+                                                    <p className="text-[10px] text-amber-500 mt-1">Proje verilerinden otomatik hesaplanacak</p>
                                                 </div>
-                                            </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kullanım Alanı</label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {[
+                                                            { value: 'Zemin', icon: '🟫' },
+                                                            { value: 'Duvar', icon: '🧱' },
+                                                            { value: 'Tavan', icon: '⬜' },
+                                                            { value: 'Cephe', icon: '🏢' }
+                                                        ].map(area => (
+                                                            <button
+                                                                key={area.value}
+                                                                type="button"
+                                                                onClick={() => setUsageArea(area.value)}
+                                                                className={`px-3 py-3 rounded-2xl text-xs font-black uppercase tracking-tight transition-all flex items-center justify-center gap-2 border-2 ${
+                                                                    usageArea === area.value
+                                                                        ? 'bg-[#D36A47] text-white border-[#D36A47] scale-[1.02] shadow-lg'
+                                                                        : 'bg-white text-slate-500 border-slate-200 hover:border-[#D36A47]/40 hover:bg-orange-50/50'
+                                                                }`}
+                                                            >
+                                                                <span>{area.icon}</span>
+                                                                {area.value}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             <button
                                                 onClick={runAnalysis}
-                                                disabled={!selection.materialId || !usageArea}
+                                                disabled={!selection.materialId || (!isDoorWindowMaterial && !usageArea)}
                                                 className="w-full py-5 bg-[#D36A47] text-white rounded-[24px] text-sm font-black uppercase tracking-wider shadow-xl shadow-[#D36A47]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:grayscale disabled:opacity-50"
                                             >
                                                 <Calculator size={20} />
@@ -688,14 +744,14 @@ export default function Purchasing() {
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2 text-slate-400 mb-1">
                                                             <Maximize2 size={14} className="text-[#D36A47]" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">Analiz Edilen Alan</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">{calculationResult.isDoorWindow ? 'Analiz Kapsamı' : 'Analiz Edilen Alan'}</span>
                                                         </div>
                                                         <p className="text-lg font-black">{calculationResult.analysisArea}</p>
                                                     </div>
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2 text-slate-400 mb-1">
                                                             <FileText size={14} className="text-blue-400" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">Reçete / Tüketim</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">{calculationResult.isDoorWindow ? 'Sayım Detayı' : 'Reçete / Tüketim'}</span>
                                                         </div>
                                                         <p className="text-sm font-bold">{calculationResult.requirement}</p>
                                                         {calculationResult.calculation && (
