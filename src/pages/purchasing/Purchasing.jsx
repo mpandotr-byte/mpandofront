@@ -59,6 +59,7 @@ export default function Purchasing() {
     const [selectedRequestForRfq, setSelectedRequestForRfq] = useState(null);
     const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
     const [stockWarningInfo, setStockWarningInfo] = useState(null);
+    const [usageArea, setUsageArea] = useState('');
 
     // Initial Fetch
     useEffect(() => {
@@ -80,6 +81,7 @@ export default function Purchasing() {
                 status: req.status === 'ORDERED' ? 'Malzeme Bekleniyor' : 'Teklif Toplanıyor',
                 date: req.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
                 requester: req.requested_by_user?.full_name || req.requester || 'Sistem',
+                usage_area: req.usage_area || '',
                 offers: req.offers || []
             }));
             setRequests(mappedData);
@@ -390,17 +392,23 @@ export default function Purchasing() {
     };
 
     const createPurchaseRequest = async () => {
+        if (!usageArea) {
+            alert('Lütfen malzemenin kullanılacağı alanı seçin.');
+            return;
+        }
         try {
             const res = await api.post('/inventory/purchase-requests', {
                 project_id: parseInt(selection.projectId),
                 material_id: parseInt(selection.materialId),
                 quantity: parseFloat(requestedAmount || calculationResult.totalNeed),
+                usage_area: usageArea,
                 status: 'OPEN'
             });
 
             await fetchPurchaseRequests();
             setActiveTab('requests');
             setCalculationResult(null);
+            setUsageArea('');
             setSelection({
                 projectId: '', blockId: '', floorId: '', unitId: '', category: 'İnce Yapı', materialId: ''
             });
@@ -754,11 +762,42 @@ export default function Purchasing() {
                                                     </div>
                                                 </div>
 
+                                                {/* Kullanım Alanı Seçimi */}
+                                                <div className="space-y-3">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kullanım Alanı</p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {[
+                                                            { value: 'Zemin', icon: '🟫', color: 'amber' },
+                                                            { value: 'Duvar', icon: '🧱', color: 'blue' },
+                                                            { value: 'Tavan', icon: '⬜', color: 'slate' },
+                                                            { value: 'Cephe', icon: '🏢', color: 'indigo' }
+                                                        ].map(area => (
+                                                            <button
+                                                                key={area.value}
+                                                                onClick={() => setUsageArea(area.value)}
+                                                                className={`px-4 py-3 rounded-2xl text-sm font-black uppercase tracking-tight transition-all flex items-center justify-center gap-2 border-2 ${
+                                                                    usageArea === area.value
+                                                                        ? 'bg-[#0A1128] text-white border-[#0A1128] scale-[1.02] shadow-lg'
+                                                                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                                                }`}
+                                                            >
+                                                                <span>{area.icon}</span>
+                                                                {area.value}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
                                                 <button
                                                     onClick={createPurchaseRequest}
-                                                    className="w-full py-6 bg-[#0A1128] text-white rounded-[24px] text-sm font-black uppercase tracking-wider shadow-2xl shadow-blue-900/10 hover:bg-slate-900 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                                    className={`w-full py-6 rounded-[24px] text-sm font-black uppercase tracking-wider shadow-2xl transition-all flex items-center justify-center gap-3 ${
+                                                        usageArea
+                                                            ? 'bg-[#0A1128] text-white shadow-blue-900/10 hover:bg-slate-900 hover:scale-[1.01] active:scale-95'
+                                                            : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                                                    }`}
+                                                    disabled={!usageArea}
                                                 >
-                                                    <ShoppingBag size={20} className="text-[#D36A47]" />
+                                                    <ShoppingBag size={20} className={usageArea ? "text-[#D36A47]" : "text-slate-400"} />
                                                     SATIN ALMA TALEBİ OLUŞTUR
                                                 </button>
                                             </div>
@@ -819,6 +858,9 @@ export default function Purchasing() {
 
                                                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
                                                     <div className="flex items-center gap-1.5"><Clock size={14} /> {req.date}</div>
+                                                    {req.usage_area && (
+                                                        <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase">{req.usage_area}</span>
+                                                    )}
                                                     <div className="flex items-center gap-1.5"><ArrowRight size={14} /> {req.requester}</div>
                                                 </div>
 
