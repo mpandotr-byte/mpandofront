@@ -283,7 +283,8 @@ export default function Purchasing() {
                 project_id: selection.projectId ? parseInt(selection.projectId) : null,
                 block_id: selection.blockId ? parseInt(selection.blockId) : null,
                 floor_id: selection.floorId ? parseInt(selection.floorId) : null,
-                unit_id: selection.unitId ? parseInt(selection.unitId) : null
+                unit_id: selection.unitId ? parseInt(selection.unitId) : null,
+                usage_area: usageArea || null
             });
 
             // Analiz alanı bilgisi
@@ -304,6 +305,12 @@ export default function Purchasing() {
             // Lojistik items oluştur (genel - tüm malzeme tipleri)
             const logisticsItems = [];
             const pkg = smartResult.packaging || {};
+            const matName = smartResult.material?.name || selectedMat?.name || '';
+
+            // Brüt ihtiyaç (ana birim)
+            const grossVal = smartResult.calculation?.gross_need || 0;
+            const matUnit = smartResult.material?.unit || selectedMat?.unit || 'm²';
+            logisticsItems.push({ label: `Toplam ${matUnit}`, value: Math.ceil(grossVal), icon: '📐', subtitle: matName });
 
             // Ton dönüşümü varsa göster
             if (pkg.converted_amount) {
@@ -312,7 +319,7 @@ export default function Purchasing() {
 
             // Paket bilgisi (Kova, Torba, Kutu, Demet vb.)
             if (pkg.package_count) {
-                logisticsItems.push({ label: pkg.package_label || pkg.package_unit || 'Paket', value: pkg.package_count, icon: '📦' });
+                logisticsItems.push({ label: pkg.package_unit || 'Paket', value: pkg.package_count, icon: '📦', subtitle: pkg.package_label });
             }
 
             // Paketleme bilgisi yoksa ham birim
@@ -322,7 +329,7 @@ export default function Purchasing() {
 
             // Palet
             if (pkg.pallet_count) {
-                logisticsItems.push({ label: pkg.pallet_label || 'Palet', value: pkg.pallet_count, icon: '🏗️' });
+                logisticsItems.push({ label: 'Palet', value: pkg.pallet_count, icon: '🏗️', subtitle: pkg.pallet_label });
             }
 
             // Ağırlık
@@ -349,7 +356,7 @@ export default function Purchasing() {
                 unit: smartResult.material?.unit || selectedMat?.unit || 'm²',
                 stockRecommendation: smartResult.stock?.current || 0,
                 stockDeficit: smartResult.stock?.deficit || 0,
-                logistics: { items: logisticsItems, estimatedWeight: pkg.total_weight_kg || null },
+                logistics: { items: logisticsItems },
                 // Akıllı detaylar
                 applicationAreas: smartResult.application_areas || [],
                 layerBreakdown: smartResult.layer_breakdown || {},
@@ -393,10 +400,6 @@ export default function Purchasing() {
     };
 
     const createPurchaseRequest = async () => {
-        if (!usageArea) {
-            alert('Lütfen malzemenin kullanılacağı alanı seçin.');
-            return;
-        }
         try {
             const res = await api.post('/inventory/purchase-requests', {
                 project_id: parseInt(selection.projectId),
@@ -600,9 +603,36 @@ export default function Purchasing() {
                                                 </div>
                                             </div>
 
+                                            {/* Kullanım Alanı Seçimi - Analiz öncesi */}
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kullanım Alanı</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {[
+                                                        { value: 'Zemin', icon: '🟫' },
+                                                        { value: 'Duvar', icon: '🧱' },
+                                                        { value: 'Tavan', icon: '⬜' },
+                                                        { value: 'Cephe', icon: '🏢' }
+                                                    ].map(area => (
+                                                        <button
+                                                            key={area.value}
+                                                            type="button"
+                                                            onClick={() => setUsageArea(area.value)}
+                                                            className={`px-3 py-3 rounded-2xl text-xs font-black uppercase tracking-tight transition-all flex items-center justify-center gap-2 border-2 ${
+                                                                usageArea === area.value
+                                                                    ? 'bg-[#D36A47] text-white border-[#D36A47] scale-[1.02] shadow-lg'
+                                                                    : 'bg-white text-slate-500 border-slate-200 hover:border-[#D36A47]/40 hover:bg-orange-50/50'
+                                                            }`}
+                                                        >
+                                                            <span>{area.icon}</span>
+                                                            {area.value}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
                                             <button
                                                 onClick={runAnalysis}
-                                                disabled={!selection.materialId}
+                                                disabled={!selection.materialId || !usageArea}
                                                 className="w-full py-5 bg-[#D36A47] text-white rounded-[24px] text-sm font-black uppercase tracking-wider shadow-xl shadow-[#D36A47]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:grayscale disabled:opacity-50"
                                             >
                                                 <Calculator size={20} />
@@ -695,17 +725,11 @@ export default function Purchasing() {
                                                         {calculationResult.logistics.items.map((item, idx) => (
                                                             <div key={idx} className="bg-white rounded-2xl p-5 border border-indigo-100 text-center shadow-sm">
                                                                 <span className="text-2xl">{item.icon}</span>
-                                                                <p className="text-2xl font-black text-indigo-700 mt-2">{item.value.toLocaleString('tr-TR')}</p>
+                                                                <p className="text-2xl font-black text-indigo-700 mt-2">{typeof item.value === 'number' ? item.value.toLocaleString('tr-TR') : item.value}</p>
                                                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">{item.label}</p>
+                                                                {item.subtitle && <p className="text-[9px] text-slate-400 mt-1 truncate">{item.subtitle}</p>}
                                                             </div>
                                                         ))}
-                                                        {calculationResult.logistics.estimatedWeight && (
-                                                            <div className="bg-white rounded-2xl p-5 border border-indigo-100 text-center shadow-sm">
-                                                                <span className="text-2xl">⚖️</span>
-                                                                <p className="text-2xl font-black text-indigo-700 mt-2">{calculationResult.logistics.estimatedWeight.toLocaleString('tr-TR')} kg</p>
-                                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Tahmini Ağırlık</p>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 </div>
                                             )}
@@ -763,42 +787,11 @@ export default function Purchasing() {
                                                     </div>
                                                 </div>
 
-                                                {/* Kullanım Alanı Seçimi */}
-                                                <div className="space-y-3">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kullanım Alanı</p>
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        {[
-                                                            { value: 'Zemin', icon: '🟫', color: 'amber' },
-                                                            { value: 'Duvar', icon: '🧱', color: 'blue' },
-                                                            { value: 'Tavan', icon: '⬜', color: 'slate' },
-                                                            { value: 'Cephe', icon: '🏢', color: 'indigo' }
-                                                        ].map(area => (
-                                                            <button
-                                                                key={area.value}
-                                                                onClick={() => setUsageArea(area.value)}
-                                                                className={`px-4 py-3 rounded-2xl text-sm font-black uppercase tracking-tight transition-all flex items-center justify-center gap-2 border-2 ${
-                                                                    usageArea === area.value
-                                                                        ? 'bg-[#0A1128] text-white border-[#0A1128] scale-[1.02] shadow-lg'
-                                                                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                                                                }`}
-                                                            >
-                                                                <span>{area.icon}</span>
-                                                                {area.value}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
                                                 <button
                                                     onClick={createPurchaseRequest}
-                                                    className={`w-full py-6 rounded-[24px] text-sm font-black uppercase tracking-wider shadow-2xl transition-all flex items-center justify-center gap-3 ${
-                                                        usageArea
-                                                            ? 'bg-[#0A1128] text-white shadow-blue-900/10 hover:bg-slate-900 hover:scale-[1.01] active:scale-95'
-                                                            : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-                                                    }`}
-                                                    disabled={!usageArea}
+                                                    className="w-full py-6 bg-[#0A1128] text-white rounded-[24px] text-sm font-black uppercase tracking-wider shadow-2xl shadow-blue-900/10 hover:bg-slate-900 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-3"
                                                 >
-                                                    <ShoppingBag size={20} className={usageArea ? "text-[#D36A47]" : "text-slate-400"} />
+                                                    <ShoppingBag size={20} className="text-[#D36A47]" />
                                                     SATIN ALMA TALEBİ OLUŞTUR
                                                 </button>
                                             </div>
