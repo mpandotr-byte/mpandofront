@@ -280,6 +280,7 @@ export default function Purchasing() {
             // Akıllı hesaplama API'sini çağır
             const smartResult = await api.post('/inventory/smart-calculate', {
                 material_id: parseInt(selection.materialId),
+                project_id: selection.projectId ? parseInt(selection.projectId) : null,
                 block_id: selection.blockId ? parseInt(selection.blockId) : null,
                 floor_id: selection.floorId ? parseInt(selection.floorId) : null,
                 unit_id: selection.unitId ? parseInt(selection.unitId) : null
