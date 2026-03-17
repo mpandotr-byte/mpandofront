@@ -56,6 +56,7 @@ import SuppOffers from "./pages/supplier/SuppOffers";
 import SuppAccounting from "./pages/supplier/SuppAccounting";
 
 // Tenders ve DwgManager kaldırıldı - DWG/PDF yükleme İnşaat Projeler sayfasına taşındı
+import AiChat from "./components/AiChat";
 import Announcements from "./pages/system/Announcements";
 import UserManagement from "./pages/system/UserManagement";
 import ActivityLogs from "./pages/system/ActivityLogs";
@@ -164,6 +165,7 @@ function App() {
         <Route path="/supp-panel/offers" element={<PrivateRoute><SuppOffers /></PrivateRoute>} />
         <Route path="/supp-panel/accounting" element={<PrivateRoute><SuppAccounting /></PrivateRoute>} />
       </Routes>
+      <AiChat />
     </BrowserRouter >
   );
 }
