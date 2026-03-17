@@ -29,6 +29,10 @@ export default function AiChat() {
         }
     }, [isOpen]);
 
+    // Login olmamış kullanıcılara gösterme
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
     const sendMessage = async () => {
         if (!input.trim() || loading) return;
 
