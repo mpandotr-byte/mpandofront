@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, Bot, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import { api } from '../api/client';
 
@@ -13,6 +14,7 @@ export default function AiChat() {
     const [aiStatus, setAiStatus] = useState(null);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const location = useLocation();
 
     useEffect(() => {
         if (isOpen && inputRef.current) inputRef.current.focus();
@@ -49,7 +51,9 @@ export default function AiChat() {
                 .slice(-10)
                 .map(m => ({ role: m.role, content: m.content }));
 
-            const data = await api.post('/mgama/chat', { messages: chatHistory });
+            // Kullanıcının mevcut sayfasını ve zamanını context olarak gönder
+            const pageContext = `Kullanıcı şu anda ${location.pathname} sayfasında. Tarih: ${new Date().toLocaleString('tr-TR')}`;
+            const data = await api.post('/mgama/chat', { messages: chatHistory, context: pageContext });
             setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
         } catch (err) {
             setMessages(prev => [...prev, {
@@ -70,9 +74,11 @@ export default function AiChat() {
     };
 
     const quickActions = [
-        'Satın alma hesaplama nasıl çalışır?',
-        'Reçete sistemi nedir?',
-        'DWG analizi nasıl yapılır?',
+        'Sistemdeki güncel durumu özetle',
+        'Satışlar ve müşteriler hakkında bilgi ver',
+        'Stok ve malzeme durumu nedir?',
+        'Son aktiviteleri göster',
+        'DWG analiz sonuçları neler?',
     ];
 
     if (!isOpen) {
